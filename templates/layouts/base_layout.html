@@ -9,6 +9,11 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css"
       rel="stylesheet"
     />
+    <!-- Font Awesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -17,29 +22,67 @@
         theme: {
           extend: {
             colors: {
-              primary: {
-                50: "#f5f3ff",
-                100: "#ede9fe",
-                200: "#ddd6fe",
-                300: "#c4b5fd",
-                400: "#a78bfa",
-                500: "#8b5cf6",
-                600: "#7c3aed",
-                700: "#6d28d9",
-                800: "#5b21b6",
-                900: "#4c1d95",
-                950: "#2e1065",
+              // Paleta de colores cálidos para una galletería
+              cookie: {
+                50: "#FEF9EF",
+                100: "#FEF5E7",
+                200: "#FCE7C5",
+                300: "#F9D6A3",
+                400: "#F6C177", // Color cookie más claro
+                500: "#F3AD4E", // Color cookie principal
+                600: "#E69235",
+                700: "#D97721",
+                800: "#B45E15",
+                900: "#8A470F",
+                950: "#5A2E0A",
               },
+              chocolate: {
+                50: "#FCF8F5",
+                100: "#F8EFE9",
+                200: "#EFD9C9",
+                300: "#E5BFA8",
+                400: "#D49877", // Chocolate claro
+                500: "#C37647", // Chocolate medio
+                600: "#A45A33",
+                700: "#854625",
+                800: "#66361D",
+                900: "#4D2917",
+                950: "#2A170D",
+              },
+              cream: {
+                50: "#FFFCF9",
+                100: "#FFF9F3",
+                200: "#FFF3E7",
+                300: "#FEECD9",
+                400: "#FDE5CB", // Crema clara
+                500: "#FBDAB5", // Crema principal
+                600: "#F9C382",
+                700: "#F6AC50",
+                800: "#F3951D",
+                900: "#CF7A0E",
+                950: "#6A3F07",
+              },
+            },
+            fontFamily: {
+              cookie: ["'Poppins'", "sans-serif"],
             },
           },
         },
       };
     </script>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+      body {
+        font-family: 'Poppins', sans-serif;
+        background-color: #FEF9EF;
+        color: #4D2917;
+      }
+    </style>
     {% block extra_css %}{% endblock %}
   </head>
-  <body class="bg-gray-900 text-white">
+  <body class="bg-cream-50 text-chocolate-900">
     <!-- Navbar -->
-    <nav class="bg-gray-800 border-gray-700">
+    <nav class="bg-white border-b border-cookie-200 shadow">
       <div
         class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4"
       >
@@ -47,15 +90,16 @@
           href="{{ url_for('main.index') }}"
           class="flex items-center space-x-3 rtl:space-x-reverse"
         >
+          <img src="{{ url_for('static', filename='images/logo.png') }}" class="h-12" alt="Cookie King Logo" onerror="this.src='https://via.placeholder.com/150x50?text=Cookie+King'; this.onerror=null;">
           <span
-            class="self-center text-2xl font-semibold whitespace-nowrap text-white"
+            class="self-center text-2xl font-semibold whitespace-nowrap text-cookie-700"
             >Cookie King</span
           >
         </a>
         <button
           data-collapse-toggle="navbar-dropdown"
           type="button"
-          class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-400 rounded-lg md:hidden hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600"
+          class="inline-flex items-center p-2 w-10 h-10 justify-center text-cookie-500 rounded-lg md:hidden hover:bg-cream-100 focus:outline-none focus:ring-2 focus:ring-cookie-300"
           aria-controls="navbar-dropdown"
           aria-expanded="false"
         >
@@ -78,23 +122,26 @@
         </button>
         <div class="hidden w-full md:block md:w-auto" id="navbar-dropdown">
           <ul
-            class="flex flex-col font-medium p-4 md:p-0 mt-4 border rounded-lg md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 bg-gray-800 md:bg-gray-800 border-gray-700"
+            class="flex flex-col font-medium p-4 md:p-0 mt-4 border rounded-lg md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 bg-white md:bg-white border-cookie-200"
           >
             <li>
               <a
                 href="{{ url_for('main.index') }}"
-                class="block py-2 px-3 rounded md:p-0 text-white md:hover:text-purple-400 hover:bg-gray-700 hover:text-white md:hover:bg-transparent"
+                class="block py-2 px-3 rounded md:p-0 text-chocolate-800 md:hover:text-cookie-600 hover:bg-cream-100 hover:text-cookie-700 md:hover:bg-transparent"
                 aria-current="page"
-                >Inicio</a
-              >
+                >
+                <i class="fas fa-home me-1"></i> Inicio
+              </a>
             </li>
+
+            <!-- Dropdown: Administración -->
             <li>
               <button
-                id="dropdownNavbarLink"
-                data-dropdown-toggle="dropdownNavbar"
-                class="flex items-center justify-between w-full py-2 px-3 rounded md:border-0 md:p-0 md:w-auto text-white md:hover:text-purple-400 hover:bg-gray-700 hover:text-white md:hover:bg-transparent"
+                id="dropdownAdminNavbarLink"
+                data-dropdown-toggle="dropdownAdminNavbar"
+                class="flex items-center justify-between w-full py-2 px-3 rounded md:border-0 md:p-0 md:w-auto text-chocolate-800 md:hover:text-cookie-600 hover:bg-cream-100 hover:text-cookie-700 md:hover:bg-transparent"
               >
-                Administración
+                <span><i class="fas fa-cog me-1"></i> Administración</span>
                 <svg
                   class="w-2.5 h-2.5 ms-2.5"
                   aria-hidden="true"
@@ -112,57 +159,309 @@
                 </svg>
               </button>
               <div
-                id="dropdownNavbar"
-                class="z-10 hidden font-normal bg-gray-800 divide-y divide-gray-600 rounded-lg shadow w-44"
+                id="dropdownAdminNavbar"
+                class="z-10 hidden font-normal bg-white divide-y divide-cookie-200 rounded-lg shadow-lg w-44"
               >
                 <ul
-                  class="py-2 text-sm text-gray-200"
-                  aria-labelledby="dropdownLargeButton"
+                  class="py-2 text-sm text-chocolate-700"
+                  aria-labelledby="dropdownAdminNavbarLink"
                 >
                   <li>
                     <a
                       href="{{ url_for('recetas.index') }}"
-                      class="block px-4 py-2 hover:bg-gray-700 hover:text-white"
-                      >Recetas</a
-                    >
+                      class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
+                      >
+                      <i class="fas fa-book me-1"></i> Recetas
+                    </a>
                   </li>
                   <li>
                     <a
                       href="{{ url_for('galletas.index') }}"
-                      class="block px-4 py-2 hover:bg-gray-700 hover:text-white"
-                      >Galletas</a
-                    >
+                      class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
+                      >
+                      <i class="fas fa-cookie me-1"></i> Galletas
+                    </a>
                   </li>
                   <li>
                     <a
-                      href="#"
-                      class="block px-4 py-2 hover:bg-gray-700 hover:text-white"
-                      >Ingredientes</a
-                    >
+                      href="/ingredientes"
+                      class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
+                      >
+                      <i class="fas fa-wheat-awn me-1"></i> Ingredientes
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="/clientes"
+                      class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
+                      >
+                      <i class="fas fa-users me-1"></i> Clientes
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="/proveedores"
+                      class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
+                      >
+                      <i class="fas fa-truck me-1"></i> Proveedores
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="/usuarios"
+                      class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
+                      >
+                      <i class="fas fa-user-cog me-1"></i> Usuarios
+                    </a>
                   </li>
                 </ul>
               </div>
             </li>
+
+            <!-- Dropdown: Compras -->
             <li>
-              <a
-                href="#"
-                class="block py-2 px-3 rounded md:p-0 text-white md:hover:text-purple-400 hover:bg-gray-700 hover:text-white md:hover:bg-transparent"
-                >Producción</a
+              <button
+                id="dropdownComprasNavbarLink"
+                data-dropdown-toggle="dropdownComprasNavbar"
+                class="flex items-center justify-between w-full py-2 px-3 rounded md:border-0 md:p-0 md:w-auto text-chocolate-800 md:hover:text-cookie-600 hover:bg-cream-100 hover:text-cookie-700 md:hover:bg-transparent"
               >
+                <span><i class="fas fa-shopping-cart me-1"></i> Compras</span>
+                <svg
+                  class="w-2.5 h-2.5 ms-2.5"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 10 6"
+                >
+                  <path
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="m1 1 4 4 4-4"
+                  />
+                </svg>
+              </button>
+              <div
+                id="dropdownComprasNavbar"
+                class="z-10 hidden font-normal bg-white divide-y divide-cookie-200 rounded-lg shadow-lg w-44"
+              >
+                <ul
+                  class="py-2 text-sm text-chocolate-700"
+                  aria-labelledby="dropdownComprasNavbarLink"
+                >
+                  <li>
+                    <a
+                      href="/compras"
+                      class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
+                      >
+                      <i class="fas fa-list me-1"></i> Lista de Compras
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="/compras/nueva"
+                      class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
+                      >
+                      <i class="fas fa-plus me-1"></i> Nueva Compra
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </li>
+
+            <!-- Dropdown: Producción -->
             <li>
-              <a
-                href="#"
-                class="block py-2 px-3 rounded md:p-0 text-white md:hover:text-purple-400 hover:bg-gray-700 hover:text-white md:hover:bg-transparent"
-                >Ventas</a
+              <button
+                id="dropdownProduccionNavbarLink"
+                data-dropdown-toggle="dropdownProduccionNavbar"
+                class="flex items-center justify-between w-full py-2 px-3 rounded md:border-0 md:p-0 md:w-auto text-chocolate-800 md:hover:text-cookie-600 hover:bg-cream-100 hover:text-cookie-700 md:hover:bg-transparent"
               >
+                <span><i class="fas fa-industry me-1"></i> Producción</span>
+                <svg
+                  class="w-2.5 h-2.5 ms-2.5"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 10 6"
+                >
+                  <path
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="m1 1 4 4 4-4"
+                  />
+                </svg>
+              </button>
+              <div
+                id="dropdownProduccionNavbar"
+                class="z-10 hidden font-normal bg-white divide-y divide-cookie-200 rounded-lg shadow-lg w-44"
+              >
+                <ul
+                  class="py-2 text-sm text-chocolate-700"
+                  aria-labelledby="dropdownProduccionNavbarLink"
+                >
+                  <li>
+                    <a
+                      href="/produccion"
+                      class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
+                      >
+                      <i class="fas fa-list me-1"></i> Producciones
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="/produccion/solicitud"
+                      class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
+                      >
+                      <i class="fas fa-plus me-1"></i> Solicitar Producción
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="/produccion/inventario"
+                      class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
+                      >
+                      <i class="fas fa-boxes-stacked me-1"></i> Inventario
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </li>
+
+            <!-- Dropdown: Ventas -->
+            <li>
+              <button
+                id="dropdownVentasNavbarLink"
+                data-dropdown-toggle="dropdownVentasNavbar"
+                class="flex items-center justify-between w-full py-2 px-3 rounded md:border-0 md:p-0 md:w-auto text-chocolate-800 md:hover:text-cookie-600 hover:bg-cream-100 hover:text-cookie-700 md:hover:bg-transparent"
+              >
+                <span><i class="fas fa-cash-register me-1"></i> Ventas</span>
+                <svg
+                  class="w-2.5 h-2.5 ms-2.5"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 10 6"
+                >
+                  <path
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="m1 1 4 4 4-4"
+                  />
+                </svg>
+              </button>
+              <div
+                id="dropdownVentasNavbar"
+                class="z-10 hidden font-normal bg-white divide-y divide-cookie-200 rounded-lg shadow-lg w-44"
+              >
+                <ul
+                  class="py-2 text-sm text-chocolate-700"
+                  aria-labelledby="dropdownVentasNavbarLink"
+                >
+                  <li>
+                    <a
+                      href="/ventas"
+                      class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
+                      >
+                      <i class="fas fa-list me-1"></i> Lista de Ventas
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="/ventas/nueva"
+                      class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
+                      >
+                      <i class="fas fa-plus me-1"></i> Nueva Venta
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="/ventas/diarias"
+                      class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
+                      >
+                      <i class="fas fa-calendar-day me-1"></i> Ventas Diarias
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="/ventas/productos-mas-vendidos"
+                      class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
+                      >
+                      <i class="fas fa-trophy me-1"></i> Más Vendidos
+                    </a>
+                  </li>
+                </ul>
+              </div>
+            </li>
+
+            <!-- Dropdown: Reportes -->
             <li>
               <a
-                href="#"
-                class="block py-2 px-3 rounded md:p-0 text-white md:hover:text-purple-400 hover:bg-gray-700 hover:text-white md:hover:bg-transparent"
-                >Reportes</a
+                href="/reportes"
+                class="block py-2 px-3 rounded md:p-0 text-chocolate-800 md:hover:text-cookie-600 hover:bg-cream-100 hover:text-cookie-700 md:hover:bg-transparent"
               >
+                <i class="fas fa-chart-line me-1"></i> Reportes
+              </a>
+            </li>
+
+            <!-- Dropdown: Perfil (solo visible si está iniciada la sesión) -->
+            <li class="ms-auto">
+              <button
+                id="dropdownPerfilNavbarLink"
+                data-dropdown-toggle="dropdownPerfilNavbar"
+                class="flex items-center justify-between w-full py-2 px-3 rounded md:border-0 md:p-0 md:w-auto text-chocolate-800 md:hover:text-cookie-600 hover:bg-cream-100 hover:text-cookie-700 md:hover:bg-transparent"
+              >
+                <span><i class="fas fa-user-circle me-1"></i> Mi Perfil</span>
+                <svg
+                  class="w-2.5 h-2.5 ms-2.5"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 10 6"
+                >
+                  <path
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="m1 1 4 4 4-4"
+                  />
+                </svg>
+              </button>
+              <div
+                id="dropdownPerfilNavbar"
+                class="z-10 hidden font-normal bg-white divide-y divide-cookie-200 rounded-lg shadow-lg w-44"
+              >
+                <div class="px-4 py-3 text-sm text-chocolate-900">
+                  <div class="font-medium">Usuario</div>
+                  <div class="truncate">usuario@ejemplo.com</div>
+                </div>
+                <ul
+                  class="py-2 text-sm text-chocolate-700"
+                  aria-labelledby="dropdownPerfilNavbarLink"
+                >
+                  <li>
+                    <a
+                      href="/perfil"
+                      class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
+                      >
+                      <i class="fas fa-user-cog me-1"></i> Perfil
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="/auth/logout"
+                      class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
+                      >
+                      <i class="fas fa-sign-out-alt me-1"></i> Cerrar Sesión
+                    </a>
+                  </li>
+                </ul>
+              </div>
             </li>
           </ul>
         </div>
@@ -171,29 +470,41 @@
 
     <!-- Flash Messages -->
     <div class="container mx-auto px-4 py-2">
-      {% with messages = get_flashed_messages(with_categories=true) %} {% if
-      messages %} {% for category, message in messages %} {% set alert_type =
-      "info" %} {% set alert_color = "blue" %} {% set icon_path = "M10 .5a9.5
-      9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0
-      0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1
-      1 0 0 1 0 2Z" %} {% if category == "success" %} {% set alert_type =
-      "success" %} {% set alert_color = "green" %} {% set icon_path = "M10
-      .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0
-      1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414
-      1.414Z" %} {% elif category == "error" %} {% set alert_type = "failure" %}
-      {% set alert_color = "red" %} {% set icon_path = "M10 .5a9.5 9.5 0 1 0 9.5
-      9.5A9.51 9.51 0 0 0 10 .5Zm3.5 11.493-2 2a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1
-      1.414-1.414L11 11.086V7.5a1 1 0 1 1 2 0v3.586l1.5-1.5a1 1 0 0 1 1.414
-      1.414ZM10 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z" %} {% elif category ==
-      "warning" %} {% set alert_type = "warning" %} {% set alert_color =
-      "yellow" %} {% set icon_path = "M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0
-      0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1
-      0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" %} {% endif
-      %}
+      {% with messages = get_flashed_messages(with_categories=true) %} 
+      {% if messages %} 
+      {% for category, message in messages %} 
+      {% set alert_type = "info" %} 
+      {% set alert_color = "blue" %} 
+      {% set icon_path = "M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" %} 
+      
+      {% if category == "success" %} 
+      {% set alert_type = "success" %} 
+      {% set alert_color = "cookie" %} 
+      {% set icon_path = "M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" %} 
+      
+      {% elif category == "error" %} 
+      {% set alert_type = "failure" %} 
+      {% set alert_color = "red" %} 
+      {% set icon_path = "M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.5 11.493-2 2a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L11 11.086V7.5a1 1 0 1 1 2 0v3.586l1.5-1.5a1 1 0 0 1 1.414 1.414ZM10 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z" %} 
+      
+      {% elif category == "warning" %} 
+      {% set alert_type = "warning" %} 
+      {% set alert_color = "yellow" %} 
+      {% set icon_path = "M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" %} 
+      {% endif %}
 
       <div
         id="alert-{{ loop.index }}"
-        class="flex items-center p-4 mb-4 text-{{ alert_color }}-800 rounded-lg bg-{{ alert_color }}-50 dark:bg-gray-800 dark:text-{{ alert_color }}-400"
+        class="flex items-center p-4 mb-4 rounded-lg shadow-md border border-{{ alert_color }}-200 
+        {% if category == 'success' %}
+          bg-cream-50 text-cookie-700
+        {% elif category == 'error' %}
+          bg-red-50 text-red-700
+        {% elif category == 'warning' %}
+          bg-yellow-50 text-yellow-700
+        {% else %}
+          bg-blue-50 text-blue-700
+        {% endif %}"
         role="alert"
       >
         <svg
@@ -209,7 +520,17 @@
         <div class="ms-3 text-sm font-medium">{{ message }}</div>
         <button
           type="button"
-          class="ms-auto -mx-1.5 -my-1.5 bg-{{ alert_color }}-50 text-{{ alert_color }}-500 rounded-lg focus:ring-2 focus:ring-{{ alert_color }}-400 p-1.5 hover:bg-{{ alert_color }}-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-{{ alert_color }}-400 dark:hover:bg-gray-700"
+          class="ms-auto -mx-1.5 -my-1.5
+          {% if category == 'success' %}
+            text-cookie-600 hover:text-cookie-800 focus:ring-cookie-400
+          {% elif category == 'error' %}
+            text-red-600 hover:text-red-800 focus:ring-red-400
+          {% elif category == 'warning' %}
+            text-yellow-600 hover:text-yellow-800 focus:ring-yellow-400
+          {% else %}
+            text-blue-600 hover:text-blue-800 focus:ring-blue-400
+          {% endif %}
+          rounded-lg focus:ring-2 p-1.5 inline-flex items-center justify-center h-8 w-8"
           data-dismiss-target="#alert-{{ loop.index }}"
           aria-label="Close"
         >
@@ -231,36 +552,40 @@
           </svg>
         </button>
       </div>
-      {% endfor %} {% endif %} {% endwith %}
+      {% endfor %} 
+      {% endif %} 
+      {% endwith %}
     </div>
 
     <!-- Main Content -->
-    <div class="container mx-auto p-4">{% block content %}{% endblock %}</div>
+    <div class="container mx-auto p-4">
+      {% block content %}{% endblock %}
+    </div>
 
     <!-- Footer -->
-    <footer class="bg-gray-800 rounded-lg shadow m-4">
+    <footer class="bg-white rounded-lg shadow m-4 border-t border-cookie-200">
       <div
         class="w-full mx-auto max-w-screen-xl p-4 md:flex md:items-center md:justify-between"
       >
-        <span class="text-sm text-gray-400 sm:text-center"
+        <span class="text-sm text-chocolate-700 sm:text-center"
           >© 2025
-          <a href="{{ url_for('main.index') }}" class="hover:underline"
+          <a href="{{ url_for('main.index') }}" class="hover:underline font-semibold"
             >Cookie King™</a
           >. Todos los derechos reservados.
         </span>
         <ul
-          class="flex flex-wrap items-center mt-3 text-sm font-medium text-gray-400 sm:mt-0"
+          class="flex flex-wrap items-center mt-3 text-sm font-medium text-chocolate-700 sm:mt-0"
         >
           <li>
-            <a href="#" class="hover:underline me-4 md:me-6">Acerca de</a>
+            <a href="#" class="hover:underline hover:text-cookie-600 me-4 md:me-6">Acerca de</a>
           </li>
           <li>
-            <a href="#" class="hover:underline me-4 md:me-6"
+            <a href="#" class="hover:underline hover:text-cookie-600 me-4 md:me-6"
               >Políticas de Privacidad</a
             >
           </li>
           <li>
-            <a href="#" class="hover:underline">Contacto</a>
+            <a href="#" class="hover:underline hover:text-cookie-600">Contacto</a>
           </li>
         </ul>
       </div>

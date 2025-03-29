@@ -1,4 +1,5 @@
 from models import db
+from datetime import datetime
 
 class Cliente(db.Model):
     """Modelo de clientes"""
@@ -8,7 +9,7 @@ class Cliente(db.Model):
     fechaNacimiento = db.Column(db.DateTime)
     telefono = db.Column(db.String(25), nullable=False)
     correo = db.Column(db.String(150))
-    estatus = db.Column(db.Integer, nullable=False)
+    estatus = db.Column(db.Integer, nullable=False, default=1)
     
     # Relationships
     ventas = db.relationship('Venta', backref='cliente', lazy=True)

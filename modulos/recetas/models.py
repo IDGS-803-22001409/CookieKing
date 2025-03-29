@@ -23,4 +23,23 @@ class Receta(db.Model):
             'galletasProducidas': self.galletasProducidas,
             'idGalleta': self.idGalleta,
             'estatus': self.estatus
-        } 
+        }
+
+# Asegúrate de agregar esto al archivo si no está ya
+class RecetaIngrediente(db.Model):
+    """Modelo para la relación entre recetas e ingredientes"""
+    __tablename__ = 'RecetaIngredientes'
+    receta_id = db.Column(db.Integer, db.ForeignKey('Recetas.idReceta'), primary_key=True)
+    ingrediente_id = db.Column(db.Integer, db.ForeignKey('Ingredientes.idIngrediente'), primary_key=True)
+    cantidad = db.Column(db.Float, nullable=False)
+    
+    # Relación con Ingrediente
+    ingrediente = db.relationship('Ingrediente', backref='recetas_relacion', lazy=True)
+    
+    def to_dict(self):
+        """Convierte el modelo a un diccionario para facilitar la serialización"""
+        return {
+            'receta_id': self.receta_id,
+            'ingrediente_id': self.ingrediente_id,
+            'cantidad': self.cantidad
+        }
