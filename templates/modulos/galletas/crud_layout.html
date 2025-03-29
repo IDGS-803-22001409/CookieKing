@@ -1,0 +1,224 @@
+{% extends "layouts/base_layout.html" %} {% block content %}
+<div class="p-4">
+  <h1 class="text-2xl font-bold mb-4">{{ crud_title }}</h1>
+
+  <div class="flex justify-between mb-4">
+    <div class="flex items-center">
+      <input
+        type="text"
+        id="table-search"
+        class="border rounded px-3 py-2 mr-2"
+        placeholder="Buscar..."
+      />
+      <button id="btn-search" class="bg-blue-500 text-white px-4 py-2 rounded">
+        Buscar
+      </button>
+    </div>
+    <button id="btn-add-new" class="bg-green-500 text-white px-4 py-2 rounded">
+      Agregar {{ modal_title }}
+    </button>
+  </div>
+
+  <div class="overflow-x-auto bg-white shadow-md rounded">
+    <table class="min-w-full text-sm">
+      <thead>
+        <tr class="bg-gray-200 text-gray-600 uppercase">
+          {% for header in table_headers %}
+          <th class="py-3 px-4 text-left">{{ header }}</th>
+          {% endfor %}
+          <th class="py-3 px-4 text-center">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in items %}
+        <tr class="border-b hover:bg-gray-100" data-id="{{ item.id }}">
+          {% for field in item.fields %}
+          <td class="py-3 px-4">{{ field }}</td>
+          {% endfor %}
+          <td class="py-3 px-4 text-center">
+            <button
+              class="text-blue-500 hover:text-blue-700 mr-2 btn-view"
+              data-id="{{ item.id }}"
+            >
+              <i class="fas fa-eye"></i>
+            </button>
+            <button
+              class="text-yellow-500 hover:text-yellow-700 mr-2 btn-edit"
+              data-id="{{ item.id }}"
+            >
+              <i class="fas fa-edit"></i>
+            </button>
+            <button
+              class="text-red-500 hover:text-red-700 btn-delete"
+              data-id="{{ item.id }}"
+            >
+              <i class="fas fa-trash"></i>
+            </button>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal para añadir/editar -->
+<div
+  id="modal"
+  class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+>
+  <div class="bg-white rounded-lg shadow-lg w-full max-w-md">
+    <div class="flex justify-between items-center bg-gray-200 p-4 rounded-t-lg">
+      <h3 class="text-lg font-semibold">{{ modal_title }}</h3>
+      <button id="btn-close-modal" class="text-gray-500 hover:text-gray-700">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <form id="form-crud" action="{{ form_action }}" method="POST" class="p-4">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+      {% for field in form_fields %} {% include field.template %} {% endfor %}
+
+      <div class="mt-6 flex justify-end">
+        <button
+          type="button"
+          id="btn-cancel"
+          class="px-4 py-2 border rounded mr-2"
+        >
+          Cancelar
+        </button>
+        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">
+          Guardar
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const modal = document.getElementById("modal");
+    const formCrud = document.getElementById("form-crud");
+
+    // Función para abrir el modal
+    function openModal() {
+      modal.classList.remove("hidden");
+    }
+
+    // Función para cerrar el modal
+    function closeModal() {
+      modal.classList.add("hidden");
+      formCrud.reset();
+      // Reiniciar el ID oculto
+      const idField = document.querySelector('input[name="id"]');
+      if (idField) idField.value = "";
+    }
+
+    // Función para cargar datos de un elemento
+    async function loadItemData(id) {
+      try {
+        const response = await fetch(
+          `{{ url_for('galletas.get_galleta', galleta_id=0) }}`.replace(
+            "/0",
+            `/${id}`
+          )
+        );
+        const data = await response.json();
+
+        // Recorrer todos los campos y establecer sus valores
+        for (const key in data) {
+          const field = document.querySelector(`[name="${key}"]`);
+          if (field) {
+            field.value = data[key];
+          }
+        }
+
+        openModal();
+      } catch (error) {
+        console.error("Error al cargar datos:", error);
+        alert("Ocurrió un error al cargar los datos");
+      }
+    }
+
+    // Función para eliminar un elemento
+    async function deleteItem(id) {
+      if (confirm("¿Estás seguro de que deseas eliminar este elemento?")) {
+        try {
+          const csrfToken = document.querySelector(
+            'input[name="csrf_token"]'
+          ).value;
+          const response = await fetch(
+            `{{ url_for('galletas.delete', galleta_id=0) }}`.replace(
+              "/0",
+              `/${id}`
+            ),
+            {
+              method: "POST",
+              headers: {
+                "X-Requested-With": "XMLHttpRequest",
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrfToken,
+              },
+            }
+          );
+
+          const result = await response.json();
+
+          if (result.success) {
+            location.reload();
+          } else {
+            alert(result.message || "Error al eliminar");
+          }
+        } catch (error) {
+          console.error("Error al eliminar:", error);
+          alert("Ocurrió un error al eliminar");
+        }
+      }
+    }
+
+    // Botón para añadir nuevo
+    document.getElementById("btn-add-new").addEventListener("click", openModal);
+
+    // Botones para cerrar modal
+    document
+      .getElementById("btn-close-modal")
+      .addEventListener("click", closeModal);
+    document.getElementById("btn-cancel").addEventListener("click", closeModal);
+
+    // Botones de edición
+    document.querySelectorAll(".btn-edit").forEach((button) => {
+      button.addEventListener("click", function () {
+        const id = this.getAttribute("data-id");
+        loadItemData(id);
+      });
+    });
+
+    // Botones de eliminación
+    document.querySelectorAll(".btn-delete").forEach((button) => {
+      button.addEventListener("click", function () {
+        const id = this.getAttribute("data-id");
+        deleteItem(id);
+      });
+    });
+
+    // Botones de visualización
+    document.querySelectorAll(".btn-view").forEach((button) => {
+      button.addEventListener("click", function () {
+        const id = this.getAttribute("data-id");
+        window.location.href =
+          `{{ url_for('galletas.details', galleta_id=0) }}`.replace(
+            "/0",
+            `/${id}`
+          );
+      });
+    });
+
+    // Cerrar modal si se hace clic fuera
+    modal.addEventListener("click", function (e) {
+      if (e.target === modal) {
+        closeModal();
+      }
+    });
+  });
+</script>
+{% endblock %}

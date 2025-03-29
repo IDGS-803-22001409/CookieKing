@@ -1,0 +1,16 @@
+<select 
+    id="{{ field.id }}" 
+    name="{{ field.name }}" 
+    {% if field.required %}required{% endif %}
+    class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5"
+    {% for attr_name, attr_value in field.attrs.items() %}
+        {{ attr_name }}="{{ attr_value }}"
+    {% endfor %}
+>
+    <option value="">Seleccionar...</option>
+    {% for option in field.options %}
+        <option value="{{ option.value }}" {% if option.value == field.value %}selected{% endif %}>
+            {{ option.label }}
+        </option>
+    {% endfor %}
+</select>

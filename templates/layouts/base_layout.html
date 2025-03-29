@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Cookie King{% endblock %}</title>
+    <!-- Flowbite CSS -->
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.css"
+      rel="stylesheet"
+    />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: {
+                50: "#f5f3ff",
+                100: "#ede9fe",
+                200: "#ddd6fe",
+                300: "#c4b5fd",
+                400: "#a78bfa",
+                500: "#8b5cf6",
+                600: "#7c3aed",
+                700: "#6d28d9",
+                800: "#5b21b6",
+                900: "#4c1d95",
+                950: "#2e1065",
+              },
+            },
+          },
+        },
+      };
+    </script>
+    {% block extra_css %}{% endblock %}
+  </head>
+  <body class="bg-gray-900 text-white">
+    <!-- Navbar -->
+    <nav class="bg-gray-800 border-gray-700">
+      <div
+        class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4"
+      >
+        <a
+          href="{{ url_for('main.index') }}"
+          class="flex items-center space-x-3 rtl:space-x-reverse"
+        >
+          <span
+            class="self-center text-2xl font-semibold whitespace-nowrap text-white"
+            >Cookie King</span
+          >
+        </a>
+        <button
+          data-collapse-toggle="navbar-dropdown"
+          type="button"
+          class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-400 rounded-lg md:hidden hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-600"
+          aria-controls="navbar-dropdown"
+          aria-expanded="false"
+        >
+          <span class="sr-only">Abrir menú principal</span>
+          <svg
+            class="w-5 h-5"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 17 14"
+          >
+            <path
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M1 1h15M1 7h15M1 13h15"
+            />
+          </svg>
+        </button>
+        <div class="hidden w-full md:block md:w-auto" id="navbar-dropdown">
+          <ul
+            class="flex flex-col font-medium p-4 md:p-0 mt-4 border rounded-lg md:space-x-8 rtl:space-x-reverse md:flex-row md:mt-0 md:border-0 bg-gray-800 md:bg-gray-800 border-gray-700"
+          >
+            <li>
+              <a
+                href="{{ url_for('main.index') }}"
+                class="block py-2 px-3 rounded md:p-0 text-white md:hover:text-purple-400 hover:bg-gray-700 hover:text-white md:hover:bg-transparent"
+                aria-current="page"
+                >Inicio</a
+              >
+            </li>
+            <li>
+              <button
+                id="dropdownNavbarLink"
+                data-dropdown-toggle="dropdownNavbar"
+                class="flex items-center justify-between w-full py-2 px-3 rounded md:border-0 md:p-0 md:w-auto text-white md:hover:text-purple-400 hover:bg-gray-700 hover:text-white md:hover:bg-transparent"
+              >
+                Administración
+                <svg
+                  class="w-2.5 h-2.5 ms-2.5"
+                  aria-hidden="true"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 10 6"
+                >
+                  <path
+                    stroke="currentColor"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="m1 1 4 4 4-4"
+                  />
+                </svg>
+              </button>
+              <div
+                id="dropdownNavbar"
+                class="z-10 hidden font-normal bg-gray-800 divide-y divide-gray-600 rounded-lg shadow w-44"
+              >
+                <ul
+                  class="py-2 text-sm text-gray-200"
+                  aria-labelledby="dropdownLargeButton"
+                >
+                  <li>
+                    <a
+                      href="{{ url_for('recetas.index') }}"
+                      class="block px-4 py-2 hover:bg-gray-700 hover:text-white"
+                      >Recetas</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="{{ url_for('galletas.index') }}"
+                      class="block px-4 py-2 hover:bg-gray-700 hover:text-white"
+                      >Galletas</a
+                    >
+                  </li>
+                  <li>
+                    <a
+                      href="#"
+                      class="block px-4 py-2 hover:bg-gray-700 hover:text-white"
+                      >Ingredientes</a
+                    >
+                  </li>
+                </ul>
+              </div>
+            </li>
+            <li>
+              <a
+                href="#"
+                class="block py-2 px-3 rounded md:p-0 text-white md:hover:text-purple-400 hover:bg-gray-700 hover:text-white md:hover:bg-transparent"
+                >Producción</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                class="block py-2 px-3 rounded md:p-0 text-white md:hover:text-purple-400 hover:bg-gray-700 hover:text-white md:hover:bg-transparent"
+                >Ventas</a
+              >
+            </li>
+            <li>
+              <a
+                href="#"
+                class="block py-2 px-3 rounded md:p-0 text-white md:hover:text-purple-400 hover:bg-gray-700 hover:text-white md:hover:bg-transparent"
+                >Reportes</a
+              >
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <div class="container mx-auto px-4 py-2">
+      {% with messages = get_flashed_messages(with_categories=true) %} {% if
+      messages %} {% for category, message in messages %} {% set alert_type =
+      "info" %} {% set alert_color = "blue" %} {% set icon_path = "M10 .5a9.5
+      9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0
+      0 1 0-3ZM12 15H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1
+      1 0 0 1 0 2Z" %} {% if category == "success" %} {% set alert_type =
+      "success" %} {% set alert_color = "green" %} {% set icon_path = "M10
+      .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0
+      1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414
+      1.414Z" %} {% elif category == "error" %} {% set alert_type = "failure" %}
+      {% set alert_color = "red" %} {% set icon_path = "M10 .5a9.5 9.5 0 1 0 9.5
+      9.5A9.51 9.51 0 0 0 10 .5Zm3.5 11.493-2 2a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1
+      1.414-1.414L11 11.086V7.5a1 1 0 1 1 2 0v3.586l1.5-1.5a1 1 0 0 1 1.414
+      1.414ZM10 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3Z" %} {% elif category ==
+      "warning" %} {% set alert_type = "warning" %} {% set alert_color =
+      "yellow" %} {% set icon_path = "M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0
+      0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 15H8a1 1 0 0 1
+      0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 0 2Z" %} {% endif
+      %}
+
+      <div
+        id="alert-{{ loop.index }}"
+        class="flex items-center p-4 mb-4 text-{{ alert_color }}-800 rounded-lg bg-{{ alert_color }}-50 dark:bg-gray-800 dark:text-{{ alert_color }}-400"
+        role="alert"
+      >
+        <svg
+          class="flex-shrink-0 w-4 h-4"
+          aria-hidden="true"
+          xmlns="http://www.w3.org/2000/svg"
+          fill="currentColor"
+          viewBox="0 0 20 20"
+        >
+          <path d="{{ icon_path }}" />
+        </svg>
+        <span class="sr-only">{{ alert_type }}</span>
+        <div class="ms-3 text-sm font-medium">{{ message }}</div>
+        <button
+          type="button"
+          class="ms-auto -mx-1.5 -my-1.5 bg-{{ alert_color }}-50 text-{{ alert_color }}-500 rounded-lg focus:ring-2 focus:ring-{{ alert_color }}-400 p-1.5 hover:bg-{{ alert_color }}-200 inline-flex items-center justify-center h-8 w-8 dark:bg-gray-800 dark:text-{{ alert_color }}-400 dark:hover:bg-gray-700"
+          data-dismiss-target="#alert-{{ loop.index }}"
+          aria-label="Close"
+        >
+          <span class="sr-only">Close</span>
+          <svg
+            class="w-3 h-3"
+            aria-hidden="true"
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 14 14"
+          >
+            <path
+              stroke="currentColor"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"
+            />
+          </svg>
+        </button>
+      </div>
+      {% endfor %} {% endif %} {% endwith %}
+    </div>
+
+    <!-- Main Content -->
+    <div class="container mx-auto p-4">{% block content %}{% endblock %}</div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 rounded-lg shadow m-4">
+      <div
+        class="w-full mx-auto max-w-screen-xl p-4 md:flex md:items-center md:justify-between"
+      >
+        <span class="text-sm text-gray-400 sm:text-center"
+          >© 2025
+          <a href="{{ url_for('main.index') }}" class="hover:underline"
+            >Cookie King™</a
+          >. Todos los derechos reservados.
+        </span>
+        <ul
+          class="flex flex-wrap items-center mt-3 text-sm font-medium text-gray-400 sm:mt-0"
+        >
+          <li>
+            <a href="#" class="hover:underline me-4 md:me-6">Acerca de</a>
+          </li>
+          <li>
+            <a href="#" class="hover:underline me-4 md:me-6"
+              >Políticas de Privacidad</a
+            >
+          </li>
+          <li>
+            <a href="#" class="hover:underline">Contacto</a>
+          </li>
+        </ul>
+      </div>
+    </footer>
+
+    <!-- Flowbite JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/2.2.0/flowbite.min.js"></script>
+
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

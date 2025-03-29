@@ -1,0 +1,14 @@
+<input 
+    type="text" 
+    id="{{ field.id }}" 
+    name="{{ field.name }}" 
+    value="{{ field.value }}" 
+    {% if field.required %}required{% endif %}
+    placeholder="{{ field.attrs.placeholder|default('') }}"
+    class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5"
+    {% for attr_name, attr_value in field.attrs.items() %}
+        {% if attr_name != 'placeholder' %}
+            {{ attr_name }}="{{ attr_value }}"
+        {% endif %}
+    {% endfor %}
+>
