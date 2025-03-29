@@ -1,0 +1,9 @@
+<input 
+    type="hidden" 
+    id="{{ field.id }}" 
+    name="{{ field.name }}" 
+    value="{{ field.value }}"
+    {% for attr_name, attr_value in field.attrs.items() %}
+        {{ attr_name }}="{{ attr_value }}"
+    {% endfor %}
+>

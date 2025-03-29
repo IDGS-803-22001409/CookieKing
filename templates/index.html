@@ -1,12 +1,225 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flowbite Flask</title>
-</head>
-<body>
-    <h1>Hello, Flask!</h1>
-</body>
-</html>
+{% extends "layouts/base_layout.html" %} {% block title %}Inicio - Cookie King{%
+endblock %} {% block content %}
+<div class="bg-black text-white">
+  <div class="container mx-auto px-4 py-12">
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-bold mb-4">Cookie King</h1>
+      <p class="text-xl">Sistema de Administración de Producción de Galletas</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Recetas Card -->
+      <div
+        class="max-w-sm bg-gray-800 border border-gray-700 rounded-lg shadow"
+      >
+        <div class="p-5">
+          <h5 class="mb-2 text-2xl font-bold tracking-tight text-white">
+            Recetas
+          </h5>
+          <p class="mb-3 font-normal text-gray-400">
+            Gestiona las recetas de tus galletas, incluyendo ingredientes e
+            instrucciones.
+          </p>
+          <a
+            href="{{ url_for('recetas.index') }}"
+            class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-purple-700 rounded-lg hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-800"
+          >
+            Ir a Recetas
+            <svg
+              class="rtl:rotate-180 w-3.5 h-3.5 ms-2"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 14 10"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M1 5h12m0 0L9 1m4 4L9 9"
+              />
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Galletas Card -->
+      <div
+        class="max-w-sm bg-gray-800 border border-gray-700 rounded-lg shadow"
+      >
+        <div class="p-5">
+          <h5 class="mb-2 text-2xl font-bold tracking-tight text-white">
+            Galletas
+          </h5>
+          <p class="mb-3 font-normal text-gray-400">
+            Administra el catálogo de galletas, precios y características.
+          </p>
+          <a
+            href="{{ url_for('galletas.index') }}"
+            class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-purple-700 rounded-lg hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-800"
+          >
+            Ir a Galletas
+            <svg
+              class="rtl:rotate-180 w-3.5 h-3.5 ms-2"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 14 10"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M1 5h12m0 0L9 1m4 4L9 9"
+              />
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Ingredientes Card -->
+      <div
+        class="max-w-sm bg-gray-800 border border-gray-700 rounded-lg shadow"
+      >
+        <div class="p-5">
+          <h5 class="mb-2 text-2xl font-bold tracking-tight text-white">
+            Ingredientes
+          </h5>
+          <p class="mb-3 font-normal text-gray-400">
+            Controla el inventario de ingredientes, proveedores y compras.
+          </p>
+          <a
+            href="#"
+            class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-purple-700 rounded-lg hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-800"
+          >
+            Ir a Ingredientes
+            <svg
+              class="rtl:rotate-180 w-3.5 h-3.5 ms-2"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 14 10"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M1 5h12m0 0L9 1m4 4L9 9"
+              />
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Producción Card -->
+      <div
+        class="max-w-sm bg-gray-800 border border-gray-700 rounded-lg shadow"
+      >
+        <div class="p-5">
+          <h5 class="mb-2 text-2xl font-bold tracking-tight text-white">
+            Producción
+          </h5>
+          <p class="mb-3 font-normal text-gray-400">
+            Gestiona los procesos de producción y horneado de galletas.
+          </p>
+          <a
+            href="#"
+            class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-purple-700 rounded-lg hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-800"
+          >
+            Ir a Producción
+            <svg
+              class="rtl:rotate-180 w-3.5 h-3.5 ms-2"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 14 10"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M1 5h12m0 0L9 1m4 4L9 9"
+              />
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Ventas Card -->
+      <div
+        class="max-w-sm bg-gray-800 border border-gray-700 rounded-lg shadow"
+      >
+        <div class="p-5">
+          <h5 class="mb-2 text-2xl font-bold tracking-tight text-white">
+            Ventas
+          </h5>
+          <p class="mb-3 font-normal text-gray-400">
+            Registra y consulta las ventas de galletas individuales y por
+            paquete.
+          </p>
+          <a
+            href="#"
+            class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-purple-700 rounded-lg hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-800"
+          >
+            Ir a Ventas
+            <svg
+              class="rtl:rotate-180 w-3.5 h-3.5 ms-2"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 14 10"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M1 5h12m0 0L9 1m4 4L9 9"
+              />
+            </svg>
+          </a>
+        </div>
+      </div>
+
+      <!-- Reportes Card -->
+      <div
+        class="max-w-sm bg-gray-800 border border-gray-700 rounded-lg shadow"
+      >
+        <div class="p-5">
+          <h5 class="mb-2 text-2xl font-bold tracking-tight text-white">
+            Reportes
+          </h5>
+          <p class="mb-3 font-normal text-gray-400">
+            Genera informes y estadísticas de producción y ventas.
+          </p>
+          <a
+            href="#"
+            class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-purple-700 rounded-lg hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-800"
+          >
+            Ir a Reportes
+            <svg
+              class="rtl:rotate-180 w-3.5 h-3.5 ms-2"
+              aria-hidden="true"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 14 10"
+            >
+              <path
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M1 5h12m0 0L9 1m4 4L9 9"
+              />
+            </svg>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

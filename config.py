@@ -9,6 +9,9 @@ class Config:
 
 class DevelopmentConfig(Config):  
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:sergio@localhost:3306/flaskBD'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:sergio@localhost:3306/CookieKing'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+config = {
+    'development': DevelopmentConfig
+}
