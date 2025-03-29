@@ -18,3 +18,14 @@ node_modules/
 # Archivos del sistema
 .DS_Store
 Thumbs.db
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Edita el archivo .gitignore y asegúrate de que contenga estas líneas:
+echo "# Python bytecode" >> .gitignore
+echo "__pycache__/" >> .gitignore
+echo "*.py[cod]" >> .gitignore
+echo "*$py.class" >> .gitignore
