@@ -9,6 +9,7 @@ class Ingrediente(db.Model):
     stock = db.Column(db.Float, nullable=False)
     unidad = db.Column(db.String(50))
     stock_minimo = db.Column(db.Float, nullable=False)
+    precio_unitario = db.Column(db.Float, nullable=False)
     fecha_expiracion = db.Column(db.Date)
     
     # Relaciones
