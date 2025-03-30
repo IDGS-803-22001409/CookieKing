@@ -11,15 +11,27 @@ class Cliente(db.Model):
     correo = db.Column(db.String(150))
     estatus = db.Column(db.Integer, nullable=False, default=1)
     
-    # Relationships
+    # Relationships (si se implementan)
     ventas = db.relationship('Venta', backref='cliente', lazy=True)
     
-    def to_dict(self):        
-        return {
-            'idCliente': self.idCliente,
-            'nombreCliente': self.nombreCliente,
-            'fechaNacimiento': self.fechaNacimiento.strftime('%Y-%m-%d') if self.fechaNacimiento else None,
-            'telefono': self.telefono,
-            'correo': self.correo,
-            'estatus': self.estatus
-        }
+    def to_dict(self):
+        """Convertir objeto a diccionario para serialización JSON"""
+        try:
+            return {
+                'idCliente': self.idCliente,
+                'nombreCliente': self.nombreCliente,
+                'fechaNacimiento': self.fechaNacimiento.strftime('%Y-%m-%d') if self.fechaNacimiento else None,
+                'telefono': self.telefono,
+                'correo': self.correo,
+                'estatus': self.estatus
+            }
+        except Exception as e:
+            print(f"Error en to_dict: {str(e)}")
+            # Versión simplificada en caso de error
+            return {
+                'idCliente': self.idCliente,
+                'nombreCliente': self.nombreCliente,
+                'telefono': self.telefono,
+                'correo': self.correo,
+                'estatus': self.estatus
+            }

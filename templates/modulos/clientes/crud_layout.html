@@ -60,6 +60,7 @@
                             class="text-blue-500 hover:text-blue-700 mr-2 btn-edit"
                             data-id="{{ item.id }}"
                             title="Editar"
+                            onclick="editItem({{ item.id }})"
                         >
                             <i class="fas fa-edit"></i>
                         </button>
@@ -104,13 +105,21 @@
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
 
             {% for field in form_fields %} 
-                {% if field.template != "components/forms/input_hidden.html" %}
+                {% if field.template != "components/forms/input_hidden.html" and field.template != "components/input_hidden.html" %}
                 <div class="mb-4">
                     <label for="{{ field.id }}" class="block mb-2 text-sm font-medium text-chocolate-700">{{ field.label }}</label>
-                    {% include field.template %}
+                    {% if field.template.startswith('components/forms/') %}
+                        {% include field.template %}
+                    {% else %}
+                        {% include 'components/forms/' + field.template.split('/')[-1] %}
+                    {% endif %}
                 </div>
                 {% else %}
-                    {% include field.template %}
+                    {% if field.template.startswith('components/forms/') %}
+                        {% include field.template %}
+                    {% else %}
+                        {% include 'components/forms/' + field.template.split('/')[-1] %}
+                    {% endif %}
                 {% endif %}
             {% endfor %}
 
@@ -132,9 +141,71 @@
         </form>
     </div>
 </div>
+{% endblock %}
 
-<!-- Script simplificado para las interacciones del CRUD -->
+{% block extra_js %}
 <script>
+// Función global para editar un elemento
+// Esta es la parte relevante del script que se debe modificar en templates/modulos/clientes/crud_layout.html
+
+function editItem(itemId) {
+    console.log("Editando item con ID:", itemId);
+    
+    // URL completa para obtener los datos del cliente
+    const url = "{{ url_for('clientes.get_cliente', cliente_id=0) }}".replace("0", itemId);
+    
+    // Obtener los datos del cliente vía AJAX
+    fetch(url)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Error HTTP: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log("Datos recibidos:", data);
+            
+            // Llenar el formulario con los datos recibidos
+            document.querySelector('input[name="id"]').value = data.idCliente || "";
+            
+            // Asignar valores a los demás campos
+            if (document.querySelector('input[name="nombreCliente"]')) {
+                document.querySelector('input[name="nombreCliente"]').value = data.nombreCliente || "";
+            }
+            
+            // Fecha de nacimiento (si existe)
+            const fechaNacimientoField = document.querySelector('input[name="fechaNacimiento"]');
+            if (fechaNacimientoField && data.fechaNacimiento) {
+                // Asegurar que la fecha tiene el formato correcto para un input type="date"
+                fechaNacimientoField.value = data.fechaNacimiento;
+                console.log("Fecha asignada:", data.fechaNacimiento);
+            }
+            
+            // Teléfono
+            if (document.querySelector('input[name="telefono"]')) {
+                document.querySelector('input[name="telefono"]').value = data.telefono || "";
+            }
+            
+            // Correo
+            if (document.querySelector('input[name="correo"]')) {
+                document.querySelector('input[name="correo"]').value = data.correo || "";
+            }
+            
+            // Estatus
+            const estatusField = document.querySelector('select[name="estatus"]');
+            if (estatusField) {
+                estatusField.value = data.estatus == 1 ? "1" : "0";
+            }
+            
+            // Mostrar el modal
+            document.getElementById('crud-modal').classList.remove('hidden');
+        })
+        .catch(error => {
+            console.error('Error al cargar los datos del cliente:', error);
+            alert('Error al cargar los datos del cliente. Por favor, intenta de nuevo.');
+        });
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     // Referencias a elementos DOM
     const modal = document.getElementById("crud-modal");
@@ -142,11 +213,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const btnAddNew = document.getElementById("btn-add-new");
     const btnCloseModal = document.getElementById("btn-close-modal");
     const btnCancel = document.getElementById("btn-cancel");
-    const idField = document.querySelector('input[name="id"]');
-    const editButtons = document.querySelectorAll(".btn-edit");
     const searchInput = document.getElementById("table-search");
 
-    // Función para abrir modal (Nuevo/Editar)
+    // Función para abrir modal (Nuevo)
     function openModal() {
         modal.classList.remove("hidden");
     }
@@ -155,15 +224,14 @@ document.addEventListener("DOMContentLoaded", function () {
     function closeModal() {
         modal.classList.add("hidden");
         formCrud.reset();
-        // Limpiar el ID para asegurar que se trate como un nuevo registro
-        if (idField) idField.value = "";
+        document.querySelector('input[name="id"]').value = "";
     }
 
     // Evento para el botón "Agregar"
     if (btnAddNew) {
         btnAddNew.addEventListener("click", function() {
             formCrud.reset();
-            if (idField) idField.value = "";
+            document.querySelector('input[name="id"]').value = "";
             openModal();
         });
     }
@@ -177,54 +245,14 @@ document.addEventListener("DOMContentLoaded", function () {
         btnCancel.addEventListener("click", closeModal);
     }
 
-    // Cerrar modal al hacer clic fuera (en el fondo)
+    // Cerrar modal al hacer clic fuera
     modal.addEventListener("click", function(e) {
         if (e.target === modal) {
             closeModal();
         }
     });
 
-    // Eventos para botones de edición
-    if (editButtons.length > 0) {
-        editButtons.forEach(function(button) {
-            button.addEventListener("click", function() {
-                const id = this.getAttribute("data-id");
-                
-                // URL completa generada por Flask
-                const url = "{{ url_for('clientes.get_cliente', cliente_id=0) }}".replace("0", id);
-                
-                // Obtener datos del cliente para editar
-                fetch(url)
-                    .then(function(response) {
-                        if (!response.ok) {
-                            throw new Error('Error al obtener datos del cliente');
-                        }
-                        return response.json();
-                    })
-                    .then(function(data) {
-                        // Llenar formulario con datos del cliente
-                        if (idField) idField.value = data.idCliente || "";
-                        
-                        // Actualizar cada campo del formulario
-                        for (const key in data) {
-                            const field = document.querySelector([name="${key}"]);
-                            if (field) {
-                                field.value = data[key];
-                            }
-                        }
-                        
-                        // Abrir el modal
-                        openModal();
-                    })
-                    .catch(function(error) {
-                        console.error('Error:', error);
-                        alert('Error al cargar los datos del cliente');
-                    });
-            });
-        });
-    }
-
-    // Filtro de búsqueda en la tabla
+    // Aplicar filtro de búsqueda
     if (searchInput) {
         searchInput.addEventListener("keyup", function() {
             const searchTerm = this.value.toLowerCase();

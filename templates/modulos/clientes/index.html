@@ -10,6 +10,10 @@
             <h2 class="text-3xl font-bold text-chocolate-800">Gestión de Clientes</h2>
             <p class="text-lg text-cookie-700">Administración de clientes y datos de contacto</p>
         </div>
+        <!-- Botón para ir a la vista admin -->
+        <a href="{{ url_for('clientes.admin') }}" class="inline-flex items-center px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200">
+            <i class="fas fa-cog mr-2"></i> Administrar Clientes
+        </a>
     </div>
 
     <!-- Tabla de clientes -->
@@ -27,7 +31,7 @@
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 {% for cliente in clientes %}
-                <tr>
+                <tr class="hover:bg-gray-50">
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ cliente.idCliente }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ cliente.nombreCliente }}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ cliente.telefono }}</td>

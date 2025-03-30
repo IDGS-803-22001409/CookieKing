@@ -3,10 +3,10 @@ env/
 venv/
 
 # Archivos de caché de Python
-__pycache__/
+_pycache_/
 *.py[cod]
 *$py.class
-**/__pycache__/
+**/_pycache_/
 
 # Dependencias
 node_modules/
@@ -20,17 +20,21 @@ node_modules/
 Thumbs.db
 
 # Python cache files
-__pycache__/
+_pycache_/
 *.py[cod]
 *$py.class
 
 # Edita el archivo .gitignore y asegúrate de que contenga estas líneas:
 echo "# Python bytecode" >> .gitignore
-echo "__pycache__/" >> .gitignore
+echo "_pycache_/" >> .gitignore
 echo "*.py[cod]" >> .gitignore
 echo "*$py.class" >> .gitignore
-modulos/recetas/__pycache__/forms.cpython-312.pyc
-modulos/recetas/__pycache__/routes.cpython-312.pyc
+modulos/recetas/_pycache_/forms.cpython-312.pyc
+modulos/recetas/_pycache_/routes.cpython-312.pyc
 *.pyc
-modulos/recetas/__pycache__/controllers.cpython-312.pyc
-modulos/recetas/__pycache__/controllers.cpython-312.pyc
+modulos/recetas/_pycache_/controllers.cpython-312.pyc
+modulos/recetas/_pycache_/controllers.cpython-312.pyc
+modulos/recetas/_pycache_/routes.cpython-312.pyc
+modulos/recetas/_pycache_/forms.cpython-312.pyc
+modulos/recetas/_pycache_/controllers.cpython-312.pyc
+_pycache_/config.cpython-312.pyc

@@ -1,0 +1,92 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Detalles de Cliente - Cookie King{% endblock %}
+
+{% block content %}
+<div class="p-6 bg-cream-50 rounded-lg shadow-lg">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-chocolate-800">Detalles de Cliente</h1>
+        <a href="{{ url_for('clientes.index') }}" class="inline-flex items-center px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Volver
+        </a>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Información básica -->
+            <div>
+                <h2 class="text-xl font-semibold mb-4 text-cookie-700">Información Personal</h2>
+
+                <div class="mb-4">
+                    <label class="block text-chocolate-700 font-bold mb-1">Nombre:</label>
+                    <div class="border border-cookie-200 rounded-lg px-3 py-2 bg-cream-50">
+                        {{ cliente.nombreCliente }}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-chocolate-700 font-bold mb-1">Fecha de Nacimiento:</label>
+                    <div class="border border-cookie-200 rounded-lg px-3 py-2 bg-cream-50">
+                        {% if cliente.fechaNacimiento %}
+                            {{ cliente.fechaNacimiento.strftime('%d/%m/%Y') }}
+                        {% else %}
+                            No registrada
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-chocolate-700 font-bold mb-1">Estatus:</label>
+                    <div class="border border-cookie-200 rounded-lg px-3 py-2 bg-cream-50">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium 
+                            {% if cliente.estatus == 1 %}
+                            bg-green-100 text-green-800
+                            {% else %}
+                            bg-red-100 text-red-800
+                            {% endif %}">
+                            {{ "Activo" if cliente.estatus == 1 else "Inactivo" }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información de contacto -->
+            <div>
+                <h2 class="text-xl font-semibold mb-4 text-cookie-700">Información de Contacto</h2>
+
+                <div class="mb-4">
+                    <label class="block text-chocolate-700 font-bold mb-1">Teléfono:</label>
+                    <div class="border border-cookie-200 rounded-lg px-3 py-2 bg-cream-50">
+                        <a href="tel:{{ cliente.telefono }}" class="text-cookie-600 hover:text-cookie-800">
+                            {{ cliente.telefono }}
+                        </a>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-chocolate-700 font-bold mb-1">Correo Electrónico:</label>
+                    <div class="border border-cookie-200 rounded-lg px-3 py-2 bg-cream-50">
+                        {% if cliente.correo %}
+                            <a href="mailto:{{ cliente.correo }}" class="text-cookie-600 hover:text-cookie-800">
+                                {{ cliente.correo }}
+                            </a>
+                        {% else %}
+                            No registrado
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="mt-8 flex justify-end space-x-4">
+            <a href="{{ url_for('clientes.admin') }}" 
+                class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                <i class="fas fa-edit mr-2"></i>
+                Administrar Clientes
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

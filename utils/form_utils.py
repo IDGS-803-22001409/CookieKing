@@ -29,6 +29,13 @@ class TextField(FormField):
         super().__init__(id, name, label, value, required, **kwargs)
         self.template = "components/forms/input_text.html"
 
+class DateField(FormField):
+    """Date input field"""
+    
+    def __init__(self, id, name, label, value="", required=False, **kwargs):
+        super().__init__(id, name, label, value, required, **kwargs)
+        self.template = "components/forms/input_date.html"
+
 class TextAreaField(FormField):
     """Textarea input field"""
     

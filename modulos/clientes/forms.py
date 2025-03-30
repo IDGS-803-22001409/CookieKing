@@ -1,8 +1,15 @@
 # modulos/clientes/forms.py
+# modulos/clientes/forms.py
 from flask_wtf import FlaskForm
 from wtforms import StringField, DateField, TextAreaField, SelectField, HiddenField
 from wtforms.validators import DataRequired, Optional, Email, Length
-from utils.form_utils import TextField, TextAreaField as CustomTextAreaField, SelectField as CustomSelectField, HiddenField as CustomHiddenField
+from utils.form_utils import (
+    TextField, 
+    TextAreaField as CustomTextAreaField, 
+    SelectField as CustomSelectField, 
+    HiddenField as CustomHiddenField,
+    DateField as CustomDateField
+)
 
 class ClienteForm(FlaskForm):
     """Formulario para clientes usando WTForms"""
@@ -27,8 +34,9 @@ def create_cliente_form(cliente=None):
         CustomHiddenField('id', 'id', "" if cliente is None else cliente.idCliente).get_dict(),
         TextField('nombreCliente', 'nombreCliente', 'Nombre del Cliente', 
                  "" if cliente is None else cliente.nombreCliente, True).get_dict(),
-        TextField('fechaNacimiento', 'fechaNacimiento', 'Fecha de Nacimiento', 
-                 "" if cliente is None or not cliente.fechaNacimiento else cliente.fechaNacimiento.strftime('%Y-%m-%d'), False, type="date").get_dict(),
+        # Usar el nuevo CustomDateField en lugar de TextField con type="date"
+        CustomDateField('fechaNacimiento', 'fechaNacimiento', 'Fecha de Nacimiento', 
+                 "" if cliente is None or not cliente.fechaNacimiento else cliente.fechaNacimiento.strftime('%Y-%m-%d'), False).get_dict(),
         TextField('telefono', 'telefono', 'Teléfono', 
                  "" if cliente is None else cliente.telefono, True).get_dict(),
         TextField('correo', 'correo', 'Correo Electrónico', 

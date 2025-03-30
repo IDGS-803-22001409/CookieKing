@@ -7,19 +7,24 @@ from modulos.clientes.forms import ClienteForm, create_cliente_form
 from modulos.clientes.controllers import ClienteController
 
 # Crear blueprint para las rutas de clientes
-clientes_bp = Blueprint('clientes', __name__)
+clientes_bp = Blueprint('clientes', __name__, url_prefix='/clientes')
 
 @clientes_bp.route('/')
 def index():
     """Vista principal para la administración de clientes"""
+    # Agregar log para depuración
+    print("Accediendo a la vista index de clientes")
+    
     # Obtener todos los clientes usando el controlador
-    clientes = Cliente.query.all()
+    clientes = ClienteController.get_all_clientes()
     
     return render_template('modulos/clientes/index.html', clientes=clientes)
 
 @clientes_bp.route('/admin')
 def admin():
     """Vista de administración con CRUD para clientes"""
+    print("Accediendo a la vista admin de clientes")
+    
     # Obtener todos los clientes usando el controlador
     clientes = ClienteController.get_all_clientes()
     

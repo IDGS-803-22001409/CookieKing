@@ -9,17 +9,36 @@ class ClienteController:
     @staticmethod
     def get_all_clientes():
         """Obtener todos los clientes"""
-        return Cliente.query.all()
+        try:
+            clientes = Cliente.query.all()
+            print(f"Se encontraron {len(clientes)} clientes")
+            return clientes
+        except Exception as e:
+            print(f"Error al obtener todos los clientes: {str(e)}")
+            return []
     
     @staticmethod
     def get_active_clientes():
         """Obtener solo clientes activos"""
-        return Cliente.query.filter_by(estatus=1).all()
+        try:
+            return Cliente.query.filter_by(estatus=1).all()
+        except Exception as e:
+            print(f"Error al obtener clientes activos: {str(e)}")
+            return []
     
     @staticmethod
     def get_cliente_by_id(cliente_id):
         """Obtener un cliente por su ID"""
-        return Cliente.query.get(cliente_id)
+        try:
+            cliente = Cliente.query.get(cliente_id)
+            if cliente:
+                print(f"Cliente encontrado: {cliente.nombreCliente}")
+            else:
+                print(f"No se encontró cliente con ID: {cliente_id}")
+            return cliente
+        except Exception as e:
+            print(f"Error al obtener cliente por ID: {str(e)}")
+            return None
     
     @staticmethod
     def create_cliente(data):
@@ -28,7 +47,11 @@ class ClienteController:
             # Procesar la fecha de nacimiento si se proporciona
             fecha_nacimiento = None
             if data.get('fechaNacimiento'):
-                fecha_nacimiento = datetime.strptime(data.get('fechaNacimiento'), '%Y-%m-%d').date()
+                try:
+                    fecha_nacimiento = datetime.strptime(data.get('fechaNacimiento'), '%Y-%m-%d').date()
+                    print(f"Fecha de nacimiento procesada: {fecha_nacimiento}")
+                except ValueError as ve:
+                    print(f"Error al procesar la fecha de nacimiento: {str(ve)}")
             
             cliente = Cliente(
                 nombreCliente=data.get('nombreCliente'),
@@ -43,6 +66,7 @@ class ClienteController:
             return cliente
         except Exception as e:
             db.session.rollback()
+            print(f"Error al crear cliente: {str(e)}")
             raise e
     
     @staticmethod
@@ -58,7 +82,11 @@ class ClienteController:
             
             # Procesar la fecha de nacimiento si se proporciona
             if 'fechaNacimiento' in data and data['fechaNacimiento']:
-                cliente.fechaNacimiento = datetime.strptime(data['fechaNacimiento'], '%Y-%m-%d').date()
+                try:
+                    cliente.fechaNacimiento = datetime.strptime(data['fechaNacimiento'], '%Y-%m-%d').date()
+                    print(f"Fecha de nacimiento actualizada: {cliente.fechaNacimiento}")
+                except ValueError as ve:
+                    print(f"Error al procesar la fecha de nacimiento: {str(ve)}")
             
             cliente.telefono = data.get('telefono', cliente.telefono)
             cliente.correo = data.get('correo', cliente.correo)
@@ -70,6 +98,7 @@ class ClienteController:
             return cliente
         except Exception as e:
             db.session.rollback()
+            print(f"Error al actualizar cliente: {str(e)}")
             raise e
     
     @staticmethod
