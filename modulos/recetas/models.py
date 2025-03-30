@@ -11,7 +11,9 @@ class Receta(db.Model):
     idGalleta = db.Column(db.Integer, db.ForeignKey('Galletas.idGalleta'), nullable=False)
     
     # Relaciones
+
     ingredientes = db.relationship('RecetaIngrediente', backref='receta', lazy=True)
+    
     
     def to_dict(self):
         """Convierte el modelo a un diccionario para facilitar la serialización"""

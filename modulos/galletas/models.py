@@ -1,6 +1,6 @@
 from models import db
 
-class Galleta(db.Model):
+class Galletas(db.Model):
     """Modelo para las galletas"""
     __tablename__ = 'Galletas'
     idGalleta = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -12,7 +12,7 @@ class Galleta(db.Model):
     estatus = db.Column(db.Integer, nullable=False)
     
     # Relaciones
-    recetas = db.relationship('Receta', backref='galleta', lazy=True)
+    recetas = db.relationship('Receta', backref='galletas', lazy=True)
     
     def to_dict(self):
         """Convierte el modelo a un diccionario para facilitar la serialización"""

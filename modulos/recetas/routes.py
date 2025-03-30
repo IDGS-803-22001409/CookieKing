@@ -4,7 +4,7 @@ from models import db
 from modulos.recetas.models import Receta, RecetaIngrediente
 from modulos.recetas.forms import create_receta_form, RecetaForm
 from modulos.recetas.controllers import RecetaController
-from modulos.galletas.models import Galleta
+from modulos.galletas.models import Galletas
 from modulos.galletas.controllers import GalletaController
 from modulos.ingredientes.models import Ingrediente
 from modulos.ingredientes.controllers import IngredienteController
@@ -21,7 +21,7 @@ def index():
     # Convertir los elementos de la base de datos a diccionarios para la plantilla
     items_data = []
     for receta in recetas:
-        galleta_nombre = receta.galleta.nombreGalleta if receta.galleta else "Desconocida"
+        galleta_nombre = receta.galletas.nombreGalleta if receta.galletas else "Desconocida"
         items_data.append({
             'id': receta.idReceta,
             'fields': [

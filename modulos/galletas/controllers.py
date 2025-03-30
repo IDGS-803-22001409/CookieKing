@@ -1,5 +1,5 @@
 from models import db
-from modulos.galletas.models import Galleta
+from modulos.galletas.models import Galletas
 
 class GalletaController:
     """Controlador para la lógica de negocio relacionada con galletas"""
@@ -7,22 +7,22 @@ class GalletaController:
     @staticmethod
     def get_all_galletas():
         """Obtener todas las galletas"""
-        return Galleta.query.all()
+        return Galletas.query.all()
     
     @staticmethod
     def get_active_galletas():
         """Obtener solo galletas activas"""
-        return Galleta.query.filter_by(estatus=1).all()
+        return Galletas.query.filter_by(estatus=1).all()
     
     @staticmethod
     def get_galleta_by_id(galleta_id):
         """Obtener una galleta por su ID"""
-        return Galleta.query.get(galleta_id)
+        return Galletas.query.get(galleta_id)
     
     @staticmethod
     def create_galleta(data):
         """Crear una nueva galleta con los datos proporcionados"""
-        galleta = Galleta(
+        galleta = Galletas(
             nombreGalleta=data.get('nombreGalleta'),
             descripcion=data.get('descripcion', ''),
             estado=data.get('estado'),
@@ -38,7 +38,7 @@ class GalletaController:
     @staticmethod
     def update_galleta(galleta_id, data):
         """Actualizar una galleta existente"""
-        galleta = Galleta.query.get(galleta_id)
+        galleta = Galletas.query.get(galleta_id)
         
         if not galleta:
             return None
@@ -62,7 +62,7 @@ class GalletaController:
     @staticmethod
     def delete_galleta(galleta_id):
         """Eliminar una galleta si no tiene dependencias"""
-        galleta = Galleta.query.get(galleta_id)
+        galleta = Galletas.query.get(galleta_id)
         
         if not galleta:
             return False
@@ -78,7 +78,7 @@ class GalletaController:
     @staticmethod
     def can_delete_galleta(galleta_id):
         """Verificar si una galleta puede ser eliminada (no tiene dependencias)"""
-        galleta = Galleta.query.get(galleta_id)
+        galleta = Galletas.query.get(galleta_id)
         
         if not galleta:
             return False

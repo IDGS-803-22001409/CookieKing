@@ -12,7 +12,7 @@ class Cliente(db.Model):
     estatus = db.Column(db.Integer, nullable=False, default=1)
     
     # Relationships (si se implementan)
-    ventas = db.relationship('Venta', backref='cliente', lazy=True)
+    ventas = db.relationship('Ventas', backref='cliente', lazy=True)
     
     def to_dict(self):
         """Convertir objeto a diccionario para serialización JSON"""

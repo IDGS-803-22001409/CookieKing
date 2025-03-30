@@ -1,225 +1,111 @@
-{% extends "layouts/base_layout.html" %} {% block title %}Inicio - Cookie King{%
-endblock %} {% block content %}
-<div class="bg-black text-white">
+{% extends "layouts/base_layout.html" %}
+{% block title %}Dashboard de Ventas - Cookie King{% endblock %}
+
+{% block content %}
+<div class="bg-white text-black">
   <div class="container mx-auto px-4 py-12">
     <div class="text-center mb-12">
       <h1 class="text-4xl font-bold mb-4">Cookie King</h1>
-      <p class="text-xl">Sistema de Administración de Producción de Galletas</p>
+      <p class="text-xl">Dashboard de Ventas - {{ fecha_actual }}</p>
     </div>
-
+    
+    <!-- Sección de resumen de ventas -->
+    <div class="mb-12">
+      <h2 class="text-2xl font-bold mb-6">Resumen de Ventas por Cliente</h2>
+      <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <table class="min-w-full">
+          <thead class="bg-gray-100">
+            <tr>
+              <th class="px-6 py-3 text-left font-medium">Cliente</th>
+              <th class="px-6 py-3 text-right font-medium">Total de Venta</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for cliente in ventasClientes %}
+            <tr class="border-t hover:bg-gray-50">
+              <td class="px-6 py-4">{{ cliente.nombreCliente }}</td>
+              <td class="px-6 py-4 text-right">${{ "%.2f"|format(cliente.total_cliente) }}</td>
+            </tr>
+            {% endfor %}
+            <!-- Total general -->
+            <tr class="border-t bg-gray-100 font-semibold">
+              <td class="px-6 py-4">TOTAL </td>
+              <td class="px-6 py-4 text-right">${{ "%.2f"|format(total_ventas) }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <!-- Recetas Card -->
-      <div
-        class="max-w-sm bg-gray-800 border border-gray-700 rounded-lg shadow"
-      >
-        <div class="p-5">
-          <h5 class="mb-2 text-2xl font-bold tracking-tight text-white">
-            Recetas
-          </h5>
-          <p class="mb-3 font-normal text-gray-400">
-            Gestiona las recetas de tus galletas, incluyendo ingredientes e
-            instrucciones.
-          </p>
-          <a
-            href="{{ url_for('recetas.index') }}"
-            class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-purple-700 rounded-lg hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-800"
-          >
-            Ir a Recetas
-            <svg
-              class="rtl:rotate-180 w-3.5 h-3.5 ms-2"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 14 10"
-            >
-              <path
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M1 5h12m0 0L9 1m4 4L9 9"
-              />
-            </svg>
-          </a>
+      <!-- Card Ventas Diarias -->
+      <div class="bg-white rounded-lg shadow-lg p-6 flex flex-col justify-between">
+        <div class="flex flex-col justify-between">
+          <h2 class="text-2xl font-bold mb-4">Ventas Diarias</h2>
+          <div class="flex items-end justify-between">
+            <div>
+              <p class="text-3xl font-bold">{{ total_unidades }}</p>
+              <p class="text-lg">Unidades vendidas</p>
+            </div>
+            <div class="text-right">
+              <p class="text-2xl font-bold text-green-600">${{ "%.2f"|format(total_ventas) }}</p>
+              <p class="text-sm">Total ingresos</p>
+            </div>
+          </div>
         </div>
+      </div>      
+      <!-- Card Galletas más vendidas -->
+<div class="bg-white rounded-lg shadow-lg p-6">
+  <h2 class="text-2xl font-bold mb-4">Top 5 Galletas Más Vendidas</h2>
+  {% if galletas_mas_vendidas %}
+    <div class="space-y-3">
+      {% for galleta in galletas_mas_vendidas %}
+      <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
+        <span class="font-medium">{{ loop.index }}. {{ galleta.nombreGalleta }}</span>
+        <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-semibold">
+          {{ galleta.ventas }} galletas vendidas
+        </span>
       </div>
-
-      <!-- Galletas Card -->
-      <div
-        class="max-w-sm bg-gray-800 border border-gray-700 rounded-lg shadow"
-      >
-        <div class="p-5">
-          <h5 class="mb-2 text-2xl font-bold tracking-tight text-white">
-            Galletas
-          </h5>
-          <p class="mb-3 font-normal text-gray-400">
-            Administra el catálogo de galletas, precios y características.
-          </p>
-          <a
-            href="{{ url_for('galletas.index') }}"
-            class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-purple-700 rounded-lg hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-800"
-          >
-            Ir a Galletas
-            <svg
-              class="rtl:rotate-180 w-3.5 h-3.5 ms-2"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 14 10"
-            >
-              <path
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M1 5h12m0 0L9 1m4 4L9 9"
-              />
-            </svg>
-          </a>
-        </div>
-      </div>
-
-      <!-- Ingredientes Card -->
-      <div
-        class="max-w-sm bg-gray-800 border border-gray-700 rounded-lg shadow"
-      >
-        <div class="p-5">
-          <h5 class="mb-2 text-2xl font-bold tracking-tight text-white">
-            Ingredientes
-          </h5>
-          <p class="mb-3 font-normal text-gray-400">
-            Controla el inventario de ingredientes, proveedores y compras.
-          </p>
-          <a
-            href="#"
-            class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-purple-700 rounded-lg hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-800"
-          >
-            Ir a Ingredientes
-            <svg
-              class="rtl:rotate-180 w-3.5 h-3.5 ms-2"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 14 10"
-            >
-              <path
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M1 5h12m0 0L9 1m4 4L9 9"
-              />
-            </svg>
-          </a>
-        </div>
-      </div>
-
-      <!-- Producción Card -->
-      <div
-        class="max-w-sm bg-gray-800 border border-gray-700 rounded-lg shadow"
-      >
-        <div class="p-5">
-          <h5 class="mb-2 text-2xl font-bold tracking-tight text-white">
-            Producción
-          </h5>
-          <p class="mb-3 font-normal text-gray-400">
-            Gestiona los procesos de producción y horneado de galletas.
-          </p>
-          <a
-            href="#"
-            class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-purple-700 rounded-lg hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-800"
-          >
-            Ir a Producción
-            <svg
-              class="rtl:rotate-180 w-3.5 h-3.5 ms-2"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 14 10"
-            >
-              <path
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M1 5h12m0 0L9 1m4 4L9 9"
-              />
-            </svg>
-          </a>
-        </div>
-      </div>
-
-      <!-- Ventas Card -->
-      <div
-        class="max-w-sm bg-gray-800 border border-gray-700 rounded-lg shadow"
-      >
-        <div class="p-5">
-          <h5 class="mb-2 text-2xl font-bold tracking-tight text-white">
-            Ventas
-          </h5>
-          <p class="mb-3 font-normal text-gray-400">
-            Registra y consulta las ventas de galletas individuales y por
-            paquete.
-          </p>
-          <a
-            href="#"
-            class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-purple-700 rounded-lg hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-800"
-          >
-            Ir a Ventas
-            <svg
-              class="rtl:rotate-180 w-3.5 h-3.5 ms-2"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 14 10"
-            >
-              <path
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M1 5h12m0 0L9 1m4 4L9 9"
-              />
-            </svg>
-          </a>
-        </div>
-      </div>
-
-      <!-- Reportes Card -->
-      <div
-        class="max-w-sm bg-gray-800 border border-gray-700 rounded-lg shadow"
-      >
-        <div class="p-5">
-          <h5 class="mb-2 text-2xl font-bold tracking-tight text-white">
-            Reportes
-          </h5>
-          <p class="mb-3 font-normal text-gray-400">
-            Genera informes y estadísticas de producción y ventas.
-          </p>
-          <a
-            href="#"
-            class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-purple-700 rounded-lg hover:bg-purple-800 focus:ring-4 focus:outline-none focus:ring-purple-800"
-          >
-            Ir a Reportes
-            <svg
-              class="rtl:rotate-180 w-3.5 h-3.5 ms-2"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 14 10"
-            >
-              <path
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="2"
-                d="M1 5h12m0 0L9 1m4 4L9 9"
-              />
-            </svg>
-          </a>
-        </div>
-      </div>
+      {% endfor %}
     </div>
-  </div>
+  {% else %}
+    <div class="text-center py-4 text-gray-500">
+      <p>No hay datos de ventas disponibles</p>
+      <p class="text-sm">Última actualización: {{ fecha_actual }}</p>
+    </div>
+  {% endif %}
+</div>
+      <!-- Card Presentaciones más vendidas -->
+<div class="bg-white rounded-lg shadow-lg p-4 w-full">
+  <h2 class="text-xl font-bold mb-3 text-gray-800">Presentaciones Más Vendidas</h2>
+  {% if presentaciones %}
+    <div class="space-y-2">
+      {% for p in presentaciones %}
+      <div class="flex justify-between items-center p-2 hover:bg-gray-50 rounded">
+        <div class="flex items-center space-x-2">
+          <span class="text-sm font-semibold text-gray-700">{{ loop.index }}.</span>
+          <div>
+            <p class="text-sm font-medium text-gray-800">{{ p.presentacion }}</p>
+            <p class="text-xs text-gray-500">
+              <span class="font-medium">{{ p.total_ventas }}</span> galletas vendidas
+            </p>
+          </div>
+        </div>
+        <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">
+          {{ p.total_unidades }} unidades
+        </span>
+      </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="text-center py-3 text-gray-500 text-sm">
+      <p>No hay datos disponibles</p>
+      <p>Últ. actualización: {{ fecha_actual }}</p>
+    </div>
+  {% endif %}
+</div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@3.5.1/dist/chart.min.js"></script>
+  <script>
+    
+  </script>
 </div>
 {% endblock %}

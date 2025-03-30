@@ -1,7 +1,7 @@
 from models import db
 from datetime import datetime
 
-class Venta(db.Model):
+class Ventas(db.Model):
     """Model for sales"""
     __tablename__ = 'Ventas'
     idVenta = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -10,7 +10,7 @@ class Venta(db.Model):
     estatus = db.Column(db.Integer, nullable=False, default=1)  # 1: Completada, 0: Pendiente, 2: Cancelada
     
     # Relaciones
-    detalles = db.relationship('DetalleVenta', backref='venta', lazy=True, cascade="all, delete-orphan")
+    detalles = db.relationship('DetallesVenta', backref='ventas', lazy=True, cascade="all, delete-orphan")
     
     def to_dict(self):
         """Convert model to dictionary for serialization"""
@@ -22,7 +22,7 @@ class Venta(db.Model):
             'estatus': self.estatus
         }
 
-class DetalleVenta(db.Model):
+class DetallesVenta(db.Model):
     """Model for sale details"""
     __tablename__ = 'DetallesVenta'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -32,7 +32,7 @@ class DetalleVenta(db.Model):
     tipo_venta = db.Column(db.Integer, nullable=False)  # 1 = Individual, 0 = Paquete
     
     # Relationship
-    galleta = db.relationship('Galleta', backref='detalles_venta', lazy=True)
+    galleta = db.relationship('Galletas', backref='detalles_venta', lazy=True)
     
     def to_dict(self):
         """Convert model to dictionary for serialization"""

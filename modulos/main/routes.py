@@ -1,22 +1,83 @@
-from flask import Blueprint, render_template, flash, current_app
-
+from flask import Blueprint, render_template
+from modulos.ventas.models import Ventas, DetallesVenta
+from modulos.clientes.models import Cliente
+from modulos.galletas.models import Galletas
+from datetime import datetime
+from models import db
+from sqlalchemy import func,case
 # Crear blueprint para las rutas principales
 main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
 @main_bp.route('/index')
 def index():
-    """Vista principal de la aplicación"""
-    return render_template('index.html', title='Cookie King - Sistema de Administración')
+    """Dashboard de ventas diarias con detalles"""
+    hoy = datetime.now().date()
+    
+    try:
+        # Consulta de ventas diarias
+        ventasClientes = db.session.query(
+            Cliente.nombreCliente,
+            func.sum(DetallesVenta.cantidad * Galletas.precio_unitario).label('total_cliente')
+        ).select_from(Ventas)\
+         .join(Cliente, Ventas.IdCliente == Cliente.idCliente)\
+         .join(DetallesVenta, DetallesVenta.venta_id == Ventas.idVenta)\
+         .join(Galletas, DetallesVenta.galleta_id == Galletas.idGalleta)\
+         .filter(func.date(Ventas.fechaVenta) == hoy)\
+         .group_by(Cliente.nombreCliente)\
+         .order_by(func.sum(DetallesVenta.cantidad * Galletas.precio_unitario).desc())\
+         .all()
+                
 
-# Filtros personalizados para plantillas
-@main_bp.app_template_filter('date_format')
-def date_format(value, format='%d/%m/%Y'):
-    """Formatear fechas para mostrar en plantillas"""
-    if value:
-        return value.strftime(format)
-    return ""
+        # Consulta para totales con el mismo filtro
+        totales = db.session.query(
+            func.sum(DetallesVenta.cantidad * Galletas.precio_unitario).label('total_ventas'),
+            func.sum(DetallesVenta.cantidad).label('total_unidades')
+        ).join(Ventas, DetallesVenta.venta_id == Ventas.idVenta)\
+         .join(Galletas, DetallesVenta.galleta_id == Galletas.idGalleta)\
+         .filter(func.date(Ventas.fechaVenta) == hoy).first()
+        
+        # consulta de galetas mas vendidas
+        galletas = db.session.query(
+            Galletas.nombreGalleta,
+            func.sum(DetallesVenta.cantidad).label('ventas')  
+        ).join(DetallesVenta, DetallesVenta.galleta_id == Galletas.idGalleta)\
+         .join(Ventas, DetallesVenta.venta_id == Ventas.idVenta)\
+         .group_by(Galletas.nombreGalleta)\
+         .order_by(func.sum(DetallesVenta.cantidad).desc())\
+         .limit(5)\
+         .all()
+        
+        # consulta de presentaciones mas vendidas 1 individual 0 paquete
+        presentaciones = db.session.query(
+            case(
+                (DetallesVenta.tipo_venta == 1, 'Individual'),
+                (DetallesVenta.tipo_venta == 0, 'Paquete'),
+                else_='Otro'
+            ).label('presentacion'),
+            func.sum(DetallesVenta.cantidad).label('total_ventas'),
+            func.count().label('total_unidades')
+            ).group_by(
+                DetallesVenta.tipo_venta
+            ).order_by(
+                func.sum(DetallesVenta.cantidad).desc()
+        ).all()
 
+        return render_template('index.html',
+            ventasClientes=ventasClientes,
+            total_ventas=totales.total_ventas if totales and totales.total_ventas else 0,
+            total_unidades=totales.total_unidades if totales and totales.total_unidades else 0,
+            fecha_actual=hoy.strftime('%d/%m/%Y'),galletas_mas_vendidas=galletas,presentaciones=presentaciones)
+    
+    except Exception as e:
+        print(f"Error en la consulta: {str(e)}")
+        return render_template('index.html',
+            ventasClientes=[],
+            total_ventas=0,
+            total_unidades=0,
+            fecha_actual=hoy.strftime('%d/%m/%Y'))
+    
+    
 # Manejadores de errores
 @main_bp.app_errorhandler(404)
 def page_not_found(e):

@@ -1,6 +1,6 @@
 from models import db
 from modulos.recetas.models import Receta, RecetaIngrediente
-from modulos.galletas.models import Galleta
+from modulos.galletas.models import Galletas
 from modulos.ingredientes.models import Ingrediente
 
 class RecetaController:
@@ -82,7 +82,7 @@ class RecetaController:
     @staticmethod
     def get_galletas_for_form():
         """Obtener galletas activas para usar en el formulario"""
-        return Galleta.query.filter_by(estatus=1).all()
+        return Galletas.query.filter_by(estatus=1).all()
     
     @staticmethod
     def get_ingredientes_by_receta(receta_id):

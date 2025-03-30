@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from models import db
-from modulos.galletas.models import Galleta
+from modulos.galletas.models import Galletas
 from modulos.galletas.forms import GalletaForm, create_galleta_form
 from modulos.galletas.controllers import GalletaController
 

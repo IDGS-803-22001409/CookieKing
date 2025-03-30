@@ -22,7 +22,7 @@
                 <dl class="grid grid-cols-1 gap-2">
                     <div class="flex flex-col">
                         <dt class="text-gray-300">Tipo de Galleta:</dt>
-                        <dd class="font-medium">{{ receta.galleta.nombreGalleta }}</dd>
+                        <dd class="font-medium">{{ receta.galletas.nombreGalleta }}</dd>
                     </div>
                     <div class="flex flex-col">
                         <dt class="text-gray-300">Producción:</dt>
@@ -152,9 +152,9 @@
                             required
                             class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5"
                         >
-                            {% for galleta in galletas %}
-                                <option value="{{ galleta.idGalleta }}" {% if galleta.idGalleta == receta.idGalleta %}selected{% endif %}>
-                                    {{ galleta.nombreGalleta }}
+                            {% for galletas in galletas %}
+                                <option value="{{ galletas.idGalleta }}" {% if galletas.idGalleta == receta.idGalleta %}selected{% endif %}>
+                                    {{ galletas.nombreGalleta }}
                                 </option>
                             {% endfor %}
                         </select>
