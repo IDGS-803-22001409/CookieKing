@@ -81,16 +81,20 @@ class ClienteController:
             return False
         
         # Verificar si hay ventas asociadas
-        if cliente.ventas and len(cliente.ventas) > 0:
+        if hasattr(cliente, 'ventas') and cliente.ventas and len(cliente.ventas) > 0:
             # En lugar de eliminar, marcar como inactivo
             cliente.estatus = 0
             db.session.commit()
             return True
         
         # Si no hay dependencias, eliminar físicamente
-        db.session.delete(cliente)
-        db.session.commit()
-        return True
+        try:
+            db.session.delete(cliente)
+            db.session.commit()
+            return True
+        except Exception:
+            db.session.rollback()
+            return False
     
     @staticmethod
     def can_delete_cliente(cliente_id):
@@ -101,7 +105,7 @@ class ClienteController:
             return False
         
         # Verificar si hay ventas asociadas
-        if cliente.ventas and len(cliente.ventas) > 0:
+        if hasattr(cliente, 'ventas') and cliente.ventas and len(cliente.ventas) > 0:
             return False
         
         return True

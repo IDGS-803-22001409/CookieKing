@@ -1,0 +1,249 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}{{ crud_title }} - Cookie King{% endblock %}
+
+{% block content %}
+<div class="p-6 bg-cream-50 rounded-lg shadow-lg">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-chocolate-800">{{ crud_title }}</h1>
+        <button 
+            id="btn-add-new" 
+            class="inline-flex items-center px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200"
+        >
+            <i class="fas fa-plus mr-2"></i>
+            Agregar {{ modal_title }}
+        </button>
+    </div>
+
+    <!-- Buscador -->
+    <div class="mb-6">
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <i class="fas fa-search text-gray-400"></i>
+            </div>
+            <input 
+                type="text" 
+                id="table-search" 
+                class="border border-cookie-200 rounded-lg p-2.5 pl-10 w-full focus:ring-cookie-500 focus:border-cookie-500" 
+                placeholder="Buscar clientes..."
+            >
+        </div>
+    </div>
+
+    <!-- Tabla de registros -->
+    <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+        <table class="min-w-full text-sm">
+            <thead>
+                <tr class="bg-cookie-100 text-chocolate-700 uppercase">
+                    {% for header in table_headers %}
+                    <th class="py-3 px-4 text-left">{{ header }}</th>
+                    {% endfor %}
+                    <th class="py-3 px-4 text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr class="border-b hover:bg-cream-50" data-id="{{ item.id }}">
+                    {% for field in item.fields %}
+                    <td class="py-3 px-4">{{ field|safe }}</td>
+                    {% endfor %}
+                    <td class="py-3 px-4 text-center">
+                        <a
+                            href="{{ url_for('clientes.details', cliente_id=item.id) }}"
+                            class="text-cookie-600 hover:text-cookie-700 mr-2"
+                            title="Ver detalles"
+                        >
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <button
+                            class="text-blue-500 hover:text-blue-700 mr-2 btn-edit"
+                            data-id="{{ item.id }}"
+                            title="Editar"
+                        >
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <form class="inline" action="{{ url_for('clientes.delete', cliente_id=item.id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este cliente?');">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button
+                                type="submit"
+                                class="text-red-500 hover:text-red-700"
+                                title="Eliminar"
+                            >
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not items %}
+                <tr>
+                    <td colspan="{{ table_headers|length + 1 }}" class="py-4 px-4 text-center text-gray-500">
+                        No hay registros para mostrar
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal para añadir/editar -->
+<div
+    id="crud-modal"
+    class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+>
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md">
+        <div class="flex justify-between items-center bg-cookie-100 p-4 rounded-t-lg">
+            <h3 class="text-lg font-semibold text-chocolate-800">{{ modal_title }}</h3>
+            <button id="btn-close-modal" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="form-crud" action="{{ form_action }}" method="POST" class="p-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+
+            {% for field in form_fields %} 
+                {% if field.template != "components/forms/input_hidden.html" %}
+                <div class="mb-4">
+                    <label for="{{ field.id }}" class="block mb-2 text-sm font-medium text-chocolate-700">{{ field.label }}</label>
+                    {% include field.template %}
+                </div>
+                {% else %}
+                    {% include field.template %}
+                {% endif %}
+            {% endfor %}
+
+            <div class="mt-6 flex justify-end">
+                <button
+                    type="button"
+                    id="btn-cancel"
+                    class="px-4 py-2 border border-cookie-300 rounded-lg text-chocolate-700 mr-2 hover:bg-cream-100 transition-colors"
+                >
+                    Cancelar
+                </button>
+                <button 
+                    type="submit" 
+                    class="px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors"
+                >
+                    Guardar
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Script simplificado para las interacciones del CRUD -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    // Referencias a elementos DOM
+    const modal = document.getElementById("crud-modal");
+    const formCrud = document.getElementById("form-crud");
+    const btnAddNew = document.getElementById("btn-add-new");
+    const btnCloseModal = document.getElementById("btn-close-modal");
+    const btnCancel = document.getElementById("btn-cancel");
+    const idField = document.querySelector('input[name="id"]');
+    const editButtons = document.querySelectorAll(".btn-edit");
+    const searchInput = document.getElementById("table-search");
+
+    // Función para abrir modal (Nuevo/Editar)
+    function openModal() {
+        modal.classList.remove("hidden");
+    }
+
+    // Función para cerrar modal
+    function closeModal() {
+        modal.classList.add("hidden");
+        formCrud.reset();
+        // Limpiar el ID para asegurar que se trate como un nuevo registro
+        if (idField) idField.value = "";
+    }
+
+    // Evento para el botón "Agregar"
+    if (btnAddNew) {
+        btnAddNew.addEventListener("click", function() {
+            formCrud.reset();
+            if (idField) idField.value = "";
+            openModal();
+        });
+    }
+
+    // Eventos para cerrar el modal
+    if (btnCloseModal) {
+        btnCloseModal.addEventListener("click", closeModal);
+    }
+    
+    if (btnCancel) {
+        btnCancel.addEventListener("click", closeModal);
+    }
+
+    // Cerrar modal al hacer clic fuera (en el fondo)
+    modal.addEventListener("click", function(e) {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    // Eventos para botones de edición
+    if (editButtons.length > 0) {
+        editButtons.forEach(function(button) {
+            button.addEventListener("click", function() {
+                const id = this.getAttribute("data-id");
+                
+                // URL completa generada por Flask
+                const url = "{{ url_for('clientes.get_cliente', cliente_id=0) }}".replace("0", id);
+                
+                // Obtener datos del cliente para editar
+                fetch(url)
+                    .then(function(response) {
+                        if (!response.ok) {
+                            throw new Error('Error al obtener datos del cliente');
+                        }
+                        return response.json();
+                    })
+                    .then(function(data) {
+                        // Llenar formulario con datos del cliente
+                        if (idField) idField.value = data.idCliente || "";
+                        
+                        // Actualizar cada campo del formulario
+                        for (const key in data) {
+                            const field = document.querySelector([name="${key}"]);
+                            if (field) {
+                                field.value = data[key];
+                            }
+                        }
+                        
+                        // Abrir el modal
+                        openModal();
+                    })
+                    .catch(function(error) {
+                        console.error('Error:', error);
+                        alert('Error al cargar los datos del cliente');
+                    });
+            });
+        });
+    }
+
+    // Filtro de búsqueda en la tabla
+    if (searchInput) {
+        searchInput.addEventListener("keyup", function() {
+            const searchTerm = this.value.toLowerCase();
+            const tableRows = document.querySelectorAll("tbody tr");
+            
+            tableRows.forEach(function(row) {
+                let textContent = "";
+                row.querySelectorAll("td").forEach(function(cell) {
+                    textContent += cell.textContent.toLowerCase() + " ";
+                });
+                
+                if (textContent.includes(searchTerm)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

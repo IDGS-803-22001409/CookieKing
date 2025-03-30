@@ -3,60 +3,56 @@
 {% block title %}Clientes - Cookie King{% endblock %}
 
 {% block content %}
-<div class="min-h-[70vh] flex flex-col items-center justify-center bg-cream-50 rounded-lg border border-cookie-200 shadow-md p-8 text-center">
-    <!-- Icono de construcción -->
-    <div class="w-32 h-32 bg-cookie-100 rounded-full flex items-center justify-center mb-6 text-cookie-600">
-        <i class="fas fa-users text-6xl"></i>
-    </div>
-    
-    <!-- Título del módulo -->
-    <h2 class="text-3xl font-bold text-chocolate-800 mb-2">Gestión de Clientes</h2>
-    
-    <!-- Subtítulo -->
-    <p class="text-lg text-cookie-700 mb-8">Administración de clientes y datos de contacto</p>
-    
-    <!-- Mensaje de construcción -->
-    <div class="bg-cream-100 border-l-4 border-cookie-500 text-chocolate-700 p-4 mb-6 max-w-lg">
-        <div class="flex items-center">
-            <div class="py-1">
-                <i class="fas fa-tools mr-2"></i>
-                <span class="font-semibold">Módulo en desarrollo</span>
-            </div>
+<div class="min-h-[70vh] bg-cream-50 rounded-lg border border-cookie-200 shadow-md p-8">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h2 class="text-3xl font-bold text-chocolate-800">Gestión de Clientes</h2>
+            <p class="text-lg text-cookie-700">Administración de clientes y datos de contacto</p>
         </div>
-        <p class="mt-2">Este módulo se encuentra actualmente en desarrollo y estará disponible próximamente.</p>
     </div>
-    
-    <!-- Funcionalidades próximas -->
-    <div class="max-w-lg w-full">
-        <h3 class="text-lg font-semibold text-chocolate-700 mb-4">Funcionalidades que encontrarás aquí:</h3>
-        <ul class="space-y-2 text-left bg-white p-4 rounded-lg border border-cookie-200">
-            <li class="flex items-start">
-                <i class="fas fa-cookie text-cookie-500 mt-1 mr-2"></i>
-                <span>Registro completo de clientes</span>
-            </li>
-            <li class="flex items-start">
-                <i class="fas fa-cookie text-cookie-500 mt-1 mr-2"></i>
-                <span>Información de contacto y direcciones</span>
-            </li>
-            <li class="flex items-start">
-                <i class="fas fa-cookie text-cookie-500 mt-1 mr-2"></i>
-                <span>Historial de compras por cliente</span>
-            </li>
-            <li class="flex items-start">
-                <i class="fas fa-cookie text-cookie-500 mt-1 mr-2"></i>
-                <span>Gestión de preferencias y pedidos especiales</span>
-            </li>
-            <li class="flex items-start">
-                <i class="fas fa-cookie text-cookie-500 mt-1 mr-2"></i>
-                <span>Sistema de fidelización y descuentos</span>
-            </li>
-        </ul>
+
+    <!-- Tabla de clientes -->
+    <div class="overflow-x-auto bg-white rounded-lg shadow">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-cookie-100">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-800 uppercase tracking-wider">ID</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-800 uppercase tracking-wider">Nombre</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-800 uppercase tracking-wider">Teléfono</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-800 uppercase tracking-wider">Correo</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-800 uppercase tracking-wider">Nacimiento</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-800 uppercase tracking-wider">Estatus</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for cliente in clientes %}
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ cliente.idCliente }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ cliente.nombreCliente }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ cliente.telefono }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ cliente.correo or '-' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {% if cliente.fechaNacimiento %}
+                            {{ cliente.fechaNacimiento.strftime('%d/%m/%Y') }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            {% if cliente.estatus == 1 %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                            {% if cliente.estatus == 1 %}Activo{% else %}Inactivo{% endif %}
+                        </span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">No hay clientes registrados</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
     </div>
-    
-    <!-- Botón de regreso -->
-    <a href="{{ url_for('main.index') }}" class="mt-8 inline-flex items-center px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200">
-        <i class="fas fa-home mr-2"></i>
-        Volver al inicio
-    </a>
 </div>
 {% endblock %}

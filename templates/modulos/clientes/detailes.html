@@ -1,0 +1,219 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Detalles de Cliente - Cookie King{% endblock %}
+
+{% block content %}
+<div class="p-6 bg-cream-50 rounded-lg shadow-lg">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-chocolate-800">Detalles de Cliente</h1>
+        <a href="{{ url_for('clientes.index') }}" class="inline-flex items-center px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Volver
+        </a>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Información básica -->
+            <div>
+                <h2 class="text-xl font-semibold mb-4 text-cookie-700">Información Personal</h2>
+
+                <div class="mb-4">
+                    <label class="block text-chocolate-700 font-bold mb-1">Nombre:</label>
+                    <div class="border border-cookie-200 rounded-lg px-3 py-2 bg-cream-50">
+                        {{ cliente.nombreCliente }}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-chocolate-700 font-bold mb-1">Fecha de Nacimiento:</label>
+                    <div class="border border-cookie-200 rounded-lg px-3 py-2 bg-cream-50">
+                        {% if cliente.fechaNacimiento %}
+                            {{ cliente.fechaNacimiento.strftime('%d/%m/%Y') }}
+                        {% else %}
+                            No registrada
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-chocolate-700 font-bold mb-1">Estatus:</label>
+                    <div class="border border-cookie-200 rounded-lg px-3 py-2 bg-cream-50">
+                        <span class="px-2 py-1 rounded-full text-xs font-medium 
+                            {% if cliente.estatus == 1 %}
+                            bg-green-100 text-green-800
+                            {% else %}
+                            bg-red-100 text-red-800
+                            {% endif %}">
+                            {{ "Activo" if cliente.estatus == 1 else "Inactivo" }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información de contacto -->
+            <div>
+                <h2 class="text-xl font-semibold mb-4 text-cookie-700">Información de Contacto</h2>
+
+                <div class="mb-4">
+                    <label class="block text-chocolate-700 font-bold mb-1">Teléfono:</label>
+                    <div class="border border-cookie-200 rounded-lg px-3 py-2 bg-cream-50">
+                        <a href="tel:{{ cliente.telefono }}" class="text-cookie-600 hover:text-cookie-800">
+                            {{ cliente.telefono }}
+                        </a>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-chocolate-700 font-bold mb-1">Correo Electrónico:</label>
+                    <div class="border border-cookie-200 rounded-lg px-3 py-2 bg-cream-50">
+                        {% if cliente.correo %}
+                            <a href="mailto:{{ cliente.correo }}" class="text-cookie-600 hover:text-cookie-800">
+                                {{ cliente.correo }}
+                            </a>
+                        {% else %}
+                            No registrado
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Historial de ventas -->
+        <div class="mt-8">
+            <h2 class="text-xl font-semibold mb-4 text-cookie-700">Historial de Ventas</h2>
+
+            {% if cliente.ventas and cliente.ventas|length > 0 %}
+                <div class="overflow-x-auto bg-white border border-cookie-200 rounded-lg">
+                    <table class="min-w-full divide-y divide-cookie-200">
+                        <thead class="bg-cookie-100">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                    ID Venta
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                    Fecha
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                    Total
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                    Estatus
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                    Acciones
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-cookie-200">
+                            {% for venta in cliente.ventas %}
+                            <tr class="hover:bg-cream-50">
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-chocolate-700">
+                                    {{ venta.idVenta }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-chocolate-700">
+                                    {{ venta.fechaVenta.strftime('%d/%m/%Y') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-chocolate-700">
+                                    <!-- Aquí irían los cálculos de total si corresponde -->
+                                    $0.00
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                    <span class="px-2 py-1 text-xs rounded-full 
+                                        {% if venta.estatus == 1 %}
+                                        bg-green-100 text-green-800
+                                        {% elif venta.estatus == 0 %}
+                                        bg-yellow-100 text-yellow-800
+                                        {% else %}
+                                        bg-red-100 text-red-800
+                                        {% endif %}">
+                                        {% if venta.estatus == 1 %}
+                                            Completada
+                                        {% elif venta.estatus == 0 %}
+                                            Pendiente
+                                        {% else %}
+                                            Cancelada
+                                        {% endif %}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-chocolate-600">
+                                    <a href="#" class="text-cookie-600 hover:text-cookie-800 mr-2">
+                                        <i class="fas fa-eye"></i> Ver
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="bg-cream-50 border border-cookie-200 rounded-lg p-4 text-center">
+                    <p class="text-chocolate-600">Este cliente no tiene ventas registradas.</p>
+                </div>
+            {% endif %}
+        </div>
+        
+        <!-- Botones de acción -->
+        <div class="mt-8 flex justify-end space-x-4">
+            <button 
+                class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200 btn-edit"
+                data-id="{{ cliente.idCliente }}"
+            >
+                <i class="fas fa-edit mr-2"></i>
+                Editar Cliente
+            </button>
+            <button 
+                class="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200 btn-delete"
+                data-id="{{ cliente.idCliente }}"
+            >
+                <i class="fas fa-trash mr-2"></i>
+                Eliminar Cliente
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Script para las acciones -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Botón de edición
+    const editButton = document.querySelector(".btn-edit");
+    if (editButton) {
+        editButton.addEventListener("click", function() {
+            const id = this.getAttribute("data-id");
+            window.location.href = "{{ url_for('clientes.admin') }}";
+            // En una implementación más completa, podríamos abrir directamente el modal de edición
+        });
+    }
+    
+    // Botón de eliminación
+    const deleteButton = document.querySelector(".btn-delete");
+    if (deleteButton) {
+        deleteButton.addEventListener("click", function() {
+            const id = this.getAttribute("data-id");
+            
+            if (confirm("¿Estás seguro de que deseas eliminar este cliente?")) {
+                // Método alternativo más simple usando un formulario HTML
+                // Crear un formulario
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '/clientes/delete/' + id;
+                
+                // Agregar el token CSRF
+                const csrfInput = document.createElement('input');
+                csrfInput.type = 'hidden';
+                csrfInput.name = 'csrf_token';
+                csrfInput.value = '{{ csrf_token() }}';
+                
+                // Agregar el input al formulario
+                form.appendChild(csrfInput);
+                
+                // Agregar el formulario al documento y enviarlo
+                document.body.appendChild(form);
+                form.submit();
+            }
+        });
+    }
+});
+</script>
+{% endblock %}
