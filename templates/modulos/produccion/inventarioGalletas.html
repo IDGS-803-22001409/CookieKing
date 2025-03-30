@@ -1,0 +1,53 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Solicitud de Producción - Cookie King{% endblock %}
+
+{% block content %}
+<div class="p-4">
+    <h1 class="text-2xl font-bold mb-6 text-chocolate-800">Inventario de galletas</h1>
+    
+    {% if galletas %}
+    <div class="overflow-x-auto bg-white rounded-lg shadow">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-cookie-100">
+                <tr>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-800 uppercase tracking-wider">Nombre</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-800 uppercase tracking-wider">Descripción</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-800 uppercase tracking-wider">Estado</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-800 uppercase tracking-wider">Peso (g)</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-800 uppercase tracking-wider">Precio</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-800 uppercase tracking-wider">Estatus</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                {% for galleta in galletas %}
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ galleta.nombreGalleta }}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">
+                        {{ galleta.descripcion|truncate(50) or '-' }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ galleta.estado or '-' }}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {{ galleta.peso_por_unidad|round(2) }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        ${{ galleta.precio_unitario|round(2) }}
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                            {% if galleta.estatus == 1 %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                            {% if galleta.estatus == 1 %}Activo{% else %}Inactivo{% endif %}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="bg-white p-6 rounded-lg shadow text-center">
+        <p class="text-gray-500">No hay galletas registradas</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

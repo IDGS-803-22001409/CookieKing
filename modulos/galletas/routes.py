@@ -35,7 +35,7 @@ def index():
     form_fields = create_galleta_form()
     
     return render_template('modulos/galletas/crud_layout.html', 
-                          crud_title='Administración de Galletas',
+                          crud_title='Administración de Galletas',                          
                           modal_title='Galleta',
                           table_headers=headers,
                           items=items_data,
