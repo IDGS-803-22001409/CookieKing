@@ -53,3 +53,11 @@ modulos/main/__pycache__/routes.cpython-312.pyc
 modulos/recetas/__pycache__/controllers.cpython-312.pyc
 modulos/recetas/__pycache__/forms.cpython-312.pyc
 modulos/recetas/__pycache__/routes.cpython-312.pyc
+__pycache__/config.cpython-312.pyc
+modulos/galletas/__pycache__/controllers.cpython-312.pyc
+modulos/galletas/__pycache__/models.cpython-312.pyc
+modulos/galletas/__pycache__/routes.cpython-312.pyc
+modulos/main/__pycache__/routes.cpython-312.pyc
+modulos/recetas/__pycache__/controllers.cpython-312.pyc
+modulos/recetas/__pycache__/forms.cpython-312.pyc
+modulos/recetas/__pycache__/routes.cpython-312.pyc
