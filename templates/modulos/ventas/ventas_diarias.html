@@ -1,0 +1,202 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Ventas Diarias - Cookie King{% endblock %}
+
+{% block content %}
+<div class="p-6 bg-cream-50 rounded-lg shadow-lg">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-chocolate-800">Ventas Diarias</h1>
+        <a href="{{ url_for('ventas.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Volver
+        </a>
+    </div>
+
+    <!-- Selector de fecha -->
+    <div class="bg-white p-4 rounded-lg shadow mb-6">
+        <form id="fecha-form" method="GET" action="{{ url_for('ventas.ventas_diarias') }}" class="flex items-end space-x-4">
+            <div>
+                <label for="fecha" class="block mb-2 text-sm font-medium text-chocolate-700">Seleccione una fecha:</label>
+                <input 
+                    type="date" 
+                    id="fecha" 
+                    name="fecha" 
+                    value="{{ fecha_actual }}"
+                    max="{{ fecha_actual }}"
+                    class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500"
+                >
+            </div>
+            <button 
+                type="submit" 
+                class="px-4 py-2.5 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200"
+            >
+                <i class="fas fa-search mr-2"></i>
+                Consultar
+            </button>
+        </form>
+    </div>
+
+    <!-- Resumen de ventas -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+        <div class="bg-white p-4 rounded-lg shadow text-center">
+            <div class="text-5xl font-bold text-cookie-600 mb-2">{{ datos_ventas.num_ventas }}</div>
+            <div class="text-gray-600">Ventas Realizadas</div>
+        </div>
+        
+        <div class="bg-white p-4 rounded-lg shadow text-center">
+            <div class="text-5xl font-bold text-green-600 mb-2">${{ "%.2f"|format(datos_ventas.total_ventas) }}</div>
+            <div class="text-gray-600">Total Ingresos</div>
+        </div>
+        
+        <div class="bg-white p-4 rounded-lg shadow text-center">
+            <div class="text-5xl font-bold text-cookie-600 mb-2">
+                {% if datos_ventas.num_ventas > 0 %}
+                    ${{ "%.2f"|format(datos_ventas.total_ventas / datos_ventas.num_ventas) }}
+                {% else %}
+                    $0.00
+                {% endif %}
+            </div>
+            <div class="text-gray-600">Promedio por Venta</div>
+        </div>
+    </div>
+
+    <!-- Ventas por cliente -->
+    <div class="bg-white p-4 rounded-lg shadow mb-6">
+        <h2 class="text-lg font-semibold text-chocolate-800 mb-4">Ventas por Cliente</h2>
+        
+        {% if datos_ventas.ventas_por_cliente %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-cookie-100">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Cliente
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                No. Ventas
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Total
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for cliente, datos in datos_ventas.ventas_por_cliente.items() %}
+                        <tr class="hover:bg-cream-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {{ cliente }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                {{ datos.ventas|length }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right font-medium">
+                                ${{ "%.2f"|format(datos.total) }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="bg-cookie-50">
+                        <tr>
+                            <td class="px-6 py-4 font-medium text-chocolate-700">TOTAL</td>
+                            <td class="px-6 py-4 text-center font-medium text-chocolate-700">{{ datos_ventas.num_ventas }}</td>
+                            <td class="px-6 py-4 text-right font-medium text-green-600">${{ "%.2f"|format(datos_ventas.total_ventas) }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-info-circle text-4xl mb-2"></i>
+                <p>No hay ventas registradas para la fecha seleccionada.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Lista detallada de ventas -->
+    <div class="bg-white p-4 rounded-lg shadow">
+        <h2 class="text-lg font-semibold text-chocolate-800 mb-4">Detalle de Ventas</h2>
+        
+        {% if datos_ventas.ventas %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-cookie-100">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                #
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Hora
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Cliente
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Total
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Estatus
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Acciones
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for venta in datos_ventas.ventas %}
+                        <tr class="hover:bg-cream-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {{ venta.idVenta }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {{ venta.fechaVenta.strftime('%H:%M') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {{ venta.cliente.nombreCliente if venta.cliente else "Cliente General" }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right font-medium">
+                                ${{ "%.2f"|format(venta.total) }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                {% if venta.estatus == 1 %}
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Completada</span>
+                                {% elif venta.estatus == 0 %}
+                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Pendiente</span>
+                                {% else %}
+                                    <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Cancelada</span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <a 
+                                    href="{{ url_for('ventas.detalle', venta_id=venta.idVenta) }}" 
+                                    class="text-cookie-600 hover:text-cookie-800"
+                                    title="Ver detalles"
+                                >
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-info-circle text-4xl mb-2"></i>
+                <p>No hay ventas registradas para la fecha seleccionada.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Establecer la fecha máxima como la fecha actual
+    document.addEventListener('DOMContentLoaded', function() {
+        const fechaInput = document.getElementById('fecha');
+        const today = new Date().toISOString().split('T')[0];
+        fechaInput.setAttribute('max', today);
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,251 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Ventas por Tipo - Cookie King{% endblock %}
+
+{% block content %}
+<div class="p-6 bg-cream-50 rounded-lg shadow-lg">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-chocolate-800">Ventas por Tipo</h1>
+        <a href="{{ url_for('ventas.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Volver
+        </a>
+    </div>
+
+    <!-- Selector de fechas -->
+    <div class="bg-white p-4 rounded-lg shadow mb-6">
+        <form id="fechas-form" method="GET" action="{{ url_for('ventas.tipos_venta') }}" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label for="fecha_inicio" class="block mb-2 text-sm font-medium text-chocolate-700">Fecha Inicio:</label>
+                <input 
+                    type="date" 
+                    id="fecha_inicio" 
+                    name="fecha_inicio" 
+                    value="{{ fecha_inicio }}"
+                    class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500"
+                >
+            </div>
+            <div>
+                <label for="fecha_fin" class="block mb-2 text-sm font-medium text-chocolate-700">Fecha Fin:</label>
+                <input 
+                    type="date" 
+                    id="fecha_fin" 
+                    name="fecha_fin" 
+                    value="{{ fecha_fin }}"
+                    class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500"
+                >
+            </div>
+            <div class="flex items-end">
+                <button 
+                    type="submit" 
+                    class="px-4 py-2.5 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200 w-full"
+                >
+                    <i class="fas fa-search mr-2"></i>
+                    Consultar
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Resumen del periodo -->
+    <div class="bg-white p-4 rounded-lg shadow mb-6">
+        <h2 class="text-lg font-semibold text-chocolate-800 mb-4">Período: {{ fecha_inicio }} al {{ fecha_fin }}</h2>
+        
+        {% if ventas_por_tipo %}
+            <!-- Tarjetas de resumen -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                {% for tipo in ventas_por_tipo %}
+                <div class="bg-cream-50 p-4 rounded-lg shadow-sm">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-chocolate-800">{{ tipo.tipo }}</h3>
+                        <span class="px-3 py-1 bg-{{ 'blue' if tipo.tipo == 'Individual' else 'green' }}-100 text-{{ 'blue' if tipo.tipo == 'Individual' else 'green' }}-800 rounded-full text-sm font-medium">
+                            {{ "%.1f"|format((tipo.total_cantidad / (ventas_por_tipo|sum(attribute='total_cantidad'))) * 100) }}%
+                        </span>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-4 text-center">
+                        <div>
+                            <div class="text-3xl font-bold text-cookie-600 mb-1">{{ tipo.total_cantidad }}</div>
+                            <div class="text-sm text-gray-600">Unidades</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-bold text-green-600 mb-1">${{ "%.2f"|format(tipo.total_ventas) }}</div>
+                            <div class="text-sm text-gray-600">Ingresos</div>
+                        </div>
+                        <div>
+                            <div class="text-3xl font-bold text-yellow-600 mb-1">{{ tipo.num_ventas }}</div>
+                            <div class="text-sm text-gray-600">Ventas</div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Gráfico de comparación -->
+            <div id="chart-container" class="h-64 mb-6"></div>
+        {% else %}
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-info-circle text-4xl mb-2"></i>
+                <p>No hay datos de ventas disponibles para el período seleccionado.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Tabla de comparación -->
+    <div class="bg-white p-4 rounded-lg shadow">
+        <h2 class="text-lg font-semibold text-chocolate-800 mb-4">Comparativa por Tipo de Venta</h2>
+        
+        {% if ventas_por_tipo %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-cookie-100">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Tipo de Venta
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Cantidad Vendida
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Número de Ventas
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Ingresos
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Promedio por Venta
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for tipo in ventas_por_tipo %}
+                        <tr class="hover:bg-cream-50">
+                            <td class="px-6 py-4 whitespace-nowrap font-medium">
+                                {{ tipo.tipo }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                {{ tipo.total_cantidad }} unidades
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                {{ tipo.num_ventas }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right font-medium">
+                                ${{ "%.2f"|format(tipo.total_ventas) }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                ${{ "%.2f"|format(tipo.total_ventas / tipo.num_ventas if tipo.num_ventas > 0 else 0) }}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="bg-cookie-50">
+                        <tr>
+                            <td class="px-6 py-4 font-medium text-chocolate-700">TOTAL</td>
+                            <td class="px-6 py-4 text-center font-medium text-chocolate-700">
+                                {{ ventas_por_tipo|sum(attribute='total_cantidad') }} unidades
+                            </td>
+                            <td class="px-6 py-4 text-center font-medium text-chocolate-700">
+                                {{ ventas_por_tipo|sum(attribute='num_ventas') }}
+                            </td>
+                            <td class="px-6 py-4 text-right font-medium text-green-600">
+                                ${{ "%.2f"|format(ventas_por_tipo|sum(attribute='total_ventas')) }}
+                            </td>
+                            <td class="px-6 py-4 text-right font-medium text-chocolate-700">
+                                ${{ "%.2f"|format(ventas_por_tipo|sum(attribute='total_ventas') / ventas_por_tipo|sum(attribute='num_ventas') if ventas_por_tipo|sum(attribute='num_ventas') > 0 else 0) }}
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-8 text-gray-500">
+                <i class="fas fa-info-circle text-4xl mb-2"></i>
+                <p>No hay datos de ventas disponibles para el período seleccionado.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const fechaInicio = document.getElementById('fecha_inicio');
+        const fechaFin = document.getElementById('fecha_fin');
+        
+        // Verificar que fecha fin no sea anterior a fecha inicio
+        fechaFin.addEventListener('change', function() {
+            if (fechaInicio.value && fechaFin.value < fechaInicio.value) {
+                alert('La fecha fin no puede ser anterior a la fecha inicio');
+                fechaFin.value = fechaInicio.value;
+            }
+        });
+        
+        fechaInicio.addEventListener('change', function() {
+            if (fechaFin.value && fechaFin.value < fechaInicio.value) {
+                fechaFin.value = fechaInicio.value;
+            }
+        });
+        
+        // Crear gráfico si hay datos
+        {% if ventas_por_tipo %}
+            const chartContainer = document.getElementById('chart-container');
+            if (chartContainer) {
+                const ctx = document.createElement('canvas');
+                ctx.id = 'chart-ventas-tipo';
+                chartContainer.appendChild(ctx);
+                
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: [{% for tipo in ventas_por_tipo %}'{{ tipo.tipo }}',{% endfor %}],
+                        datasets: [
+                            {
+                                label: 'Unidades Vendidas',
+                                data: [{% for tipo in ventas_por_tipo %}{{ tipo.total_cantidad }},{% endfor %}],
+                                backgroundColor: 'rgba(243, 173, 78, 0.7)',
+                                borderColor: 'rgba(243, 173, 78, 1)',
+                                borderWidth: 1
+                            },
+                            {
+                                label: 'Ingresos ($)',
+                                data: [{% for tipo in ventas_por_tipo %}{{ tipo.total_ventas }},{% endfor %}],
+                                backgroundColor: 'rgba(52, 211, 153, 0.7)',
+                                borderColor: 'rgba(52, 211, 153, 1)',
+                                borderWidth: 1,
+                                yAxisID: 'y1'
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Unidades'
+                                }
+                            },
+                            y1: {
+                                beginAtZero: true,
+                                position: 'right',
+                                grid: {
+                                    drawOnChartArea: false
+                                },
+                                title: {
+                                    display: true,
+                                    text: 'Ingresos ($)'
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        {% endif %}
+    });
+</script>
+{% endblock %}

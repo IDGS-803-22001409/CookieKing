@@ -1,0 +1,170 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}{{ title }} - Cookie King{% endblock %}
+
+{% block content %}
+<div class="p-6 bg-cream-50 rounded-lg shadow-lg">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-chocolate-800">{{ title }}</h1>
+            <p class="text-sm text-cookie-600">Venta #{{ venta.idVenta }}</p>
+        </div>
+        <div class="flex space-x-2">
+            <a href="{{ url_for('ventas.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Volver
+            </a>
+            <a href="{{ url_for('ventas.ticket', venta_id=venta.idVenta) }}" class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors duration-200">
+                <i class="fas fa-receipt mr-2"></i>
+                Generar Ticket
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <!-- Información de la venta -->
+        <div class="bg-white p-4 rounded-lg shadow">
+            <h2 class="text-lg font-semibold text-chocolate-800 mb-4">Información de la Venta</h2>
+            
+            <div class="space-y-4">
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="text-gray-600">Fecha:</div>
+                    <div class="font-medium">{{ venta.fechaVenta.strftime('%d/%m/%Y %H:%M') }}</div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="text-gray-600">Cliente:</div>
+                    <div class="font-medium">
+                        {% if venta.cliente %}
+                            {{ venta.cliente.nombreCliente }}
+                        {% else %}
+                            Cliente General
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="text-gray-600">Estado:</div>
+                    <div>
+                        {% if venta.estatus == 1 %}
+                            <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Completada</span>
+                        {% elif venta.estatus == 0 %}
+                            <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Pendiente</span>
+                        {% else %}
+                            <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Cancelada</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-2">
+                    <div class="text-gray-600">Total:</div>
+                    <div class="font-bold text-xl text-cookie-700">${{ "%.2f"|format(venta.total) }}</div>
+                </div>
+            </div>
+            
+            <div class="mt-6 flex justify-center">
+                <a href="{{ url_for('ventas.editar_venta', venta_id=venta.idVenta) }}" class="inline-flex items-center px-4 py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors duration-200">
+                    <i class="fas fa-edit mr-2"></i>
+                    Editar Venta
+                </a>
+            </div>
+        </div>
+        
+        <!-- Productos vendidos -->
+        <div class="bg-white p-4 rounded-lg shadow">
+            <h2 class="text-lg font-semibold text-chocolate-800 mb-4">Productos Vendidos</h2>
+            
+            <div class="overflow-hidden border border-cookie-200 rounded-lg">
+                <div class="bg-cookie-100 text-chocolate-700 p-2 text-sm grid grid-cols-12 gap-2 font-medium">
+                    <div class="col-span-5">Producto</div>
+                    <div class="col-span-2 text-center">Tipo</div>
+                    <div class="col-span-2 text-center">Cantidad</div>
+                    <div class="col-span-3 text-right">Subtotal</div>
+                </div>
+                
+                <div class="text-sm">
+                    {% for detalle in detalles %}
+                    <div class="grid grid-cols-12 gap-2 p-2 {% if loop.index % 2 == 0 %}bg-cream-50{% endif %}">
+                        <div class="col-span-5">{{ detalle.galleta.nombreGalleta }}</div>
+                        <div class="col-span-2 text-center">{{ "Individual" if detalle.tipo_venta == 1 else "Paquete" }}</div>
+                        <div class="col-span-2 text-center">{{ detalle.cantidad }}</div>
+                        <div class="col-span-3 text-right">${{ "%.2f"|format(detalle.subtotal) }}</div>
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <div class="bg-cookie-50 p-2 text-right font-bold text-chocolate-800">
+                    Total: ${{ "%.2f"|format(venta.total) }}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Botones de acción -->
+    <div class="flex justify-end space-x-3">
+        <button 
+            onclick="eliminarVenta({{ venta.idVenta }})"
+            class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors duration-200"
+        >
+            <i class="fas fa-trash mr-2"></i>
+            Eliminar Venta
+        </button>
+    </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div id="modal-eliminar" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md">
+        <div class="bg-red-100 text-red-800 px-4 py-3 rounded-t-lg">
+            <h3 class="text-lg font-semibold">Confirmar eliminación</h3>
+        </div>
+        <div class="p-4">
+            <p class="mb-4">¿Estás seguro de que deseas eliminar esta venta? Esta acción no se puede deshacer.</p>
+            <form id="form-eliminar" method="POST" action="{{ url_for('ventas.eliminar', venta_id=venta.idVenta) }}">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="flex justify-end">
+                    <button 
+                        type="button" 
+                        id="btn-cancelar" 
+                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 mr-2 hover:bg-gray-100"
+                    >
+                        Cancelar
+                    </button>
+                    <button 
+                        type="submit" 
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                    >
+                        Eliminar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Manejar el modal de confirmación de eliminación
+        const modal = document.getElementById('modal-eliminar');
+        const btnCancelar = document.getElementById('btn-cancelar');
+        
+        btnCancelar.addEventListener('click', function() {
+            modal.classList.add('hidden');
+        });
+        
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    });
+    
+    function eliminarVenta(ventaId) {
+        const modal = document.getElementById('modal-eliminar');
+        modal.classList.remove('hidden');
+    }
+</script>
+{% endblock %}

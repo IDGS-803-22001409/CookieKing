@@ -357,7 +357,7 @@
               </button>
               <div
                 id="dropdownVentasNavbar"
-                class="z-10 hidden font-normal bg-white divide-y divide-cookie-200 rounded-lg shadow-lg w-44"
+                class="z-10 hidden font-normal bg-white divide-y divide-cookie-200 rounded-lg shadow-lg w-52"
               >
                 <ul
                   class="py-2 text-sm text-chocolate-700"
@@ -365,37 +365,66 @@
                 >
                   <li>
                     <a
-                      href="/ventas"
+                      href="{{ url_for('ventas.index') }}"
                       class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
-                      >
-                      <i class="fas fa-list me-1"></i> Lista de Ventas
+                    >
+                      <i class="fas fa-list me-1"></i> Administrar Ventas
                     </a>
                   </li>
                   <li>
                     <a
-                      href="/ventas/nueva"
+                      href="{{ url_for('ventas.nueva_venta') }}"
                       class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
-                      >
+                    >
                       <i class="fas fa-plus me-1"></i> Nueva Venta
                     </a>
                   </li>
                   <li>
                     <a
-                      href="/ventas/diarias"
+                      href="{{ url_for('ventas.ventas_diarias') }}"
                       class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
-                      >
+                    >
                       <i class="fas fa-calendar-day me-1"></i> Ventas Diarias
                     </a>
                   </li>
                   <li>
                     <a
-                      href="/ventas/productos-mas-vendidos"
+                      href="{{ url_for('ventas.productos_mas_vendidos') }}"
                       class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
-                      >
-                      <i class="fas fa-trophy me-1"></i> Más Vendidos
+                    >
+                      <i class="fas fa-trophy me-1"></i> Productos Más Vendidos
+                    </a>
+                  </li>
+                  <li>
+                    <a
+                      href="{{ url_for('ventas.tipos_venta') }}"
+                      class="block px-4 py-2 hover:bg-cream-100 hover:text-cookie-700"
+                    >
+                      <i class="fas fa-chart-pie me-1"></i> Análisis por Tipo
                     </a>
                   </li>
                 </ul>
+                <div class="py-1">
+                  <span class="block px-4 py-2 text-xs font-semibold text-gray-500">PEDIDOS</span>
+                  <a href="{{ url_for('ventas.pedidos_index') }}" class="block px-4 py-2 text-sm text-chocolate-700 hover:bg-cream-100 hover:text-cookie-700">
+                    <i class="fas fa-clipboard-list me-1"></i> Todos los Pedidos
+                  </a>
+                  <a href="{{ url_for('ventas.nuevo_pedido') }}" class="block px-4 py-2 text-sm text-chocolate-700 hover:bg-cream-100 hover:text-cookie-700">
+                    <i class="fas fa-plus me-1"></i> Nuevo Pedido
+                  </a>
+                  <a href="{{ url_for('ventas.pedidos_pendientes') }}" class="block px-4 py-2 text-sm text-chocolate-700 hover:bg-cream-100 hover:text-cookie-700">
+                    <i class="fas fa-clock me-1"></i> Pedidos Pendientes
+                  </a>
+                </div>
+                <div class="py-1">
+                  <span class="block px-4 py-2 text-xs font-semibold text-gray-500">PROVEEDORES</span>
+                  <a href="{{ url_for('ventas.pagos_index') }}" class="block px-4 py-2 text-sm text-chocolate-700 hover:bg-cream-100 hover:text-cookie-700">
+                    <i class="fas fa-money-bill-wave me-1"></i> Pagos a Proveedores
+                  </a>
+                  <a href="{{ url_for('ventas.nuevo_pago') }}" class="block px-4 py-2 text-sm text-chocolate-700 hover:bg-cream-100 hover:text-cookie-700">
+                    <i class="fas fa-plus me-1"></i> Nuevo Pago
+                  </a>
+                </div>
               </div>
             </li>
 

@@ -1,0 +1,104 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Pedidos Pendientes - Cookie King{% endblock %}
+
+{% block content %}
+<div class="p-6 bg-cream-50 rounded-lg shadow-lg">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-chocolate-800">Pedidos Pendientes</h1>
+            <p class="text-sm text-cookie-600">Pedidos pendientes y en proceso</p>
+        </div>
+        <div class="flex space-x-2">
+            <a href="{{ url_for('ventas.pedidos_index') }}" class="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
+                <i class="fas fa-list mr-2"></i>
+                Todos los Pedidos
+            </a>
+            <a href="{{ url_for('ventas.nuevo_pedido') }}" class="inline-flex items-center px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200">
+                <i class="fas fa-plus mr-2"></i>
+                Nuevo Pedido
+            </a>
+        </div>
+    </div>
+
+    <!-- Lista de pedidos pendientes -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for pedido in pedidos %}
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <!-- Cabecera del pedido -->
+            <div class="bg-cookie-100 p-4">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h3 class="font-semibold text-chocolate-800">Pedido #{{ pedido.id }}</h3>
+                        <p class="text-sm text-gray-600">{{ pedido.fecha_pedido }}</p>
+                    </div>
+                    <span class="px-2 py-1 rounded-full text-xs font-medium {{ pedido.estatus_class }}">
+                        {{ pedido.estatus }}
+                    </span>
+                </div>
+            </div>
+            
+            <!-- Cuerpo del pedido -->
+            <div class="p-4">
+                <div class="space-y-2 mb-4">
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="text-gray-600 text-sm">Cliente:</div>
+                        <div class="col-span-2 font-medium">{{ pedido.cliente }}</div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="text-gray-600 text-sm">Entrega:</div>
+                        <div class="col-span-2">{{ pedido.fecha_entrega }}</div>
+                    </div>
+                    
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="text-gray-600 text-sm">Total:</div>
+                        <div class="col-span-2 font-bold text-cookie-700">{{ pedido.total }}</div>
+                    </div>
+                </div>
+                
+                <!-- Acciones -->
+                <div class="flex justify-between mt-4">
+                    <a 
+                        href="{{ url_for('ventas.detalle_pedido', pedido_id=pedido.id) }}" 
+                        class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors duration-200 text-sm"
+                    >
+                        <i class="fas fa-eye mr-2"></i>
+                        Ver Detalles
+                    </a>
+                    
+                    <form 
+                        action="{{ url_for('ventas.convertir_pedido_a_venta', pedido_id=pedido.id) }}" 
+                        method="POST"
+                        onsubmit="return confirm('¿Convertir este pedido en venta? Esto marcará el pedido como completado.');"
+                    >
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button 
+                            type="submit" 
+                            class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded hover:bg-green-700 transition-colors duration-200 text-sm"
+                        >
+                            <i class="fas fa-check mr-2"></i>
+                            Convertir a Venta
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="bg-white col-span-3 rounded-lg shadow p-8 text-center">
+            <i class="fas fa-clipboard-check text-4xl text-gray-400 mb-4"></i>
+            <h3 class="text-xl font-semibold text-gray-700 mb-2">¡No hay pedidos pendientes!</h3>
+            <p class="text-gray-500 mb-4">Todos los pedidos han sido procesados.</p>
+            <a 
+                href="{{ url_for('ventas.nuevo_pedido') }}" 
+                class="inline-flex items-center px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200"
+            >
+                <i class="fas fa-plus mr-2"></i>
+                Crear Nuevo Pedido
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Ticket de Venta - Cookie King{% endblock %}
+
+{% block content %}
+<div class="p-6 bg-cream-50 rounded-lg shadow-lg">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-chocolate-800">Ticket de Venta</h1>
+        <div class="flex space-x-2">
+            <a href="{{ url_for('ventas.detalle', venta_id=ticket.venta_id) }}" class="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Volver
+            </a>
+            <button 
+                onclick="window.print();" 
+                class="inline-flex items-center px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200"
+            >
+                <i class="fas fa-print mr-2"></i>
+                Imprimir
+            </button>
+        </div>
+    </div>
+
+    <!-- Ticket -->
+    <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow ticket-print">
+        <div class="text-center mb-4">
+            <h2 class="text-2xl font-bold text-cookie-800">Cookie King</h2>
+            <p class="text-sm text-gray-600">Deliciosas galletas artesanales</p>
+        </div>
+        
+        <div class="border-t border-b border-dashed border-gray-300 py-2 mb-4">
+            <div class="flex justify-between">
+                <span class="text-gray-600">Fecha:</span>
+                <span>{{ ticket.fecha }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-600">Hora:</span>
+                <span>{{ ticket.hora }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-600">No. Venta:</span>
+                <span>#{{ ticket.venta_id }}</span>
+            </div>
+            <div class="flex justify-between">
+                <span class="text-gray-600">Cliente:</span>
+                <span>{{ ticket.cliente }}</span>
+            </div>
+        </div>
+        
+        <div class="mb-4">
+            <div class="grid grid-cols-12 gap-1 text-xs font-bold text-gray-600 mb-1">
+                <div class="col-span-6">Producto</div>
+                <div class="col-span-2 text-center">Tipo</div>
+                <div class="col-span-1 text-center">Cant</div>
+                <div class="col-span-1 text-right">P.U.</div>
+                <div class="col-span-2 text-right">Importe</div>
+            </div>
+            
+            <div class="text-sm space-y-1">
+                {% for detalle in ticket.detalles %}
+                <div class="grid grid-cols-12 gap-1">
+                    <div class="col-span-6">{{ detalle.galleta }}</div>
+                    <div class="col-span-2 text-center text-xs">{{ detalle.tipo }}</div>
+                    <div class="col-span-1 text-center">{{ detalle.cantidad }}</div>
+                    <div class="col-span-1 text-right">${{ "%.2f"|format(detalle.precio_unitario) }}</div>
+                    <div class="col-span-2 text-right">${{ "%.2f"|format(detalle.subtotal) }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        
+        <div class="border-t border-gray-300 pt-2">
+            <div class="flex justify-between font-bold">
+                <span>TOTAL:</span>
+                <span>${{ "%.2f"|format(ticket.total) }}</span>
+            </div>
+        </div>
+        
+        <div class="text-center mt-8 text-sm text-gray-600">
+            <p>¡Gracias por su compra!</p>
+            <p>Vuelva pronto</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        .ticket-print, .ticket-print * {
+            visibility: visible;
+        }
+        .ticket-print {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            margin: 0;
+            padding: 15px;
+        }
+    }
+</style>
+{% endblock %}
