@@ -209,7 +209,7 @@ def productos_mas_vendidos():
     
     resumen = PagoProveedorController.get_resumen_pagos(fecha_inicio, fecha_fin)
     
-    return render_template('modulos/ventas/pagos_resumen.html',
+    return render_template('modulos/ventas/productos_mas_vendidos.html',
                           title="Resumen de Pagos a Proveedores",
                           resumen=resumen,
                           fecha_inicio=fecha_inicio,
@@ -429,7 +429,7 @@ def pedidos_pendientes():
     
     return render_template('modulos/ventas/pedidos_pendientes.html',
                           title="Pedidos Pendientes",
-                          pedidos=items_data)().replace(day=1).strftime('%Y-%m-%d')  # Primer día del mes
+                          pedidos=items_data)
     
     if not fecha_fin:
         fecha_fin = datetime.now().strftime('%Y-%m-%d')  # Hoy
@@ -485,7 +485,7 @@ def pagos_index():
                 proveedor_nombre,
                 f"${pago.monto:.2f}",
                 pago.referencia or "-",
-                f'<span class="px-2 py-1 rounded-full text-xs {estatus_class}">{estatus_text}</span>'
+                f'<span class="px-2 py-1 rounded-full text-xs font-medium {estatus_class}">{estatus_text}</span>'
             ]
         })
     

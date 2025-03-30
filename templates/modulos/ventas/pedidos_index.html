@@ -1,0 +1,172 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Administración de Pedidos - Cookie King{% endblock %}
+
+{% block content %}
+<div class="p-6 bg-cream-50 rounded-lg shadow-lg">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-chocolate-800">Administración de Pedidos</h1>
+        <div class="flex space-x-2">
+            <a href="{{ url_for('ventas.nuevo_pedido') }}" class="inline-flex items-center px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200">
+                <i class="fas fa-plus mr-2"></i>
+                Nuevo Pedido
+            </a>
+            <a href="{{ url_for('ventas.pedidos_pendientes') }}" class="inline-flex items-center px-4 py-2 bg-cookie-500 text-white rounded-lg hover:bg-cookie-600 transition-colors duration-200">
+                <i class="fas fa-clock mr-2"></i>
+                Pendientes
+            </a>
+        </div>
+    </div>
+
+    <!-- Buscador -->
+    <div class="mb-6">
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <i class="fas fa-search text-gray-400"></i>
+            </div>
+            <input 
+                type="text" 
+                id="table-search" 
+                class="border border-cookie-200 rounded-lg p-2.5 pl-10 w-full focus:ring-cookie-500 focus:border-cookie-500" 
+                placeholder="Buscar pedidos..."
+            >
+        </div>
+    </div>
+
+    <!-- Tabla de registros -->
+    <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+        <table class="min-w-full text-sm">
+            <thead>
+                <tr class="bg-cookie-100 text-chocolate-700 uppercase">
+                    {% for header in headers %}
+                    <th class="py-3 px-4 text-left">{{ header }}</th>
+                    {% endfor %}
+                    <th class="py-3 px-4 text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr class="border-b hover:bg-cream-50" data-id="{{ item.id }}">
+                    {% for field in item.fields %}
+                    <td class="py-3 px-4">{{ field|safe }}</td>
+                    {% endfor %}
+                    <td class="py-3 px-4 text-center">
+                        <a 
+                            href="{{ url_for('ventas.detalle_pedido', pedido_id=item.id) }}"
+                            class="text-cookie-600 hover:text-cookie-700 mr-2"
+                            title="Ver detalles"
+                        >
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        
+                        <a 
+                            href="{{ url_for('ventas.editar_pedido', pedido_id=item.id) }}"
+                            class="text-yellow-500 hover:text-yellow-700 mr-2"
+                            title="Editar"
+                        >
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        
+                        <button
+                            onclick="eliminarPedido({{ item.id }})"
+                            class="text-red-500 hover:text-red-700"
+                            title="Eliminar"
+                        >
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not items %}
+                <tr>
+                    <td colspan="{{ headers|length + 1 }}" class="py-4 px-4 text-center text-gray-500">
+                        No hay pedidos registrados
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div id="modal-eliminar" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md">
+        <div class="bg-red-100 text-red-800 px-4 py-3 rounded-t-lg">
+            <h3 class="text-lg font-semibold">Confirmar eliminación</h3>
+        </div>
+        <div class="p-4">
+            <p class="mb-4">¿Estás seguro de que deseas eliminar este pedido? Esta acción no se puede deshacer.</p>
+            <form id="form-eliminar" method="POST" action="">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="flex justify-end">
+                    <button 
+                        type="button" 
+                        id="btn-cancelar" 
+                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 mr-2 hover:bg-gray-100"
+                    >
+                        Cancelar
+                    </button>
+                    <button 
+                        type="submit" 
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                    >
+                        Eliminar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Búsqueda en la tabla
+        const searchInput = document.getElementById('table-search');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                const searchTerm = this.value.toLowerCase();
+                const tableRows = document.querySelectorAll('tbody tr');
+                
+                tableRows.forEach(function(row) {
+                    let textContent = "";
+                    row.querySelectorAll('td').forEach(function(cell) {
+                        textContent += cell.textContent.toLowerCase() + " ";
+                    });
+                    
+                    if (textContent.includes(searchTerm)) {
+                        row.style.display = "";
+                    } else {
+                        row.style.display = "none";
+                    }
+                });
+            });
+        }
+        
+        // Manejar el modal de confirmación de eliminación
+        const modal = document.getElementById('modal-eliminar');
+        const btnCancelar = document.getElementById('btn-cancelar');
+        
+        btnCancelar.addEventListener('click', function() {
+            modal.classList.add('hidden');
+        });
+        
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+    });
+    
+    function eliminarPedido(pedidoId) {
+        const modal = document.getElementById('modal-eliminar');
+        const formEliminar = document.getElementById('form-eliminar');
+        
+        formEliminar.action = "{{ url_for('ventas.eliminar_pedido', pedido_id=0) }}".replace("0", pedidoId);
+        modal.classList.remove('hidden');
+    }
+</script>
+{% endblock %}

@@ -12,7 +12,7 @@ class Venta(db.Model):
     
     # Relaciones
     detalles = db.relationship('DetalleVenta', backref='venta', lazy=True, cascade="all, delete-orphan")
-    # Importante: No definimos la relación con Cliente aquí porque ya existe en el modelo Cliente
+    # No necesitamos definir explícitamente la relación con Cliente aquí, ya está definida en el modelo Cliente
     
     def to_dict(self):
         """Convierte el modelo a un diccionario para serialización"""
@@ -36,6 +36,8 @@ class Venta(db.Model):
 
 # Alias para compatibilidad con el código existente
 Ventas = Venta
+
+
 
 class DetalleVenta(db.Model):
     """Modelo para detalles de venta"""

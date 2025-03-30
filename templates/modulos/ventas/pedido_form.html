@@ -1,0 +1,407 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}{{ title }} - Cookie King{% endblock %}
+
+{% block content %}
+<div class="p-6 bg-cream-50 rounded-lg shadow-lg">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-chocolate-800">{{ title }}</h1>
+        <a href="{{ url_for('ventas.pedidos_index') }}" class="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Volver
+        </a>
+    </div>
+
+    <!-- Formulario de pedido -->
+    <form id="pedido-form" method="POST" action="{{ action }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h2 class="text-lg font-semibold text-chocolate-800 mb-4">Información del Pedido</h2>
+                
+                {% for field in form_fields %}
+                    {% if field.id != 'id' %}
+                    <div class="mb-4">
+                        <label for="{{ field.id }}" class="block mb-2 text-sm font-medium text-chocolate-700">{{ field.label }}</label>
+                        {% if field.template == "components/forms/input_select.html" %}
+                            <select 
+                                id="{{ field.id }}" 
+                                name="{{ field.name }}" 
+                                {% if field.required %}required{% endif %}
+                                class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500"
+                            >
+                                {% for option in field.options %}
+                                    <option value="{{ option.value }}" {% if option.value == field.value %}selected{% endif %}>
+                                        {{ option.label }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        {% else %}
+                            {% include field.template %}
+                        {% endif %}
+                    </div>
+                    {% else %}
+                        <input type="hidden" id="{{ field.id }}" name="{{ field.name }}" value="{{ field.value }}">
+                    {% endif %}
+                {% endfor %}
+                
+                <div class="mt-6">
+                    <div class="bg-cream-100 border-l-4 border-cookie-500 text-chocolate-700 p-4">
+                        <div class="flex items-center">
+                            <div class="py-1">
+                                <i class="fas fa-info-circle mr-2"></i>
+                                <span class="font-semibold">Información</span>
+                            </div>
+                        </div>
+                        <p class="mt-2">Agregue productos al pedido utilizando el panel de la derecha.</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-white p-4 rounded-lg shadow">
+                <h2 class="text-lg font-semibold text-chocolate-800 mb-4">Agregar Productos</h2>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="producto" class="block mb-2 text-sm font-medium text-chocolate-700">Producto</label>
+                        <select id="producto" class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500">
+                            <option value="">Seleccionar producto</option>
+                            {% for galleta in galletas %}
+                                <option value="{{ galleta.idGalleta }}" 
+                                        data-nombre="{{ galleta.nombreGalleta }}" 
+                                        data-precio="{{ galleta.precio_unitario }}">
+                                    {{ galleta.nombreGalleta }} - ${{ "%.2f"|format(galleta.precio_unitario) }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="tipo-venta" class="block mb-2 text-sm font-medium text-chocolate-700">Tipo de Venta</label>
+                        <select id="tipo-venta" class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500">
+                            <option value="1">Individual</option>
+                            <option value="0">Paquete</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label for="cantidad" class="block mb-2 text-sm font-medium text-chocolate-700">Cantidad</label>
+                        <input type="number" id="cantidad" min="1" value="1" class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500">
+                    </div>
+                    <div class="flex items-end">
+                        <button 
+                            type="button" 
+                            id="btn-agregar-producto" 
+                            class="inline-flex items-center px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200 w-full justify-center"
+                        >
+                            <i class="fas fa-plus mr-2"></i>
+                            Agregar
+                        </button>
+                    </div>
+                </div>
+                
+                <hr class="my-4 border-cookie-200">
+                
+                <h3 class="text-md font-semibold text-chocolate-800 mb-2">Productos en Pedido</h3>
+                <div id="detalles-container" class="border border-cookie-200 rounded-lg overflow-hidden mb-4 max-h-64 overflow-y-auto">
+                    <div class="bg-cookie-100 text-chocolate-700 p-2 text-sm grid grid-cols-12 gap-2 font-medium">
+                        <div class="col-span-5">Producto</div>
+                        <div class="col-span-2 text-center">Tipo</div>
+                        <div class="col-span-2 text-center">Cantidad</div>
+                        <div class="col-span-2 text-right">Subtotal</div>
+                        <div class="col-span-1 text-center">Acciones</div>
+                    </div>
+                    <div id="detalles-list" class="text-sm">
+                        <!-- Aquí se cargan dinámicamente los detalles -->
+                        {% if pedido and detalles %}
+                            {% for detalle in detalles %}
+                                <div class="grid grid-cols-12 gap-2 p-2 detail-row" data-id="{{ detalle.galleta_id }}" data-tipo="{{ detalle.tipo_venta }}">
+                                    <div class="col-span-5">{{ detalle.galleta.nombreGalleta }}</div>
+                                    <div class="col-span-2 text-center">{{ "Individual" if detalle.tipo_venta == 1 else "Paquete" }}</div>
+                                    <div class="col-span-2 text-center">{{ detalle.cantidad }}</div>
+                                    <div class="col-span-2 text-right">${{ "%.2f"|format(detalle.subtotal) }}</div>
+                                    <div class="col-span-1 text-center">
+                                        <button type="button" class="text-red-500 hover:text-red-700 btn-eliminar-detalle">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div id="no-detalles" class="p-3 text-center text-gray-500">
+                                No hay productos agregados
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="flex justify-between items-center font-semibold text-chocolate-800">
+                    <span>Total:</span>
+                    <span id="total-venta">$0.00</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Detalles JSON (se envía al servidor) -->
+        <input type="hidden" id="detalles-json" name="detalles">
+        
+        <!-- Botones de acción -->
+        <div class="flex justify-end space-x-3">
+            <a 
+                href="{{ url_for('ventas.pedidos_index') }}" 
+                class="px-4 py-2 border border-cookie-300 rounded-lg text-chocolate-700 hover:bg-cream-100 transition-colors"
+            >
+                Cancelar
+            </a>
+            <button 
+                type="submit" 
+                class="px-6 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors"
+            >
+                Guardar Pedido
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const detallesList = document.getElementById('detalles-list');
+        const noDetalles = document.getElementById('no-detalles');
+        const btnAgregarProducto = document.getElementById('btn-agregar-producto');
+        const detallesJson = document.getElementById('detalles-json');
+        const totalVenta = document.getElementById('total-venta');
+        
+        const selectProducto = document.getElementById('producto');
+        const selectTipoVenta = document.getElementById('tipo-venta');
+        const inputCantidad = document.getElementById('cantidad');
+        
+        // Detalles del pedido (array)
+        let detalles = [];
+        
+        // Inicializar detalles si estamos editando
+        {% if pedido and detalles %}
+            {% for detalle in detalles %}
+            detalles.push({
+                galleta_id: {{ detalle.galleta_id }},
+                tipo_venta: {{ detalle.tipo_venta }},
+                cantidad: {{ detalle.cantidad }}
+            });
+            {% endfor %}
+        {% endif %}
+        
+        // Actualizar JSON y total
+        actualizarDetallesJson();
+        
+        // Agregar producto al pedido
+        btnAgregarProducto.addEventListener('click', function() {
+            const productoId = selectProducto.value;
+            if (!productoId) {
+                alert('Seleccione un producto');
+                return;
+            }
+            
+            const cantidad = parseInt(inputCantidad.value);
+            if (isNaN(cantidad) || cantidad < 1) {
+                alert('Ingrese una cantidad válida');
+                return;
+            }
+            
+            const tipoVenta = parseInt(selectTipoVenta.value);
+            const productoOption = selectProducto.options[selectProducto.selectedIndex];
+            const productoNombre = productoOption.getAttribute('data-nombre');
+            const productoPrecio = parseFloat(productoOption.getAttribute('data-precio'));
+            
+            // Calcular precio según tipo de venta
+            let precioFinal = productoPrecio;
+            if (tipoVenta === 0) { // Paquete
+                precioFinal = productoPrecio * 0.9; // 10% de descuento
+            }
+            
+            const subtotal = precioFinal * cantidad;
+            
+            // Verificar si ya existe este producto con el mismo tipo
+            const detalleExistente = detalles.findIndex(d => 
+                d.galleta_id === parseInt(productoId) && 
+                d.tipo_venta === tipoVenta
+            );
+            
+            if (detalleExistente >= 0) {
+                // Actualizar cantidad
+                detalles[detalleExistente].cantidad += cantidad;
+                actualizarDetallesVisual();
+            } else {
+                // Agregar nuevo detalle
+                detalles.push({
+                    galleta_id: parseInt(productoId),
+                    tipo_venta: tipoVenta,
+                    cantidad: cantidad
+                });
+                
+                // Crear elemento visual
+                if (noDetalles) {
+                    noDetalles.remove();
+                }
+                
+                const row = document.createElement('div');
+                row.className = 'grid grid-cols-12 gap-2 p-2 detail-row';
+                row.setAttribute('data-id', productoId);
+                row.setAttribute('data-tipo', tipoVenta);
+                
+                row.innerHTML = `
+                    <div class="col-span-5">${productoNombre}</div>
+                    <div class="col-span-2 text-center">${tipoVenta === 1 ? 'Individual' : 'Paquete'}</div>
+                    <div class="col-span-2 text-center">${cantidad}</div>
+                    <div class="col-span-2 text-right">$${subtotal.toFixed(2)}</div>
+                    <div class="col-span-1 text-center">
+                        <button type="button" class="text-red-500 hover:text-red-700 btn-eliminar-detalle">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                
+                detallesList.appendChild(row);
+                
+                // Agregar evento para eliminar
+                const btnEliminar = row.querySelector('.btn-eliminar-detalle');
+                btnEliminar.addEventListener('click', function() {
+                    eliminarDetalle(productoId, tipoVenta);
+                });
+            }
+            
+            // Actualizar JSON y total
+            actualizarDetallesJson();
+            
+            // Limpiar selección
+            selectProducto.value = '';
+            inputCantidad.value = 1;
+        });
+        
+        // Eliminar evento a botones existentes
+        document.querySelectorAll('.btn-eliminar-detalle').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const row = this.closest('.detail-row');
+                const productoId = parseInt(row.getAttribute('data-id'));
+                const tipoVenta = parseInt(row.getAttribute('data-tipo'));
+                eliminarDetalle(productoId, tipoVenta);
+            });
+        });
+        
+        // Función para eliminar un detalle
+        function eliminarDetalle(productoId, tipoVenta) {
+            // Eliminar del array
+            detalles = detalles.filter(d => 
+                !(d.galleta_id === productoId && d.tipo_venta === tipoVenta)
+            );
+            
+            // Actualizar visualización
+            actualizarDetallesVisual();
+            
+            // Actualizar JSON y total
+            actualizarDetallesJson();
+        }
+        
+        // Función para actualizar la visualización de detalles
+        function actualizarDetallesVisual() {
+            // Limpiar lista
+            detallesList.innerHTML = '';
+            
+            if (detalles.length === 0) {
+                detallesList.innerHTML = `
+                    <div id="no-detalles" class="p-3 text-center text-gray-500">
+                        No hay productos agregados
+                    </div>
+                `;
+                return;
+            }
+            
+            // Recrear filas
+            detalles.forEach(detalle => {
+                const option = Array.from(selectProducto.options).find(
+                    opt => opt.value === detalle.galleta_id.toString()
+                );
+                
+                if (!option) return;
+                
+                const productoNombre = option.getAttribute('data-nombre');
+                const productoPrecio = parseFloat(option.getAttribute('data-precio'));
+                
+                // Calcular precio según tipo de venta
+                let precioFinal = productoPrecio;
+                if (detalle.tipo_venta === 0) { // Paquete
+                    precioFinal = productoPrecio * 0.9; // 10% de descuento
+                }
+                
+                const subtotal = precioFinal * detalle.cantidad;
+                
+                const row = document.createElement('div');
+                row.className = 'grid grid-cols-12 gap-2 p-2 detail-row';
+                row.setAttribute('data-id', detalle.galleta_id);
+                row.setAttribute('data-tipo', detalle.tipo_venta);
+                
+                row.innerHTML = `
+                    <div class="col-span-5">${productoNombre}</div>
+                    <div class="col-span-2 text-center">${detalle.tipo_venta === 1 ? 'Individual' : 'Paquete'}</div>
+                    <div class="col-span-2 text-center">${detalle.cantidad}</div>
+                    <div class="col-span-2 text-right">$${subtotal.toFixed(2)}</div>
+                    <div class="col-span-1 text-center">
+                        <button type="button" class="text-red-500 hover:text-red-700 btn-eliminar-detalle">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                
+                detallesList.appendChild(row);
+                
+                // Agregar evento para eliminar
+                const btnEliminar = row.querySelector('.btn-eliminar-detalle');
+                btnEliminar.addEventListener('click', function() {
+                    eliminarDetalle(detalle.galleta_id, detalle.tipo_venta);
+                });
+            });
+        }
+        
+        // Función para actualizar el JSON y el total
+        function actualizarDetallesJson() {
+            // Actualizar JSON
+            detallesJson.value = JSON.stringify(detalles);
+            
+            // Calcular y actualizar total
+            let total = 0;
+            detalles.forEach(detalle => {
+                const option = Array.from(selectProducto.options).find(
+                    opt => opt.value === detalle.galleta_id.toString()
+                );
+                
+                if (!option) return;
+                
+                const productoPrecio = parseFloat(option.getAttribute('data-precio'));
+                
+                // Calcular precio según tipo de venta
+                let precioFinal = productoPrecio;
+                if (detalle.tipo_venta === 0) { // Paquete
+                    precioFinal = productoPrecio * 0.9; // 10% de descuento
+                }
+                
+                total += precioFinal * detalle.cantidad;
+            });
+            
+            totalVenta.textContent = `$${total.toFixed(2)}`;
+        }
+        
+        // Validar formulario antes de enviar
+        document.getElementById('pedido-form').addEventListener('submit', function(e) {
+            if (detalles.length === 0) {
+                e.preventDefault();
+                alert('Debe agregar al menos un producto al pedido');
+                return false;
+            }
+            return true;
+        });
+    });
+</script>
+{% endblock %}

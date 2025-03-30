@@ -1,0 +1,118 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}{{ title }} - Cookie King{% endblock %}
+
+{% block content %}
+<div class="p-6 bg-cream-50 rounded-lg shadow-lg">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-chocolate-800">{{ title }}</h1>
+        <a href="{{ url_for('ventas.pagos_index') }}" class="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
+            <i class="fas fa-arrow-left mr-2"></i>
+            Volver
+        </a>
+    </div>
+
+    <!-- Formulario de pago -->
+    <form id="pago-form" method="POST" action="{{ action }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div class="bg-white p-6 rounded-lg shadow">
+            {% for field in form_fields %}
+                {% if field.id != 'id' %}
+                <div class="mb-4">
+                    <label for="{{ field.id }}" class="block mb-2 text-sm font-medium text-chocolate-700">{{ field.label }}</label>
+                    {% if field.template == "components/forms/input_select.html" %}
+                        <select 
+                            id="{{ field.id }}" 
+                            name="{{ field.name }}" 
+                            {% if field.required %}required{% endif %}
+                            class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500"
+                        >
+                            {% for option in field.options %}
+                                <option value="{{ option.value }}" {% if option.value == field.value %}selected{% endif %}>
+                                    {{ option.label }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        {% include field.template %}
+                    {% endif %}
+                </div>
+                {% else %}
+                    <input type="hidden" id="{{ field.id }}" name="{{ field.name }}" value="{{ field.value }}">
+                {% endif %}
+            {% endfor %}
+            
+            <div class="mt-6 flex justify-end space-x-3">
+                <a 
+                    href="{{ url_for('ventas.pagos_index') }}" 
+                    class="px-4 py-2 border border-cookie-300 rounded-lg text-chocolate-700 hover:bg-cream-100 transition-colors"
+                >
+                    Cancelar
+                </a>
+                <button 
+                    type="submit" 
+                    class="px-6 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors"
+                >
+                    Guardar Pago
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get DOM elements
+        const proveedorSelect = document.getElementById('idProveedor');
+        const compraSelect = document.getElementById('idCompra');
+        
+        // Set up event listeners if elements exist
+        if (proveedorSelect && compraSelect) {
+            proveedorSelect.addEventListener('change', function() {
+                // If this were a real application, you might want to filter
+                // compras based on the selected proveedor
+                // This would typically involve an AJAX call to the server
+                
+                // Example of how you might filter compras (commented out):
+                /*
+                const proveedorId = this.value;
+                if (proveedorId) {
+                    fetch(`/api/compras/proveedor/${proveedorId}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            // Clear current options
+                            compraSelect.innerHTML = '<option value="">Ninguna</option>';
+                            
+                            // Add new options
+                            data.forEach(compra => {
+                                const option = document.createElement('option');
+                                option.value = compra.id;
+                                option.textContent = `Compra #${compra.id} - $${compra.total.toFixed(2)}`;
+                                compraSelect.appendChild(option);
+                            });
+                        });
+                }
+                */
+            });
+        }
+        
+        // Form validation
+        const pagoForm = document.getElementById('pago-form');
+        if (pagoForm) {
+            pagoForm.addEventListener('submit', function(e) {
+                const montoInput = document.getElementById('monto');
+                if (montoInput && (isNaN(parseFloat(montoInput.value)) || parseFloat(montoInput.value) <= 0)) {
+                    e.preventDefault();
+                    alert('Por favor ingrese un monto válido mayor a 0');
+                    return false;
+                }
+                return true;
+            });
+        }
+    });
+</script>
+{% endblock %}
