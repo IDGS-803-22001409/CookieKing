@@ -12,11 +12,11 @@ class Receta(db.Model):
     
     # Relaciones
     ingredientes = db.relationship('RecetaIngrediente', backref='receta', lazy=True)
-    producciones = db.relationship('Produccion', backref='receta', lazy=True)
     
     def to_dict(self):
         """Convierte el modelo a un diccionario para facilitar la serialización"""
         return {
+            'id': self.idReceta,  # Incluir como 'id' para compatibilidad con JavaScript
             'idReceta': self.idReceta,
             'nombreReceta': self.nombreReceta,
             'instruccionesReceta': self.instruccionesReceta,
@@ -25,7 +25,6 @@ class Receta(db.Model):
             'estatus': self.estatus
         }
 
-# Asegúrate de agregar esto al archivo si no está ya
 class RecetaIngrediente(db.Model):
     """Modelo para la relación entre recetas e ingredientes"""
     __tablename__ = 'RecetaIngredientes'

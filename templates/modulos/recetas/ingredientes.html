@@ -31,7 +31,7 @@
                     <select id="ingrediente_id" name="ingrediente_id" required class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5">
                         <option value="">Seleccionar Ingrediente</option>
                         {% for ingrediente in available_ingredientes %}
-                            <option value="{{ ingrediente.id }}">{{ ingrediente.nombre }}</option>
+                            <option value="{{ ingrediente.idIngrediente }}">{{ ingrediente.nombreIngrediente }}</option>
                         {% endfor %}
                     </select>
                 </div>

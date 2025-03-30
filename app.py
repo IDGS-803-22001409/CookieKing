@@ -3,7 +3,6 @@ from flask_wtf.csrf import CSRFProtect
 from config import config
 from models import db, init_db
 from routes import register_blueprints
-from utils.init_db import init_test_data
 
 def create_app(config_name='development'):
     app = Flask(__name__, template_folder='templates')
@@ -18,9 +17,7 @@ def create_app(config_name='development'):
     
     # Create tables if they don't exist
     with app.app_context():
-        init_db()
-        # Inicializar datos de prueba
-        init_test_data()
+        init_db()                
     
     return app
 

@@ -29,3 +29,8 @@ echo "# Python bytecode" >> .gitignore
 echo "__pycache__/" >> .gitignore
 echo "*.py[cod]" >> .gitignore
 echo "*$py.class" >> .gitignore
+modulos/recetas/__pycache__/forms.cpython-312.pyc
+modulos/recetas/__pycache__/routes.cpython-312.pyc
+*.pyc
+modulos/recetas/__pycache__/controllers.cpython-312.pyc
+modulos/recetas/__pycache__/controllers.cpython-312.pyc

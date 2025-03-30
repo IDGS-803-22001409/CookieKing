@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from datetime import datetime
-from models import db, RecetaIngrediente
-from modulos.recetas.models import Receta
+from models import db
+from modulos.recetas.models import Receta, RecetaIngrediente
 from modulos.recetas.forms import create_receta_form, RecetaForm
 from modulos.recetas.controllers import RecetaController
 from modulos.galletas.models import Galleta
@@ -21,11 +21,12 @@ def index():
     # Convertir los elementos de la base de datos a diccionarios para la plantilla
     items_data = []
     for receta in recetas:
+        galleta_nombre = receta.galleta.nombreGalleta if receta.galleta else "Desconocida"
         items_data.append({
             'id': receta.idReceta,
             'fields': [
                 receta.nombreReceta,
-                receta.galleta.nombreGalleta,
+                galleta_nombre,
                 f"{receta.galletasProducidas} unidades",
                 "Activo" if receta.estatus == 1 else "Inactivo"
             ]
@@ -132,19 +133,15 @@ def details(receta_id):
         return redirect(url_for('recetas.index'))
     
     # Obtener todos los ingredientes para esta receta
-    receta_ingredientes = RecetaIngrediente.query.filter_by(receta_id=receta_id).join(Ingrediente).all()
+    ingredientes = RecetaController.get_ingredientes_by_receta(receta_id)
     
-    ingredientes = []
-    for ri in receta_ingredientes:
-        ingredientes.append({
-            'nombre': ri.ingrediente.nombreIngrediente,
-            'cantidad': ri.cantidad,
-            'unidad': ri.ingrediente.unidad or ''
-        })
+    # Obtener todas las galletas para el formulario de edición
+    galletas = GalletaController.get_active_galletas()
     
     return render_template('modulos/recetas/details.html',
                           receta=receta,
-                          ingredientes=ingredientes)
+                          ingredientes=ingredientes,
+                          galletas=galletas)
 
 # Rutas para administrar los ingredientes de las recetas
 @recetas_bp.route('/ingredientes/<int:receta_id>')
@@ -157,31 +154,10 @@ def ingredientes(receta_id):
         return redirect(url_for('recetas.index'))
     
     # Obtener ingredientes actuales en la receta
-    receta_ingredientes = RecetaIngrediente.query.filter_by(receta_id=receta_id).join(Ingrediente).all()
+    current_ingredientes = RecetaController.get_ingredientes_by_receta(receta_id)
     
-    # Formatear los ingredientes actuales para la plantilla
-    current_ingredientes = []
-    for ri in receta_ingredientes:
-        current_ingredientes.append({
-            'id': ri.ingrediente.idIngrediente,
-            'nombre': ri.ingrediente.nombreIngrediente,
-            'cantidad': ri.cantidad,
-            'unidad': ri.ingrediente.unidad or ''
-        })
-    
-    # Obtener todos los ingredientes disponibles que no están ya en la receta
-    todos_ingredientes = IngredienteController.get_all_ingredientes()
-    
-    # Filtrar ingredientes ya utilizados
-    ingredientes_utilizados = [ri.ingrediente_id for ri in receta_ingredientes]
-    available_ingredientes = []
-    
-    for ing in todos_ingredientes:
-        if ing.idIngrediente not in ingredientes_utilizados:
-            available_ingredientes.append({
-                'id': ing.idIngrediente,
-                'nombre': ing.nombreIngrediente
-            })
+    # Obtener ingredientes disponibles que no están en la receta
+    available_ingredientes = RecetaController.get_available_ingredientes(receta_id)
     
     return render_template('modulos/recetas/ingredientes.html',
                           receta=receta,
@@ -199,28 +175,14 @@ def add_ingrediente():
         flash('Todos los campos son requeridos', 'error')
         return redirect(url_for('recetas.ingredientes', receta_id=receta_id))
     
-    try:
-        # Verificar si ya existe esta relación
-        existing = RecetaIngrediente.query.filter_by(
-            receta_id=receta_id, 
-            ingrediente_id=ingrediente_id
-        ).first()
-        
-        if existing:
-            flash('Este ingrediente ya está en la receta', 'error')
-        else:
-            # Crear nueva relación entre receta e ingrediente
-            nueva_relacion = RecetaIngrediente(
-                receta_id=receta_id,
-                ingrediente_id=ingrediente_id,
-                cantidad=cantidad
-            )
-            db.session.add(nueva_relacion)
-            db.session.commit()
-            flash('Ingrediente añadido correctamente', 'success')
-    except Exception as e:
-        db.session.rollback()
-        flash(f'Error al añadir ingrediente: {str(e)}', 'error')
+    success, message = RecetaController.add_ingrediente_to_receta(
+        int(receta_id), int(ingrediente_id), float(cantidad)
+    )
+    
+    if success:
+        flash(message, 'success')
+    else:
+        flash(message, 'error')
     
     return redirect(url_for('recetas.ingredientes', receta_id=receta_id))
 
@@ -234,21 +196,13 @@ def delete_ingrediente():
         flash('Información incompleta', 'error')
         return redirect(url_for('recetas.ingredientes', receta_id=receta_id))
     
-    try:
-        # Buscar y eliminar la relación
-        relacion = RecetaIngrediente.query.filter_by(
-            receta_id=receta_id, 
-            ingrediente_id=ingrediente_id
-        ).first()
-        
-        if relacion:
-            db.session.delete(relacion)
-            db.session.commit()
-            flash('Ingrediente eliminado correctamente', 'success')
-        else:
-            flash('No se encontró el ingrediente en la receta', 'error')
-    except Exception as e:
-        db.session.rollback()
-        flash(f'Error al eliminar ingrediente: {str(e)}', 'error')
+    success, message = RecetaController.remove_ingrediente_from_receta(
+        int(receta_id), int(ingrediente_id)
+    )
+    
+    if success:
+        flash(message, 'success')
+    else:
+        flash(message, 'error')
     
     return redirect(url_for('recetas.ingredientes', receta_id=receta_id))

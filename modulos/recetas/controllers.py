@@ -1,6 +1,7 @@
 from models import db
-from modulos.recetas.models import Receta
+from modulos.recetas.models import Receta, RecetaIngrediente
 from modulos.galletas.models import Galleta
+from modulos.ingredientes.models import Ingrediente
 
 class RecetaController:
     """Controlador para la lógica de negocio relacionada con recetas"""
@@ -72,8 +73,7 @@ class RecetaController:
             return False
         
         # Eliminar relaciones en RecetaIngrediente
-        for ingrediente in receta.ingredientes:
-            db.session.delete(ingrediente)
+        RecetaIngrediente.query.filter_by(receta_id=receta_id).delete()
         
         db.session.delete(receta)
         db.session.commit()
@@ -82,4 +82,80 @@ class RecetaController:
     @staticmethod
     def get_galletas_for_form():
         """Obtener galletas activas para usar en el formulario"""
-        return Galleta.query.filter_by(estatus=1).all() 
+        return Galleta.query.filter_by(estatus=1).all()
+    
+    @staticmethod
+    def get_ingredientes_by_receta(receta_id):
+        """Obtener todos los ingredientes asociados a una receta"""
+        ingredientes_data = []
+        ingredientes_receta = RecetaIngrediente.query.filter_by(receta_id=receta_id).all()
+        
+        for ingrediente_receta in ingredientes_receta:
+            ingrediente = Ingrediente.query.get(ingrediente_receta.ingrediente_id)
+            if ingrediente:
+                ingredientes_data.append({
+                    'id': ingrediente.idIngrediente,
+                    'nombre': ingrediente.nombreIngrediente,
+                    'cantidad': ingrediente_receta.cantidad,
+                    'unidad': ingrediente.unidad or ''
+                })
+        
+        return ingredientes_data
+    
+    @staticmethod
+    def get_available_ingredientes(receta_id):
+        """Obtener ingredientes disponibles que no están en la receta"""
+        # Obtener IDs de ingredientes ya en la receta
+        ingredientes_existentes = RecetaIngrediente.query.filter_by(receta_id=receta_id).all()
+        ingredientes_ids = [ir.ingrediente_id for ir in ingredientes_existentes]
+        
+        # Obtener ingredientes que no están en la receta
+        ingredientes_disponibles = Ingrediente.query.filter(~Ingrediente.idIngrediente.in_(ingredientes_ids)).all()
+        
+        return ingredientes_disponibles
+    
+    @staticmethod
+    def add_ingrediente_to_receta(receta_id, ingrediente_id, cantidad):
+        """Añadir un ingrediente a una receta"""
+        try:
+            # Verificar si ya existe esta relación
+            existente = RecetaIngrediente.query.filter_by(
+                receta_id=receta_id,
+                ingrediente_id=ingrediente_id
+            ).first()
+            
+            if existente:
+                return False, "Este ingrediente ya está en la receta"
+                
+            # Crear la nueva relación
+            receta_ingrediente = RecetaIngrediente(
+                receta_id=receta_id,
+                ingrediente_id=ingrediente_id,
+                cantidad=float(cantidad)
+            )
+            
+            db.session.add(receta_ingrediente)
+            db.session.commit()
+            return True, "Ingrediente añadido correctamente"
+        except Exception as e:
+            db.session.rollback()
+            return False, str(e)
+    
+    @staticmethod
+    def remove_ingrediente_from_receta(receta_id, ingrediente_id):
+        """Eliminar un ingrediente de una receta"""
+        try:
+            relacion = RecetaIngrediente.query.filter_by(
+                receta_id=receta_id,
+                ingrediente_id=ingrediente_id
+            ).first()
+            
+            if not relacion:
+                return False, "No se encontró el ingrediente en la receta"
+                
+            db.session.delete(relacion)
+            db.session.commit()
+            return True, "Ingrediente eliminado correctamente"
+        except Exception as e:
+            db.session.rollback()
+            return False, str(e)

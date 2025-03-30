@@ -1,4 +1,3 @@
-# modulos/produccion/controllers.py
 from models import db
 from modulos.produccion.models import Produccion, ProduccionDetalle
 from modulos.recetas.models import Receta
@@ -41,7 +40,7 @@ class ProduccionController:
     def create_produccion(data):
         """Crear una nueva producción"""
         try:
-            # Obtener la receta para calcular la fecha de caducidad
+            # Obtener la receta
             receta = Receta.query.get(data.get('receta_id'))
             if not receta:
                 raise ValueError("Receta no encontrada")
@@ -52,15 +51,11 @@ class ProduccionController:
             else:
                 fecha_produccion = data.get('fecha_produccion', datetime.now().date())
             
-            # Calcular fecha de caducidad (ejemplo: 7 días después de la producción)
-            fecha_caducidad = fecha_produccion + timedelta(days=7)
-            
             # Crear la producción
             produccion = Produccion(
                 receta_id=data.get('receta_id'),
                 estado_produccion=1,  # 1 = En Proceso
                 fecha_produccion=fecha_produccion,
-                fecha_caducidad=fecha_caducidad,
                 cantidad_producida=0,  # Se actualiza al finalizar
                 lote=data.get('lote', f"LOTE-{datetime.now().strftime('%Y%m%d%H%M%S')}")
             )
@@ -134,9 +129,6 @@ class ProduccionController:
             # Actualizar estado y cantidad producida
             produccion.estado_produccion = 2  # 2 = Terminado
             produccion.cantidad_producida = cantidad_producida
-            
-            # Actualizar inventario de galletas producidas
-            # Esta lógica puede variar según tu implementación de inventario
             
             db.session.commit()
             return True, "Producción finalizada exitosamente"
