@@ -4,6 +4,8 @@ from modulos.galletas.routes import galletas_bp
 from modulos.clientes.routes import clientes_bp
 from modulos.ventas.routes import ventas_bp
 from modulos.produccion.routes import produccion_bp
+from modulos.auth.routes import auth_bp
+
 
 # Importar blueprints temporales (excluimos clientes ya que ahora usamos la implementación real)
 from modulos.temp.routes import (
@@ -17,6 +19,7 @@ from modulos.temp.routes import (
 def register_blueprints(app):
     """Registra todos los blueprints con la aplicación"""
     # Registrar blueprint principal primero
+    app.register_blueprint(auth_bp, url_prefix='/auth') 
     app.register_blueprint(main_bp)
     
     # Módulos ya implementados
