@@ -7,6 +7,7 @@ class Galletas(db.Model):
     nombreGalleta = db.Column(db.String(255), nullable=False)
     descripcion = db.Column(db.Text)
     estado = db.Column(db.String(90), nullable=False)
+    existencias = db.Column(db.Integer, nullable=False)
     peso_por_unidad = db.Column(db.Float)
     precio_unitario = db.Column(db.Float)
     estatus = db.Column(db.Integer, nullable=False)

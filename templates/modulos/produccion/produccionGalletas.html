@@ -1,0 +1,110 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Producción de Galletas - Cookie King{% endblock %}
+
+{% block content %}
+<div class="min-h-[70vh] flex flex-col bg-cream-50 rounded-lg border border-cookie-200 shadow-md p-8 w-full">
+    <!-- Título y navegación -->
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-bold text-chocolate-800">Producción de Galletas</h2>
+        <a href="{{ url_for('produccion.index') }}" class="bg-cookie-600 text-white px-4 py-2 rounded-lg hover:bg-cookie-700 transition">
+            Volver al listado
+        </a>
+    </div>
+
+    <!-- Información de la galleta -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+        <h3 class="text-2xl font-bold text-cookie-800 mb-4">{{ galleta.nombreGalleta }}</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-gray-700"><span class="font-bold">Descripción:</span> {{ galleta.descripcion }}</p>
+                <p class="text-gray-700"><span class="font-bold">Existencias actuales:</span> 
+                    <span class="{% if galleta.existencias < 101 %}text-red-600 font-bold{% endif %}">
+                        {{ galleta.existencias }}
+                    </span>
+                </p>
+                <p class="text-gray-700"><span class="font-bold">Precio unitario:</span> ${{ galleta.precio_unitario }}</p>
+            </div>
+            <div>
+                <p class="text-gray-700"><span class="font-bold">Receta:</span> {{ receta.nombreReceta }}</p>
+                <p class="text-gray-700"><span class="font-bold">Rendimiento:</span> {{ receta.galletasProducidas }} galletas por lote</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ingredientes requeridos -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+        <h3 class="text-xl font-bold text-cookie-800 mb-4">Ingredientes Requeridos (por lote)</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+                <thead class="bg-cookie-600 text-white">
+                    <tr>
+                        <th class="py-3 px-4 text-left">Ingrediente</th>
+                        <th class="py-3 px-4 text-right">Cantidad Requerida</th>
+                        <th class="py-3 px-4 text-right">Stock Disponible</th>
+                        <th class="py-3 px-4 text-center">Estado</th>
+                        <th class="py-3 px-4 text-right">Lotes Posibles</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in ingredientes %}
+                    <tr class="border-b border-cookie-300">
+                        <td class="py-3 px-4">{{ item.ingrediente.nombreIngrediente }}</td>
+                        <td class="py-3 px-4 text-right">{{ item.cantidad_requerida }} {{ item.ingrediente.unidad }}</td>
+                        <td class="py-3 px-4 text-right">{{ item.ingrediente.stock }} {{ item.ingrediente.unidad }}</td>
+                        <td class="py-3 px-4 text-center">
+                            {% if item.disponible %}
+                                <span class="bg-green-100 text-green-800 py-1 px-3 rounded-full font-medium">Disponible</span>
+                            {% else %}
+                                <span class="bg-red-100 text-red-800 py-1 px-3 rounded-full font-medium">
+                                    Faltante: {{ item.faltante }} {{ item.ingrediente.unidad }}
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td class="py-3 px-4 text-right">{{ item.lotes_posibles }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="mt-4 bg-blue-100 p-4 rounded-lg">
+            <p class="text-blue-800">
+                <span class="font-bold">Máximo de lotes posibles:</span> {{ max_lotes_posibles }}
+                {% if max_lotes_posibles > 0 %}
+                (Producirá {{ max_lotes_posibles * receta.galletasProducidas }} galletas)
+                {% endif %}
+            </p>
+        </div>
+    </div>
+
+    <!-- Formulario de producción -->
+    <form method="POST" class="bg-white p-6 rounded-lg shadow-md">
+        <h3 class="text-xl font-bold text-cookie-800 mb-4">Producir Galletas</h3>
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        
+        <div class="mb-4">
+            <label for="cantidad" class="block text-gray-700 font-medium mb-2">Cantidad de lotes a producir:</label>
+            <input type="number" id="cantidad" name="cantidad" min="1" value="1" max="{{ max_lotes_posibles }}"
+                   class="w-full px-4 py-2 border border-cookie-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-cookie-500">
+            <p class="text-sm text-gray-600 mt-1">Cada lote produce {{ receta.galletasProducidas }} galletas.</p>
+        </div>
+
+        <div class="flex justify-between items-center mt-6">
+            <div>
+                {% if max_lotes_posibles <= 0 %}
+                    <div class="bg-red-100 text-red-800 p-3 rounded-lg">
+                        <p class="font-bold">¡Advertencia!</p>
+                        <p>No hay suficientes ingredientes para producir galletas.</p>
+                    </div>
+                {% endif %}
+            </div>
+            <button type="submit" 
+                    {% if max_lotes_posibles <= 0 %}disabled{% endif %}
+                    class="bg-cookie-600 text-white px-6 py-3 rounded-lg hover:bg-cookie-700 transition {% if max_lotes_posibles <= 0 %}opacity-50 cursor-not-allowed{% endif %}">
+                Producir Galletas
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

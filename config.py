@@ -9,7 +9,7 @@ class Config:
 
 class DevelopmentConfig(Config):  
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:Rocha3107__@localhost:3306/CookieKing'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:root@localhost:3306/CookieKing'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
 config = {
