@@ -13,11 +13,12 @@ from flask_login import login_required
 main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
+@login_required
 def root_redirect():
     """Redirige automáticamente a la página de inicio de sesión"""
     return redirect(url_for('auth.iniciar_sesion'))  
 @main_bp.route('/index')
-def index():
+def index():    
     """Dashboard de ventas diarias con detalles"""
     hoy = datetime.now().date()
     
