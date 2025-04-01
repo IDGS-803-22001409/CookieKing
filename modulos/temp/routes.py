@@ -44,6 +44,10 @@ def index():
 def index():
     return render_template('modulos/produccion/index.html')
 
+@produccion_bp.route('/inventarioGalletas')
+def inventario_galletas():
+    return render_template('modulos/produccion/inventarioGalletas.html')
+
 @produccion_bp.route('/solicitud')
 def solicitud():
     return render_template('modulos/produccion/solicitud.html')

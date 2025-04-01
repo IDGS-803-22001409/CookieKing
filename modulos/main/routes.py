@@ -1,17 +1,24 @@
-from flask import Blueprint, render_template
+from flask import Blueprint, redirect, render_template, url_for
+from flask_login import current_user, login_required
 from modulos.ventas.models import Venta, DetalleVenta
 from modulos.clientes.models import Cliente
 from modulos.galletas.models import Galletas
 from datetime import datetime
 from models import db
 from sqlalchemy import func, case
+from flask_login import login_required
+
 
 # Crear blueprint para las rutas principales
 main_bp = Blueprint('main', __name__)
 
 @main_bp.route('/')
+@login_required
+def root_redirect():
+    """Redirige automáticamente a la página de inicio de sesión"""
+    return redirect(url_for('auth.iniciar_sesion'))  
 @main_bp.route('/index')
-def index():
+def index():    
     """Dashboard de ventas diarias con detalles"""
     hoy = datetime.now().date()
     
@@ -91,3 +98,14 @@ def page_not_found(e):
 def internal_server_error(e):
     """Error interno del servidor"""
     return render_template('errors/500.html'), 500
+@main_bp.route('/principal')
+@login_required
+def principal():
+    """Redirige al dashboard según el rol del usuario"""
+    if current_user.rol == 'admin':
+        return redirect(url_for('auth.catalogo_usuarios'))
+    elif current_user.rol == 'empleado':
+        return redirect(url_for('index.html'))
+    else:
+        # Para otros roles o como fallback
+        return render_template('#')

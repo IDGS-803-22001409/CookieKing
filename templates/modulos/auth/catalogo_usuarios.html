@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block contenido %}
+<div class="min-h-screen bg-gray-100 dark:bg-gray-900 p-6">
+    <div class="container mx-auto">
+        <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
+            Catálogo de Usuarios
+        </h1>
+
+        {% if current_user.is_authenticated and current_user.rol == 'admin' %}
+            <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg">
+                <div class="p-4 border-b dark:border-gray-700">
+                    <a href="{{ url_for('auth.crear_usuario') }}"
+                       class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-sm px-4 py-2">
+                        Crear Nuevo Usuario
+                    </a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                            <tr>
+                                <th scope="col" class="px-6 py-3">ID</th>
+                                <th scope="col" class="px-6 py-3">Nombre de Usuario</th>
+                                <th scope="col" class="px-6 py-3">Correo</th>
+                                <th scope="col" class="px-6 py-3">Rol</th>
+                                <th scope="col" class="px-6 py-3">Estado</th>
+                                <th scope="col" class="px-6 py-3">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for usuario in usuarios %}
+                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                                <td class="px-6 py-4">{{ usuario.id }}</td>
+                                <td class="px-6 py-4">{{ usuario.nombre_usuario }}</td>
+                                <td class="px-6 py-4">{{ usuario.correo }}</td>
+                                <td class="px-6 py-4">{{ usuario.rol }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="px-2 py-1 rounded {% if usuario.esta_activo %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                        {{ 'Activo' if usuario.esta_activo else 'Inactivo' }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex space-x-2">
+                                        <a href="{{ url_for('auth.editar_usuario', usuario_id=usuario.id) }}"
+                                           class="text-blue-600 hover:text-blue-900">
+                                            Editar
+                                        </a>
+                                        <a href="{{ url_for('auth.cambiar_estado_usuario', usuario_id=usuario.id) }}"
+                                           class="text-{{ 'red' if usuario.esta_activo else 'green' }}-600 hover:text-{{ 'red' if usuario.esta_activo else 'green' }}-900">
+                                            {{ 'Desactivar' if usuario.esta_activo else 'Activar' }}
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        {% else %}
+            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <strong class="font-bold">Acceso Denegado</strong>
+                <span class="block sm:inline">Solo los administradores pueden acceder a esta página.</span>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

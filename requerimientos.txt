@@ -16,3 +16,7 @@ SQLAlchemy==2.0.27
 typing_extensions==4.9.0
 Werkzeug==3.0.1
 WTForms==3.1.2
+flask-login==0.6.3
+passlib==1.7.4
+flask-mail==0.10.0
+bcrypt==4.3.0
