@@ -4,6 +4,7 @@ from modulos.proveedores.models import Proveedor
 
 class ProveedorController:
     """Controlador para la lógica de negocio relacionada con proveedores"""
+
     
     @staticmethod
     def get_all_proveedores():

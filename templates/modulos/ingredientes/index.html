@@ -1,62 +1,163 @@
 {% extends "layouts/base_layout.html" %}
-
-{% block title %}Ingredientes - Cookie King{% endblock %}
+{% block title %}Gestión de Ingredientes - Cookie King{% endblock %}
 
 {% block content %}
-<div class="min-h-[70vh] flex flex-col items-center justify-center bg-cream-50 rounded-lg border border-cookie-200 shadow-md p-8 text-center">
-    <!-- Icono de construcción -->
-    <div class="w-32 h-32 bg-cookie-100 rounded-full flex items-center justify-center mb-6 text-cookie-600">
-        <i class="fas fa-wheat-awn text-6xl"></i>
+<div class="container mx-auto px-4 py-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-chocolate-800">Gestión de Ingredientes</h1>
+        <a href="{{ url_for('ingredientes.nuevo_ingrediente') }}" class="bg-cookie-600 hover:bg-cookie-700 text-white font-bold py-2 px-4 rounded flex items-center">
+            <i class="fas fa-plus mr-2"></i> Nuevo Ingrediente
+        </a>
     </div>
-    
-    <!-- Título del módulo -->
-    <h2 class="text-3xl font-bold text-chocolate-800 mb-2">Gestión de Ingredientes</h2>
-    
-    <!-- Subtítulo -->
-    <p class="text-lg text-cookie-700 mb-8">Control de inventario de materias primas</p>
-    
-    <!-- Mensaje de construcción -->
-    <div class="bg-cream-100 border-l-4 border-cookie-500 text-chocolate-700 p-4 mb-6 max-w-lg">
+
+    <!-- Alertas de stock mínimo -->
+    {% if alertas and alertas|length > 0 %}
+    <div class="bg-amber-50 border-l-4 border-amber-500 text-amber-700 p-4 mb-6">
         <div class="flex items-center">
             <div class="py-1">
-                <i class="fas fa-tools mr-2"></i>
-                <span class="font-semibold">Módulo en desarrollo</span>
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                <span class="font-semibold">Atención: {{ alertas|length }} ingredientes con stock bajo</span>
             </div>
         </div>
-        <p class="mt-2">Este módulo se encuentra actualmente en desarrollo y estará disponible próximamente.</p>
+        <div class="mt-2">
+            <ul class="list-disc pl-5">
+                {% for alerta in alertas %}
+                <li>
+                    <strong>{{ alerta.nombreIngrediente }}</strong>: 
+                    {{ alerta.stock }} {{ alerta.unidad }} 
+                    (Mínimo: {{ alerta.stock_minimo }} {{ alerta.unidad }})
+                </li>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
-    
-    <!-- Funcionalidades próximas -->
-    <div class="max-w-lg w-full">
-        <h3 class="text-lg font-semibold text-chocolate-700 mb-4">Funcionalidades que encontrarás aquí:</h3>
-        <ul class="space-y-2 text-left bg-white p-4 rounded-lg border border-cookie-200">
-            <li class="flex items-start">
-                <i class="fas fa-cookie text-cookie-500 mt-1 mr-2"></i>
-                <span>Catálogo completo de ingredientes</span>
-            </li>
-            <li class="flex items-start">
-                <i class="fas fa-cookie text-cookie-500 mt-1 mr-2"></i>
-                <span>Control de stock y alertas de nivel bajo</span>
-            </li>
-            <li class="flex items-start">
-                <i class="fas fa-cookie text-cookie-500 mt-1 mr-2"></i>
-                <span>Registro de fechas de caducidad</span>
-            </li>
-            <li class="flex items-start">
-                <i class="fas fa-cookie text-cookie-500 mt-1 mr-2"></i>
-                <span>Historial de movimientos de inventario</span>
-            </li>
-            <li class="flex items-start">
-                <i class="fas fa-cookie text-cookie-500 mt-1 mr-2"></i>
-                <span>Integración con módulo de compras y recetas</span>
-            </li>
-        </ul>
+    {% endif %}
+
+    <!-- Tabla de ingredientes -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden mb-6">
+        <table class="min-w-full divide-y divide-cookie-200">
+            <thead class="bg-cookie-100">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                        Ingrediente
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                        Stock Actual
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                        Stock Mínimo
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                        Precio Unitario
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                        Fecha Expiración
+                    </th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                        Acciones
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-cookie-200">
+                {% if ingredientes %}
+                    {% for ingrediente in ingredientes %}
+                    <tr class="{% if ingrediente.stock < ingrediente.stock_minimo %}bg-amber-50{% endif %}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-chocolate-800">
+                                {{ ingrediente.nombreIngrediente }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                {{ ingrediente.stock }} {{ ingrediente.unidad }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                {{ ingrediente.stock_minimo }} {{ ingrediente.unidad }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                ${{ ingrediente.precio_unitario|round(2) }}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">
+                                {% if ingrediente.fecha_expiracion %}
+                                    {{ ingrediente.fecha_expiracion.strftime('%d/%m/%Y') }}
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex justify-end space-x-2">
+                               
+                                <a href="{{ url_for('ingredientes.editar_ingrediente', ingrediente_id=ingrediente.idIngrediente) }}" 
+                                   class="text-amber-600 hover:text-amber-900" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button type="button" onclick="confirmarEliminar({{ ingrediente.idIngrediente }})" 
+                                        class="text-red-600 hover:text-red-900" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                            No hay ingredientes registrados.
+                        </td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
     </div>
-    
-    <!-- Botón de regreso -->
-    <a href="{{ url_for('main.index') }}" class="mt-8 inline-flex items-center px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200">
-        <i class="fas fa-home mr-2"></i>
-        Volver al inicio
-    </a>
 </div>
+
+<!-- Modal de confirmación de eliminación -->
+<div id="modalEliminar" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg p-6 max-w-md w-full">
+        <h3 class="text-lg font-bold text-chocolate-800 mb-4">Confirmar eliminación</h3>
+        <p class="text-gray-700 mb-6">¿Estás seguro de que deseas eliminar este ingrediente? Esta acción no se puede deshacer.</p>
+        <div class="flex justify-end space-x-3">
+            <button type="button" onclick="cerrarModal()" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+                Cancelar
+            </button>
+            <form id="formEliminar" method="POST">
+                <!-- Agregar token CSRF para Flask -->
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <input type="hidden" name="_method" value="DELETE">
+                <button type="submit" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                    Eliminar
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmarEliminar(id) {
+    const modal = document.getElementById('modalEliminar');
+    const form = document.getElementById('formEliminar');
+    form.action = "{{ url_for('ingredientes.eliminar_ingrediente', ingrediente_id=0) }}".replace('0', id);
+    modal.classList.remove('hidden');
+}
+
+function cerrarModal() {
+    const modal = document.getElementById('modalEliminar');
+    modal.classList.add('hidden');
+}
+
+// Cerrar modal al hacer clic fuera de él
+window.addEventListener('click', function(event) {
+    const modal = document.getElementById('modalEliminar');
+    if (event.target === modal) {
+        cerrarModal();
+    }
+});
+</script>
 {% endblock %}

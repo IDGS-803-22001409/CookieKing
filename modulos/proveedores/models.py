@@ -1,9 +1,11 @@
+# Archivo: modulos/proveedores/models.py
+# Corrección de la definición de la tabla
 from models import db
 from datetime import datetime
 
 class Proveedor(db.Model):
     """Modelo para los proveedores"""
-    __tablename__ = 'Proveedores'
+    __tablename__ = 'Proveedores'  # Corregido: usar doble guión bajo
     idProveedor = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nombre_proveedor = db.Column(db.String(255), nullable=False)
     telefono = db.Column(db.String(20))
@@ -12,10 +14,10 @@ class Proveedor(db.Model):
     rfc = db.Column(db.String(13))
     estatus = db.Column(db.Integer, nullable=False, default=1)  # 1: Activo, 0: Inactivo
     fecha_registro = db.Column(db.DateTime, default=datetime.now)
-    
+   
     # Relaciones
     compras = db.relationship('CompraInsumo', backref='proveedor', lazy=True)
-    
+   
     def to_dict(self):
         """Convierte el modelo a un diccionario para facilitar la serialización"""
         return {
