@@ -10,6 +10,7 @@ from modulos.clientes.controllers import ClienteController
 clientes_bp = Blueprint('clientes', __name__, url_prefix='/clientes')
 
 @clientes_bp.route('/')
+@login_required
 def index():
     """Vista principal para la administración de clientes"""
     # Agregar log para depuración
@@ -21,6 +22,7 @@ def index():
     return render_template('modulos/clientes/index.html', clientes=clientes)
 
 @clientes_bp.route('/admin')
+@login_required
 def admin():
     """Vista de administración con CRUD para clientes"""
     print("Accediendo a la vista admin de clientes")
@@ -57,6 +59,7 @@ def admin():
                           form_action=url_for('clientes.save'))
 
 @clientes_bp.route('/save', methods=['POST'])
+@login_required
 def save():
     """Guardar un cliente nuevo o actualizado"""
     # Crear una instancia del formulario y validar
@@ -96,6 +99,7 @@ def save():
     return redirect(url_for('clientes.index'))
 
 @clientes_bp.route('/get/<int:cliente_id>')
+@login_required
 def get_cliente(cliente_id):
     """Obtener datos de un cliente para solicitudes AJAX"""
     cliente = ClienteController.get_cliente_by_id(cliente_id)
@@ -106,6 +110,7 @@ def get_cliente(cliente_id):
     return jsonify(cliente.to_dict())
 
 @clientes_bp.route('/delete/<int:cliente_id>', methods=['POST'])
+@login_required
 def delete(cliente_id):
     """Eliminar un cliente"""
     # Verificar si el cliente puede ser eliminado
@@ -141,6 +146,7 @@ def delete(cliente_id):
     return redirect(url_for('clientes.index'))
 
 @clientes_bp.route('/details/<int:cliente_id>')
+@login_required
 def details(cliente_id):
     """Ver detalles de un cliente"""
     cliente = ClienteController.get_cliente_by_id(cliente_id)

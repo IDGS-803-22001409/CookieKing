@@ -17,7 +17,9 @@ main_bp = Blueprint('main', __name__)
 def root_redirect():
     """Redirige automáticamente a la página de inicio de sesión"""
     return redirect(url_for('auth.iniciar_sesion'))  
+
 @main_bp.route('/index')
+@login_required
 def index():    
     """Dashboard de ventas diarias con detalles"""
     hoy = datetime.now().date()
@@ -98,6 +100,7 @@ def page_not_found(e):
 def internal_server_error(e):
     """Error interno del servidor"""
     return render_template('errors/500.html'), 500
+
 @main_bp.route('/principal')
 @login_required
 def principal():

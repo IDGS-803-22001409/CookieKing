@@ -1,7 +1,6 @@
-# modulos/proveedores/routes.py
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from flask_login import login_required
 from models import db
+from flask_login import login_required
 from modulos.proveedores.models import Proveedor
 from modulos.proveedores.forms import ProveedorForm, create_proveedor_form
 from modulos.proveedores.controllers import ProveedorController
@@ -13,10 +12,8 @@ proveedores_bp = Blueprint('proveedores', __name__, url_prefix='/proveedores')
 @login_required
 def index():
     """Vista principal para la administración de proveedores"""
-    # Obtener todos los proveedores usando el controlador
     proveedores = ProveedorController.get_all_proveedores()
     
-    # Convertir los elementos de la base de datos a diccionarios para la plantilla
     items_data = []
     for proveedor in proveedores:
         items_data.append({
@@ -31,31 +28,36 @@ def index():
             ]
         })
     
-    # Definir los encabezados de la tabla
     headers = ['Nombre', 'Teléfono', 'Correo', 'Dirección', 'RFC', 'Estatus']
-    
-    # Crear campos del formulario para el modal
-    form_fields = create_proveedor_form()
-    
-    return render_template('modulos/proveedores/crud_layout.html', 
+        
+    return render_template('modulos/proveedores/index.html', 
                           crud_title='Administración de Proveedores',
                           modal_title='Proveedor',
                           table_headers=headers,
-                          items=items_data,
-                          form_fields=form_fields,
-                          form_action=url_for('proveedores.save'))
+                          items=items_data)
+
+@proveedores_bp.route('/details/<int:proveedor_id>')
+@login_required
+def details(proveedor_id):
+    """Vista de detalles para un proveedor"""
+    proveedor = ProveedorController.get_proveedor_by_id(proveedor_id)
+    
+    if not proveedor:
+        flash('Proveedor no encontrado', 'error')
+        return redirect(url_for('proveedores.index'))
+        
+    return render_template('modulos/proveedores/details.html', 
+                          proveedor=proveedor)
 
 @proveedores_bp.route('/save', methods=['POST'])
 @login_required
 def save():
-    """Guardar un proveedor nuevo o actualizado"""
-    # Crear una instancia del formulario y validar
+    """Guardar un proveedor nuevo o actualizado"""    
     form = ProveedorForm()
     
     if form.validate_on_submit():
         proveedor_id = request.form.get('id', '')
-        
-        # Recopilar datos del formulario
+                
         data = {
             'nombre_proveedor': form.nombre_proveedor.data,
             'telefono': form.telefono.data,
@@ -110,37 +112,15 @@ def delete(proveedor_id):
         if proveedor:
             proveedor.estatus = 0
             db.session.commit()
-        
-        # Para solicitudes AJAX, devolver respuesta JSON
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({'success': True, 'message': 'Proveedor marcado como inactivo'})
-        
-        return redirect(url_for('proveedores.index'))
-    
-    # Eliminar el proveedor
-    if ProveedorController.delete_proveedor(proveedor_id):
-        flash('Proveedor eliminado exitosamente', 'success')
-        
-        # Para solicitudes AJAX, devolver respuesta JSON
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({'success': True})
     else:
-        flash('No se pudo eliminar el proveedor', 'error')
+        # Eliminar el proveedor
+        if ProveedorController.delete_proveedor(proveedor_id):
+            flash('Proveedor eliminado exitosamente', 'success')
+        else:
+            flash('No se pudo eliminar el proveedor', 'error')
+    
+    # Para solicitudes AJAX, devolver respuesta JSON
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+        return jsonify({'success': True})
         
-        # Para solicitudes AJAX, devolver respuesta JSON
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            return jsonify({'success': False, 'message': 'No se pudo eliminar el proveedor'})
-    
     return redirect(url_for('proveedores.index'))
-
-@proveedores_bp.route('/details/<int:proveedor_id>')
-@login_required
-def details(proveedor_id):
-    """Ver detalles de un proveedor"""
-    proveedor = ProveedorController.get_proveedor_by_id(proveedor_id)
-    
-    if not proveedor:
-        flash('Proveedor no encontrado', 'error')
-        return redirect(url_for('proveedores.index'))
-    
-    return render_template('modulos/proveedores/details.html', proveedor=proveedor)
