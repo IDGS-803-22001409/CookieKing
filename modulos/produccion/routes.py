@@ -2,6 +2,7 @@
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from models import db
 from flask_login import login_required
+from modulos.main.routes import roles_required
 from modulos.galletas.models import Galletas
 from modulos.ingredientes.models import Ingrediente, MovimientoInsumo
 from modulos.recetas.models import Receta, RecetaIngrediente
@@ -22,6 +23,7 @@ def solicitud():
 
 @produccion_bp.route('/')
 @login_required
+@roles_required('admin', 'empleado')
 def index():
     """Vista principal para la administración de producción"""
     galletas = Galletas.query.all()
@@ -29,6 +31,7 @@ def index():
 
 @produccion_bp.route('/inventarioGalletas', methods=['GET'])
 @login_required
+@roles_required('admin', 'empleado')
 def inventario_galletas():
     """Vista para inventario de galletas"""
     galletas = Galletas.query.all()

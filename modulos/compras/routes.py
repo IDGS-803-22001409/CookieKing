@@ -2,6 +2,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required
 from models import db
+from modulos.main.routes import roles_required
 from modulos.compras.models import CompraInsumo, CompraDetalle
 from modulos.compras.controllers import CompraController
 from modulos.proveedores.controllers import ProveedorController
@@ -14,6 +15,7 @@ compras_bp = Blueprint('compras', __name__, url_prefix='/compras')
 
 @compras_bp.route('/')
 @login_required
+@roles_required('admin', 'empleado')
 def index():
     """Vista principal para la administración de compras"""
     compras = CompraController.get_all_compras()

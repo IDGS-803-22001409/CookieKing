@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from models import db
 from flask_login import login_required
+from modulos.main.routes import roles_required
 from modulos.proveedores.models import Proveedor
 from modulos.proveedores.forms import ProveedorForm, create_proveedor_form
 from modulos.proveedores.controllers import ProveedorController
@@ -10,6 +11,7 @@ proveedores_bp = Blueprint('proveedores', __name__, url_prefix='/proveedores')
 
 @proveedores_bp.route('/')
 @login_required
+@roles_required('admin', 'empleado')
 def index():
     """Vista principal para la administración de proveedores"""
     proveedores = ProveedorController.get_all_proveedores()

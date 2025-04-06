@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from models import db
 from flask_login import login_required
+from modulos.main.routes import roles_required
 from modulos.galletas.models import Galletas
 from modulos.galletas.forms import GalletaForm, create_galleta_form
 from modulos.galletas.controllers import GalletaController
@@ -10,6 +11,7 @@ galletas_bp = Blueprint('galletas', __name__, url_prefix='/galletas')
 
 @galletas_bp.route('/')
 @login_required
+@roles_required('admin', 'empleado')
 def index():
     """Vista principal para la administración de galletas"""
     # Obtener todas las galletas usando el controlador

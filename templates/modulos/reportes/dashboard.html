@@ -1,0 +1,295 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Dashboard de Reportes - Cookie King{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-container {
+        height: 300px;
+        position: relative;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="p-6 bg-cream-50 rounded-lg shadow-lg">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-chocolate-800">Dashboard de Reportes</h1>
+            <p class="text-sm text-cookie-600">Período: {{ fecha_anterior }} - {{ fecha_actual }}</p>
+        </div>
+        <div class="flex space-x-2">
+            <a href="{{ url_for('reportes.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Volver
+            </a>
+        </div>
+    </div>
+
+
+    <!-- Gráficos y tablas -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <!-- Gráfico de ventas -->
+        <div class="bg-white p-4 rounded-lg shadow">
+            <h2 class="text-lg font-semibold text-chocolate-800 mb-4">Tendencia de Ventas</h2>
+            <div class="chart-container">
+                <canvas id="ventas-chart"></canvas>
+            </div>
+        </div>
+        
+        <!-- Productos más vendidos -->
+        <div class="bg-white p-4 rounded-lg shadow">
+            <h2 class="text-lg font-semibold text-chocolate-800 mb-4">Productos Más Vendidos</h2>
+            <div class="chart-container">
+                <canvas id="productos-chart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 gap-6">
+        <!-- Ventas por cliente -->
+        <div class="bg-white p-4 rounded-lg shadow">
+            <h2 class="text-lg font-semibold text-chocolate-800 mb-4">Top Clientes</h2>
+            
+            {% if ventas_por_cliente %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-cookie-100">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                    Cliente
+                                </th>
+                                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                    Total Compras
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for cliente, total in ventas_por_cliente %}
+                            <tr class="hover:bg-cream-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {{ cliente }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right font-medium">
+                                    ${{ "%.2f"|format(total) }}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-8 text-gray-500">
+                    <p>No hay datos de ventas por cliente disponibles.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Reportes recientes -->
+    <div class="mt-6 bg-white p-4 rounded-lg shadow">
+        <h2 class="text-lg font-semibold text-chocolate-800 mb-4">Reportes Recientes</h2>
+        
+        {% if reportes_recientes %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-cookie-100">
+                        <tr>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Nombre
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Tipo
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Formato
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Fecha
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Acciones
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for reporte in reportes_recientes %}
+                        <tr class="hover:bg-cream-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {{ reporte.nombre }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {{ reporte.tipo }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded-full text-xs font-medium">
+                                    {{ reporte.formato }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                {{ reporte.fechaGeneracion.strftime('%d/%m/%Y %H:%M') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                <a href="{{ url_for('reportes.descargar_reporte', historial_id=reporte.idHistorial) }}" class="text-cookie-600 hover:text-cookie-800 mr-2" title="Descargar">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <div class="text-center py-8 text-gray-500">
+                <p>No hay reportes recientes.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Datos para gráfico de ventas
+        const ventasData = {
+            labels: [
+                {% for fecha, _, _ in ventas_stats %}
+                    "{{ fecha.strftime('%d/%m') }}",
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Ventas Diarias',
+                backgroundColor: 'rgba(243, 173, 78, 0.2)',
+                borderColor: 'rgba(243, 173, 78, 1)',
+                borderWidth: 2,
+                data: [
+                    {% for _, num_ventas, _ in ventas_stats %}
+                        {{ num_ventas }},
+                    {% endfor %}
+                ],
+                yAxisID: 'y',
+                tension: 0.4
+            }, {
+                label: 'Ingresos ($)',
+                backgroundColor: 'rgba(52, 211, 153, 0.2)',
+                borderColor: 'rgba(52, 211, 153, 1)',
+                borderWidth: 2,
+                data: [
+                    {% for _, _, ingresos in ventas_stats %}
+                        {{ ingresos }},
+                    {% endfor %}
+                ],
+                yAxisID: 'y1',
+                tension: 0.4
+            }]
+        };
+
+        // Configuración del gráfico de ventas
+        const ventasConfig = {
+            type: 'line',
+            data: ventasData,
+            options: {
+                responsive: true,
+                interaction: {
+                    mode: 'index',
+                    intersect: false,
+                },
+                stacked: false,
+                plugins: {
+                    title: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        title: {
+                            display: true,
+                            text: 'Ventas'
+                        }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: {
+                            drawOnChartArea: false,
+                        },
+                        title: {
+                            display: true,
+                            text: 'Ingresos ($)'
+                        }
+                    },
+                }
+            },
+        };
+
+        // Datos para gráfico de productos
+        const productosData = {
+            labels: [
+                {% for galleta, _ in galletas_top %}
+                    "{{ galleta }}",
+                {% endfor %}
+            ],
+            datasets: [{
+                label: 'Unidades Vendidas',
+                backgroundColor: [
+                    'rgba(243, 173, 78, 0.7)',
+                    'rgba(52, 211, 153, 0.7)',
+                    'rgba(79, 70, 229, 0.7)',
+                    'rgba(239, 68, 68, 0.7)',
+                    'rgba(245, 158, 11, 0.7)'
+                ],
+                borderColor: [
+                    'rgba(243, 173, 78, 1)',
+                    'rgba(52, 211, 153, 1)',
+                    'rgba(79, 70, 229, 1)',
+                    'rgba(239, 68, 68, 1)',
+                    'rgba(245, 158, 11, 1)'
+                ],
+                borderWidth: 1,
+                data: [
+                    {% for _, cantidad in galletas_top %}
+                        {{ cantidad }},
+                    {% endfor %}
+                ]
+            }]
+        };
+
+        // Configuración del gráfico de productos
+        const productosConfig = {
+            type: 'pie',
+            data: productosData,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                    },
+                    title: {
+                        display: false
+                    }
+                }
+            },
+        };
+
+        // Renderizar gráficos
+        const ventasChart = new Chart(
+            document.getElementById('ventas-chart'),
+            ventasConfig
+        );
+
+        const productosChart = new Chart(
+            document.getElementById('productos-chart'),
+            productosConfig
+        );
+        
+    });
+</script>
+{% endblock %}

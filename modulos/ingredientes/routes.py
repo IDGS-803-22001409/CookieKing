@@ -1,5 +1,6 @@
 from flask import Blueprint, render_template, redirect, url_for, flash, request, jsonify
 from flask_login import login_required
+from modulos.main.routes import roles_required
 from modulos.ingredientes.controllers import IngredienteController
 from modulos.ingredientes.forms import IngredienteForm, MovimientoStockForm
 from datetime import datetime
@@ -7,6 +8,7 @@ from datetime import datetime
 ingredientes_bp = Blueprint('ingredientes', __name__, url_prefix='/ingredientes')
 
 @ingredientes_bp.route('/')
+@roles_required('admin', 'empleado')
 @login_required
 def index():
     """Vista principal para la administración de ingredientes"""

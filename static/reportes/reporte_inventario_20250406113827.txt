@@ -1,0 +1,2 @@
+Reporte generado: a
+Tipo de reporte no implementado: movimientos

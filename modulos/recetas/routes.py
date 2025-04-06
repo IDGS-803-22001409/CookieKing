@@ -1,7 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from datetime import datetime
 from models import db
+from modulos.main.routes import roles_required
 from flask_login import login_required
+
 from modulos.recetas.models import Receta, RecetaIngrediente
 from modulos.recetas.forms import create_receta_form, RecetaForm
 from modulos.recetas.controllers import RecetaController
@@ -15,6 +17,7 @@ recetas_bp = Blueprint('recetas', __name__, url_prefix='/recetas')
 
 @recetas_bp.route('/')
 @login_required
+@roles_required('admin', 'empleado')
 def index():
     """Vista principal para la administración de recetas"""
     # Obtener todas las recetas con sus tipos de galleta relacionados
@@ -53,6 +56,7 @@ def index():
 
 @recetas_bp.route('/save', methods=['POST'])
 @login_required
+@roles_required('admin', 'empleado')
 def save():
     """Guardar una receta nueva o actualizada"""
     # Crear una instancia del formulario y validar

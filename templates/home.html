@@ -1,0 +1,147 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Cookie King - Inicio{% endblock %}
+
+{% block content %}
+<div class="bg-cream-50 min-h-screen">
+    <!-- Hero Section -->
+    <div class="relative overflow-hidden">
+        <div class="absolute inset-0 bg-chocolate-800 opacity-70"></div>
+        <div class="relative bg-cover bg-center h-96" style="background-image: url('https://images.unsplash.com/photo-1558961363-fa8fdf82db35?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1350&q=80');">
+            <div class="max-w-5xl mx-auto px-4 h-full flex flex-col justify-center items-center text-center">
+                <h1 class="text-4xl md:text-5xl font-bold text-white mb-4">Galletas Artesanales Cookie King</h1>
+                <p class="text-xl text-white mb-8">Deliciosas galletas artesanales horneadas con los mejores ingredientes</p>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <a href="{{ url_for('main.cliente_portal') }}" class="bg-cookie-600 hover:bg-cookie-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-200">
+                        Hacer un Pedido
+                    </a>
+                    <a href="{{ url_for('auth.iniciar_sesion') }}" class="bg-white hover:bg-cream-100 text-chocolate-800 font-bold py-3 px-6 rounded-lg transition-colors duration-200">
+                        Iniciar Sesión
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Featured Products -->
+    <div class="max-w-5xl mx-auto px-4 py-16">
+        <h2 class="text-3xl font-bold text-chocolate-800 mb-8 text-center">Nuestras Galletas</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Product Card 1 -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="h-48 bg-cookie-100 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1499636136210-6598e88226ee?ixlib=rb-1.2.1&auto=format&fit=crop&w=700&q=80');"></div>
+                <div class="p-4">
+                    <h3 class="text-xl font-bold text-chocolate-800 mb-2">Chocolate Chip</h3>
+                    <p class="text-gray-600 mb-4">Galletas tradicionales con chispas de chocolate. Suaves por dentro y crujientes por fuera.</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-cookie-600 font-bold">$10.00</span>
+                        <a href="{{ url_for('main.cliente_portal') }}" class="text-sm bg-cookie-600 hover:bg-cookie-700 text-white py-2 px-3 rounded transition-colors duration-200">
+                            Ordenar
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Card 2 -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="h-48 bg-cookie-100 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1558312657-b2dead03d494?ixlib=rb-1.2.1&auto=format&fit=crop&w=700&q=80');"></div>
+                <div class="p-4">
+                    <h3 class="text-xl font-bold text-chocolate-800 mb-2">Vainilla</h3>
+                    <p class="text-gray-600 mb-4">Galletas clásicas de vainilla, perfectas para acompañar con té o café.</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-cookie-600 font-bold">$8.00</span>
+                        <a href="{{ url_for('main.cliente_portal') }}" class="text-sm bg-cookie-600 hover:bg-cookie-700 text-white py-2 px-3 rounded transition-colors duration-200">
+                            Ordenar
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Product Card 3 -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="h-48 bg-cookie-100 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1590080875852-ba44f83ff2db?ixlib=rb-1.2.1&auto=format&fit=crop&w=700&q=80');"></div>
+                <div class="p-4">
+                    <h3 class="text-xl font-bold text-chocolate-800 mb-2">Avena y Pasas</h3>
+                    <p class="text-gray-600 mb-4">Galletas nutritivas con avena y pasas, ideales para el desayuno.</p>
+                    <div class="flex justify-between items-center">
+                        <span class="text-cookie-600 font-bold">$12.00</span>
+                        <a href="{{ url_for('main.cliente_portal') }}" class="text-sm bg-cookie-600 hover:bg-cookie-700 text-white py-2 px-3 rounded transition-colors duration-200">
+                            Ordenar
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- About Us Section -->
+    <div class="bg-cookie-100 py-16">
+        <div class="max-w-5xl mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h2 class="text-3xl font-bold text-chocolate-800 mb-4">Sobre Cookie King</h2>
+                    <p class="text-gray-700 mb-4">En Cookie King, elaboramos galletas artesanales con ingredientes de la más alta calidad. Nuestra pasión por la repostería nos impulsa a crear productos únicos que deleitan a nuestros clientes.</p>
+                    <p class="text-gray-700 mb-4">Cada galleta es horneada a mano siguiendo recetas tradicionales, pero con un toque especial que solo Cookie King puede ofrecer.</p>
+                    <p class="text-gray-700">Visítanos y descubre por qué nuestras galletas son las favoritas de la ciudad.</p>
+                </div>
+                <div class="bg-cookie-300 h-64 rounded-lg bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1556656793-08538906c9f1?ixlib=rb-1.2.1&auto=format&fit=crop&w=700&q=80');"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Testimonials -->
+    <div class="max-w-5xl mx-auto px-4 py-16">
+        <h2 class="text-3xl font-bold text-chocolate-800 mb-8 text-center">Lo que dicen nuestros clientes</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Testimonial 1 -->
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-cookie-200 rounded-full mr-4 bg-cover bg-center" style="background-image: url('https://randomuser.me/api/portraits/women/65.jpg');"></div>
+                    <div>
+                        <h4 class="font-bold text-chocolate-800">María Rodríguez</h4>
+                        <div class="flex text-yellow-500">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-gray-600">"Las galletas de Cookie King son simplemente deliciosas. La textura, el sabor, todo es perfecto. Mis favoritas son las de chocolate chip."</p>
+            </div>
+            
+            <!-- Testimonial 2 -->
+            <div class="bg-white p-6 rounded-lg shadow-lg">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-cookie-200 rounded-full mr-4 bg-cover bg-center" style="background-image: url('https://randomuser.me/api/portraits/men/32.jpg');"></div>
+                    <div>
+                        <h4 class="font-bold text-chocolate-800">Carlos Martínez</h4>
+                        <div class="flex text-yellow-500">
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star"></i>
+                            <i class="fas fa-star-half-alt"></i>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-gray-600">"Hago pedidos regularmente para mi cafetería. Mis clientes adoran las galletas de avena y pasas. El servicio siempre es puntual y profesional."</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- CTA Section -->
+    <div class="bg-cookie-600 py-16">
+        <div class="max-w-5xl mx-auto px-4 text-center">
+            <h2 class="text-3xl font-bold text-white mb-4">¿Listo para probar nuestras galletas?</h2>
+            <p class="text-xl text-white mb-8">Haz tu pedido ahora y disfruta de nuestras deliciosas galletas artesanales</p>
+            <a href="{{ url_for('main.cliente_portal') }}" class="inline-block bg-white hover:bg-gray-100 text-cookie-600 font-bold py-3 px-8 rounded-lg transition-colors duration-200 text-lg">
+                Ordenar Ahora
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

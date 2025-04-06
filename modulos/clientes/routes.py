@@ -2,6 +2,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required
 from models import db
+from modulos.main.routes import roles_required
 from modulos.clientes.models import Cliente
 from modulos.clientes.forms import ClienteForm, create_cliente_form
 from modulos.clientes.controllers import ClienteController
@@ -10,6 +11,7 @@ from modulos.clientes.controllers import ClienteController
 clientes_bp = Blueprint('clientes', __name__, url_prefix='/clientes')
 
 @clientes_bp.route('/')
+@roles_required('admin', 'empleado')
 @login_required
 def index():
     """Vista principal para la administración de clientes"""

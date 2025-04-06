@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from models import db
+from modulos.main.routes import roles_required
 from modulos.ventas.models import Venta, DetalleVenta, PagoProveedor, PedidoCliente, DetallePedido
 from modulos.ventas.forms import (
     VentaForm, create_venta_form,
@@ -22,6 +23,7 @@ ventas_bp = Blueprint('ventas', __name__, url_prefix='/ventas')
 
 @ventas_bp.route('/')
 @login_required
+@roles_required('admin', 'empleado')
 def index():
     """Vista principal para la administración de ventas"""
     # Obtener todas las ventas
@@ -205,8 +207,7 @@ def ventas_diarias():
 @ventas_bp.route('/productos-mas-vendidos')
 @login_required
 def productos_mas_vendidos():
-    """Ver productos más vendidos"""
-    # Obtener fechas del request, si no hay, usar el mes actual
+    """Ver productos más vendidos"""    
     fecha_inicio = request.args.get('fecha_inicio')
     fecha_fin = request.args.get('fecha_fin')
     
@@ -216,7 +217,7 @@ def productos_mas_vendidos():
     if not fecha_fin:
         fecha_fin = datetime.now().strftime('%Y-%m-%d')  # Hoy
     
-    resumen = PagoProveedorController.get_resumen_pagos(fecha_inicio, fecha_fin)
+    resumen = VentaController.get_productos_mas_vendidos(fecha_inicio, fecha_fin)
     
     return render_template('modulos/ventas/productos_mas_vendidos.html',
                           title="Resumen de Pagos a Proveedores",
@@ -228,6 +229,7 @@ def productos_mas_vendidos():
 
 @ventas_bp.route('/pedidos')
 @login_required
+@roles_required('admin', 'empleado')
 def pedidos_index():
     """Vista principal para la administración de pedidos de clientes"""
     # Obtener todos los pedidos

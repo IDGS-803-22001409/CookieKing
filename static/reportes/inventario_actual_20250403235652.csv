@@ -1,0 +1,16 @@
+ID,Ingrediente,Stock,Unidad,Precio Unitario ($),Valor Total ($)
+6,Avena,20.0,kg,30.00,600.00
+2,Azúcar,34.2,kg,22.00,752.40
+5,Chips de chocolate,23.0,kg,150.00,3450.00
+9,Chocolate blanco,18.0,kg,160.00,2880.00
+1,Harina,42.0,kg,18.00,756.00
+4,Huevos,148.0,unidad,2.50,370.00
+11,Limón (ralladura),7.2,kg,50.00,360.00
+3,Mantequilla,25.3,kg,120.00,3036.00
+10,Nueces,12.0,kg,200.00,2400.00
+7,Pasas,15.0,kg,80.00,1200.00
+12,Polvo para hornear,3.91,kg,120.00,469.20
+13,Sal,9.97,kg,15.00,149.55
+8,Vainilla,4.9,litro,200.00,980.00
+
+,VALOR TOTAL DEL INVENTARIO,,,,17403.15

@@ -1,0 +1,351 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Portal de Cliente - Cookie King{% endblock %}
+
+{% block content %}
+<div class="bg-cream-50 min-h-screen py-8">
+    <div class="max-w-6xl mx-auto px-4">
+        <!-- Encabezado -->
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-3xl font-bold text-chocolate-800">Portal de Pedidos</h1>
+            <div class="flex space-x-3">
+                {% if current_user.is_authenticated %}
+                    <span class="text-gray-600">¡Hola, {{ current_user.nombre_usuario }}!</span>
+                    <a href="{{ url_for('auth.cerrar_sesion') }}" class="text-cookie-600 hover:text-cookie-800 font-medium">
+                        Cerrar Sesión
+                    </a>
+                {% else %}
+                    <a href="{{ url_for('auth.iniciar_sesion') }}" class="text-cookie-600 hover:text-cookie-800 font-medium">
+                        Iniciar Sesión
+                    </a>
+                    <a href="{{ url_for('auth.registro') }}" class="text-cookie-600 hover:text-cookie-800 font-medium">
+                        Registrarse
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Formulario de Pedido y Lista de Productos -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Productos -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+                    <h2 class="text-xl font-bold text-chocolate-800 mb-4">Nuestras Galletas</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {% for galleta in galletas %}
+                        {% if galleta.estatus == 1 %}
+                        <div class="border border-gray-200 rounded-lg p-4 flex flex-col hover:shadow-md transition-shadow">
+                            <div class="flex justify-between items-start mb-2">
+                                <h3 class="text-lg font-bold text-chocolate-800">{{ galleta.nombreGalleta }}</h3>
+                                <span class="text-cookie-600 font-bold">${{ "%.2f"|format(galleta.precio_unitario) }}</span>
+                            </div>
+                            <p class="text-gray-600 text-sm mb-4 flex-grow">{{ galleta.descripcion }}</p>
+                            <div class="flex space-x-2 items-center">
+                                <label for="cantidad-{{ galleta.idGalleta }}" class="text-sm text-gray-600">Cantidad:</label>
+                                <input 
+                                    type="number" 
+                                    id="cantidad-{{ galleta.idGalleta }}" 
+                                    class="w-16 border border-gray-300 rounded-md p-1 text-center" 
+                                    value="0" 
+                                    min="0"
+                                >
+                                <select 
+                                    id="tipo-{{ galleta.idGalleta }}" 
+                                    class="border border-gray-300 rounded-md p-1 text-sm"
+                                >
+                                    <option value="1">Individual</option>
+                                    <option value="0">Paquete</option>
+                                </select>
+                                <button 
+                                    onclick="agregarAlPedido({{ galleta.idGalleta }}, '{{ galleta.nombreGalleta }}', {{ galleta.precio_unitario }})" 
+                                    class="ml-auto bg-cookie-600 hover:bg-cookie-700 text-white text-sm px-2 py-1 rounded"
+                                >
+                                    Agregar
+                                </button>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Resumen del Pedido -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-lg shadow-lg p-6 sticky top-6">
+                    <h2 class="text-xl font-bold text-chocolate-800 mb-4">Tu Pedido</h2>
+                    
+                    <div id="pedido-vacio" class="text-center text-gray-500 py-8">
+                        <i class="fas fa-shopping-cart text-4xl mb-2"></i>
+                        <p>Tu pedido está vacío</p>
+                        <p class="text-sm">Agrega productos para comenzar</p>
+                    </div>
+                    
+                    <div id="pedido-items" class="hidden">
+                        <div class="space-y-4 max-h-64 overflow-y-auto mb-4" id="items-container">
+                            <!-- Aquí se agregarán dinámicamente los items del pedido -->
+                        </div>
+                        
+                        <div class="border-t border-gray-200 pt-4 mb-4">
+                            <div class="flex justify-between font-bold">
+                                <span>Total:</span>
+                                <span id="pedido-total">$0.00</span>
+                            </div>
+                        </div>
+                        
+                        <form id="form-pedido" method="POST" action="{{ url_for('main.guardar_pedido') }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <input type="hidden" id="pedido-detalles" name="detalles">
+                            
+                            <div class="mb-4">
+                                <label for="instrucciones" class="block mb-2 text-sm font-medium text-chocolate-700">Instrucciones especiales:</label>
+                                <textarea 
+                                    id="instrucciones" 
+                                    name="instrucciones" 
+                                    rows="3" 
+                                    class="border border-gray-300 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500"
+                                    placeholder="Instrucciones para tu pedido..."
+                                ></textarea>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label for="fecha-entrega" class="block mb-2 text-sm font-medium text-chocolate-700">Fecha de entrega deseada:</label>
+                                <input 
+                                    type="date" 
+                                    id="fecha-entrega" 
+                                    name="fechaEntrega" 
+                                    class="border border-gray-300 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500"
+                                    min="{{ tomorrow }}"
+                                >
+                            </div>
+                            
+                            {% if not current_user.is_authenticated %}
+                            <div class="mb-4 bg-blue-100 p-3 rounded-lg text-sm text-blue-800">
+                                <p class="font-medium">
+                                    <i class="fas fa-info-circle mr-1"></i> 
+                                    Para hacer un pedido:
+                                </p>
+                                <div class="mt-2 space-y-2">
+                                    <a href="{{ url_for('auth.iniciar_sesion') }}" class="block text-center bg-blue-600 hover:bg-blue-700 text-white py-2 rounded">
+                                        Iniciar Sesión
+                                    </a>
+                                    <a href="{{ url_for('auth.registro') }}" class="block text-center border border-blue-600 text-blue-600 hover:bg-blue-50 py-2 rounded">
+                                        Registrarse
+                                    </a>
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <button 
+                                type="submit" 
+                                class="w-full bg-cookie-600 hover:bg-cookie-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 {{ 'opacity-50 cursor-not-allowed' if not current_user.is_authenticated }}"
+                                {{ 'disabled' if not current_user.is_authenticated }}
+                            >
+                                Realizar Pedido
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        {% if current_user.is_authenticated and current_user.rol == 'cliente' %}
+        <!-- Historial de Pedidos del Cliente -->
+        <div class="mt-12">
+            <h2 class="text-2xl font-bold text-chocolate-800 mb-6">Mis Pedidos</h2>
+            
+            {% if pedidos_cliente %}
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-cookie-100">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Pedido #
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Fecha
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Entrega
+                            </th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Total
+                            </th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                Estado
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for pedido in pedidos_cliente %}
+                        <tr class="hover:bg-gray-50">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {{ pedido.idPedido }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {{ pedido.fechaPedido.strftime('%d/%m/%Y') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                {{ pedido.fechaEntrega.strftime('%d/%m/%Y') if pedido.fechaEntrega else 'Sin definir' }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right">
+                                ${{ "%.2f"|format(pedido.total) }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                                {% if pedido.estatus == 0 %}
+                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Pendiente</span>
+                                {% elif pedido.estatus == 1 %}
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">En Proceso</span>
+                                {% elif pedido.estatus == 2 %}
+                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Completado</span>
+                                {% else %}
+                                    <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Cancelado</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="bg-white rounded-lg shadow-lg p-8 text-center">
+                <i class="fas fa-shopping-basket text-4xl text-gray-400 mb-3"></i>
+                <h3 class="text-xl font-medium text-gray-700 mb-2">Aún no tienes pedidos</h3>
+                <p class="text-gray-500">¡Haz tu primer pedido y disfruta de nuestras deliciosas galletas!</p>
+            </div>
+            {% endif %}
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Establecer la fecha mínima para la entrega (mañana)
+        const fechaEntrega = document.getElementById('fecha-entrega');
+        if (fechaEntrega) {
+            const tomorrow = new Date();
+            tomorrow.setDate(tomorrow.getDate() + 1);
+            fechaEntrega.min = tomorrow.toISOString().split('T')[0];
+            fechaEntrega.value = tomorrow.toISOString().split('T')[0];
+        }
+    });
+    
+    // Array para almacenar los items del pedido
+    let itemsPedido = [];
+    
+    // Función para agregar un item al pedido
+    function agregarAlPedido(idGalleta, nombreGalleta, precioUnitario) {
+        const cantidad = parseInt(document.getElementById(`cantidad-${idGalleta}`).value);
+        const tipoVenta = parseInt(document.getElementById(`tipo-${idGalleta}`).value);
+        
+        if (cantidad <= 0) {
+            alert('Por favor, ingrese una cantidad válida');
+            return;
+        }
+        
+        // Calcular precio según tipo de venta
+        let precioFinal = precioUnitario;
+        if (tipoVenta === 0) { // Paquete
+            precioFinal = precioUnitario * 0.9; // 10% de descuento
+        }
+        
+        const subtotal = precioFinal * cantidad;
+        
+        // Verificar si ya existe este producto con el mismo tipo
+        const itemExistente = itemsPedido.findIndex(item => 
+            item.galleta_id === idGalleta && 
+            item.tipo_venta === tipoVenta
+        );
+        
+        if (itemExistente >= 0) {
+            // Actualizar cantidad del item existente
+            itemsPedido[itemExistente].cantidad += cantidad;
+        } else {
+            // Agregar nuevo item
+            itemsPedido.push({
+                galleta_id: idGalleta,
+                nombre_galleta: nombreGalleta,
+                tipo_venta: tipoVenta,
+                precio_unitario: precioFinal,
+                cantidad: cantidad
+            });
+        }
+        
+        // Resetear campo de cantidad
+        document.getElementById(`cantidad-${idGalleta}`).value = 0;
+        
+        // Actualizar vista del pedido
+        actualizarVistaPedido();
+    }
+    
+    // Función para eliminar un item del pedido
+    function eliminarItem(index) {
+        itemsPedido.splice(index, 1);
+        actualizarVistaPedido();
+    }
+    
+    // Función para actualizar la vista del pedido
+    function actualizarVistaPedido() {
+        const pedidoVacio = document.getElementById('pedido-vacio');
+        const pedidoItems = document.getElementById('pedido-items');
+        const itemsContainer = document.getElementById('items-container');
+        const pedidoTotal = document.getElementById('pedido-total');
+        const pedidoDetalles = document.getElementById('pedido-detalles');
+        
+        if (itemsPedido.length === 0) {
+            pedidoVacio.classList.remove('hidden');
+            pedidoItems.classList.add('hidden');
+        } else {
+            pedidoVacio.classList.add('hidden');
+            pedidoItems.classList.remove('hidden');
+            
+            // Limpiar contenedor
+            itemsContainer.innerHTML = '';
+            
+            // Calcular total
+            let total = 0;
+            
+            // Agregar items
+            itemsPedido.forEach((item, index) => {
+                const subtotal = item.precio_unitario * item.cantidad;
+                total += subtotal;
+                
+                const itemElement = document.createElement('div');
+                itemElement.className = 'flex justify-between items-start border-b border-gray-100 pb-3';
+                itemElement.innerHTML = `
+                    <div>
+                        <h4 class="font-medium text-chocolate-800">${item.nombre_galleta}</h4>
+                        <div class="text-sm text-gray-600">
+                            <span>${item.cantidad} x $${item.precio_unitario.toFixed(2)}</span>
+                            <span class="ml-2 text-xs bg-gray-100 px-1 rounded">
+                                ${item.tipo_venta === 1 ? 'Individual' : 'Paquete'}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <span class="font-medium mr-2">$${subtotal.toFixed(2)}</span>
+                        <button type="button" onclick="eliminarItem(${index})" class="text-red-500 hover:text-red-700">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+                
+                itemsContainer.appendChild(itemElement);
+            });
+            
+            // Actualizar total
+            pedidoTotal.textContent = `$${total.toFixed(2)}`;
+            
+            // Actualizar detalles hidden para el formulario
+            pedidoDetalles.value = JSON.stringify(itemsPedido.map(item => ({
+                galleta_id: item.galleta_id,
+                tipo_venta: item.tipo_venta,
+                cantidad: item.cantidad
+            })));
+        }
+    }
+</script>
+{% endblock %}

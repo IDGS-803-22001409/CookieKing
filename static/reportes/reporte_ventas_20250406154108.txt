@@ -1,0 +1,2 @@
+Reporte generado: Ventas
+Tipo de reporte no implementado: ventas_por_producto

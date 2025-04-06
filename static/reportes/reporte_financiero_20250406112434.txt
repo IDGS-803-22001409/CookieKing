@@ -1,0 +1,5 @@
+Reporte Financiero: TestRepFina
+Tipo: ingresos_vs_gastos
+Fecha Inicio: 2025-03-07
+Fecha Fin: 2025-04-06
+Este reporte está simulado para demostración.

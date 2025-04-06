@@ -5,6 +5,7 @@ from models import db, init_db
 from routes import register_blueprints
 from flask_login import LoginManager
 from flask_mail import Mail
+from modulos.main.routes import roles_required
 
 login_manager = LoginManager()
 mail = Mail()
@@ -14,7 +15,7 @@ def create_app(config_name='development'):
     
         # Configuración de la base de datos
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:sergio@localhost:3306/CookieKing'
-    
+    app.config['ROLES_REQUIRED'] = roles_required
     # Initialize extensions
     db.init_app(app)
     csrf = CSRFProtect(app)
@@ -31,14 +32,14 @@ def create_app(config_name='development'):
     with app.app_context():
         init_db()   
         db.create_all()
-                     
-    
+                         
     return app
-# Función para cargar usuarios
+
 @login_manager.user_loader
 def load_user(user_id):
-    from modulos.auth.models import Usuario  # Aquí importamos el modelo cuando sea necesario
+    from modulos.auth.models import Usuario  
     return Usuario.query.get(int(user_id))
+
 if __name__ == '__main__':
     app = create_app()
     app.run(debug=True)
