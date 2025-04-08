@@ -1,68 +1,167 @@
-{% extends "base.html" %}
+{% extends "layouts/base_layout.html" %}
 
-{% block contenido %}
-<div class="min-h-screen bg-gray-100 dark:bg-gray-900 p-6">
-    <div class="container mx-auto">
-        <h1 class="text-3xl font-bold mb-6 text-gray-900 dark:text-white">
-            Catálogo de Usuarios
-        </h1>
+{% block title %}Catálogo de Usuarios - Cookie King{% endblock %}
 
-        {% if current_user.is_authenticated and current_user.rol == 'admin' %}
-            <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg">
-                <div class="p-4 border-b dark:border-gray-700">
-                    <a href="{{ url_for('auth.crear_usuario') }}"
-                       class="bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg text-sm px-4 py-2">
-                        Crear Nuevo Usuario
-                    </a>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
-                        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
-                            <tr>
-                                <th scope="col" class="px-6 py-3">ID</th>
-                                <th scope="col" class="px-6 py-3">Nombre de Usuario</th>
-                                <th scope="col" class="px-6 py-3">Correo</th>
-                                <th scope="col" class="px-6 py-3">Rol</th>
-                                <th scope="col" class="px-6 py-3">Estado</th>
-                                <th scope="col" class="px-6 py-3">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for usuario in usuarios %}
-                            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                <td class="px-6 py-4">{{ usuario.id }}</td>
-                                <td class="px-6 py-4">{{ usuario.nombre_usuario }}</td>
-                                <td class="px-6 py-4">{{ usuario.correo }}</td>
-                                <td class="px-6 py-4">{{ usuario.rol }}</td>
-                                <td class="px-6 py-4">
-                                    <span class="px-2 py-1 rounded {% if usuario.esta_activo %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
-                                        {{ 'Activo' if usuario.esta_activo else 'Inactivo' }}
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4">
-                                    <div class="flex space-x-2">
-                                        <a href="{{ url_for('auth.editar_usuario', usuario_id=usuario.id) }}"
-                                           class="text-blue-600 hover:text-blue-900">
-                                            Editar
-                                        </a>
-                                        <a href="{{ url_for('auth.cambiar_estado_usuario', usuario_id=usuario.id) }}"
-                                           class="text-{{ 'red' if usuario.esta_activo else 'green' }}-600 hover:text-{{ 'red' if usuario.esta_activo else 'green' }}-900">
-                                            {{ 'Desactivar' if usuario.esta_activo else 'Activar' }}
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        {% else %}
-            <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-                <strong class="font-bold">Acceso Denegado</strong>
-                <span class="block sm:inline">Solo los administradores pueden acceder a esta página.</span>
-            </div>
-        {% endif %}
+{% block content %}
+<div class="p-6 bg-cream-50 rounded-lg shadow-lg">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-chocolate-800">Catálogo de Usuarios</h1>
+            <p class="text-sm text-cookie-600">Administración de cuentas y permisos</p>
+        </div>
+        <div class="flex space-x-2">
+            <a href="{{ url_for('auth.crear_usuario') }}" class="inline-flex items-center px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200">
+                <i class="fas fa-user-plus mr-2"></i>
+                Nuevo Usuario
+            </a>
+        </div>
     </div>
+
+    {% if current_user.is_authenticated and current_user.rol == 'admin' %}
+        <!-- Buscador -->
+        <div class="mb-6">
+            <div class="relative">
+                <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                    <i class="fas fa-search text-gray-400"></i>
+                </div>
+                <input 
+                    type="text" 
+                    id="table-search" 
+                    class="border border-cookie-200 rounded-lg p-2.5 pl-10 w-full focus:ring-cookie-500 focus:border-cookie-500" 
+                    placeholder="Buscar usuarios..."
+                >
+            </div>
+        </div>
+
+        <!-- Tabla de usuarios -->
+        <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+            <table class="min-w-full text-sm">
+                <thead>
+                    <tr class="bg-cookie-100 text-chocolate-700 uppercase">
+                        <th class="py-3 px-4 text-left">ID</th>
+                        <th class="py-3 px-4 text-left">Usuario</th>
+                        <th class="py-3 px-4 text-left">Correo</th>
+                        <th class="py-3 px-4 text-left">Rol</th>
+                        <th class="py-3 px-4 text-center">Estado</th>
+                        <th class="py-3 px-4 text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for usuario in usuarios %}
+                        <tr class="border-b hover:bg-cream-50">
+                            <td class="py-3 px-4">{{ usuario.id }}</td>
+                            <td class="py-3 px-4">{{ usuario.nombre_usuario }}</td>
+                            <td class="py-3 px-4">{{ usuario.correo }}</td>
+                            <td class="py-3 px-4">
+                                {% if usuario.rol == 'admin' %}
+                                    <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded-full text-xs font-medium">
+                                        Administrador
+                                    </span>
+                                {% elif usuario.rol == 'empleado' %}
+                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
+                                        Empleado
+                                    </span>
+                                {% else %}
+                                    <span class="px-2 py-1 bg-cookie-100 text-cookie-800 rounded-full text-xs font-medium">
+                                        Cliente
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                <span class="px-2 py-1 rounded-full text-xs font-medium {% if usuario.esta_activo %}bg-green-100 text-green-800{% else %}bg-red-100 text-red-800{% endif %}">
+                                    {{ 'Activo' if usuario.esta_activo else 'Inactivo' }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-center">
+                                <a href="{{ url_for('auth.editar_usuario', usuario_id=usuario.id) }}"
+                                   class="text-amber-600 hover:text-amber-700 mr-3" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{{ url_for('auth.cambiar_estado_usuario', usuario_id=usuario.id) }}"
+                                   class="{% if usuario.esta_activo %}text-red-600 hover:text-red-700{% else %}text-green-600 hover:text-green-700{% endif %}" 
+                                   title="{{ 'Desactivar' if usuario.esta_activo else 'Activar' }}">
+                                    <i class="fas {% if usuario.esta_activo %}fa-user-slash{% else %}fa-user-check{% endif %}"></i>
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    {% if not usuarios %}
+                        <tr>
+                            <td colspan="6" class="py-4 px-4 text-center text-gray-500">
+                                No hay usuarios registrados
+                            </td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Resumen de usuarios por rol -->
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="bg-white p-4 rounded-lg shadow text-center">
+                <div class="text-3xl font-bold text-purple-600 mb-1">
+                    {{ usuarios|selectattr('rol', 'equalto', 'admin')|list|length }}
+                </div>
+                <div class="text-sm text-gray-600">Administradores</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow text-center">
+                <div class="text-3xl font-bold text-blue-600 mb-1">
+                    {{ usuarios|selectattr('rol', 'equalto', 'empleado')|list|length }}
+                </div>
+                <div class="text-sm text-gray-600">Empleados</div>
+            </div>
+            <div class="bg-white p-4 rounded-lg shadow text-center">
+                <div class="text-3xl font-bold text-cookie-600 mb-1">
+                    {{ usuarios|selectattr('rol', 'equalto', 'cliente')|list|length }}
+                </div>
+                <div class="text-sm text-gray-600">Clientes</div>
+            </div>
+        </div>
+    {% else %}
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded">
+            <div class="flex items-center">
+                <div class="py-1">
+                    <i class="fas fa-exclamation-circle mr-2"></i>
+                    <span class="font-semibold">Acceso Denegado</span>
+                </div>
+            </div>
+            <p class="mt-2">Solo los administradores pueden acceder a esta página.</p>
+            <div class="mt-4">
+                <a href="{{ url_for('main.index') }}" class="inline-flex items-center px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200">
+                    <i class="fas fa-home mr-2"></i>
+                    Volver al inicio
+                </a>
+            </div>
+        </div>
+    {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Búsqueda en la tabla
+        const searchInput = document.getElementById('table-search');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                const searchTerm = this.value.toLowerCase();
+                const tableRows = document.querySelectorAll('tbody tr');
+                
+                tableRows.forEach(function(row) {
+                    let textContent = "";
+                    row.querySelectorAll('td').forEach(function(cell) {
+                        textContent += cell.textContent.toLowerCase() + " ";
+                    });
+                    
+                    if (textContent.includes(searchTerm)) {
+                        row.style.display = "";
+                    } else {
+                        row.style.display = "none";
+                    }
+                });
+            });
+        }
+    });
+</script>
 {% endblock %}

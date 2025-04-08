@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from models import db
+from flask_login import login_required
+from modulos.main.routes import roles_required
 from modulos.galletas.models import Galletas
 from modulos.galletas.forms import GalletaForm, create_galleta_form
 from modulos.galletas.controllers import GalletaController
@@ -8,6 +10,8 @@ from modulos.galletas.controllers import GalletaController
 galletas_bp = Blueprint('galletas', __name__, url_prefix='/galletas')
 
 @galletas_bp.route('/')
+@login_required
+@roles_required('admin', 'empleado')
 def index():
     """Vista principal para la administración de galletas"""
     # Obtener todas las galletas usando el controlador
@@ -43,6 +47,7 @@ def index():
                           form_action=url_for('galletas.save'))
 
 @galletas_bp.route('/save', methods=['POST'])
+@login_required
 def save():
     """Guardar una galleta nueva o actualizada"""
     # Crear una instancia del formulario y validar
@@ -83,6 +88,7 @@ def save():
     return redirect(url_for('galletas.index'))
 
 @galletas_bp.route('/get/<int:galleta_id>')
+@login_required
 def get_galleta(galleta_id):
     """Obtener datos de una galleta para solicitudes AJAX"""
     galleta = GalletaController.get_galleta_by_id(galleta_id)
@@ -122,6 +128,7 @@ def delete(galleta_id):
     return redirect(url_for('galletas.index'))
 
 @galletas_bp.route('/details/<int:galleta_id>')
+@login_required
 def details(galleta_id):
     """Ver detalles de una galleta"""
     galleta = GalletaController.get_galleta_by_id(galleta_id)

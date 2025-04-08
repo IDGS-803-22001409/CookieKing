@@ -91,3 +91,97 @@
     </div>
 </div>
 {% endblock %}
+
+{% extends "layouts/base_layout.html" %}
+{% block title %}Nuevo Ingrediente - Cookie King{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <div class="flex items-center mb-6">
+        <a href="{{ url_for('ingredientes.index') }}" class="text-cookie-600 hover:text-cookie-900 mr-4">
+            <i class="fas fa-arrow-left"></i>
+        </a>
+        <h1 class="text-2xl font-bold text-chocolate-800">Nuevo Ingrediente</h1>
+    </div>
+
+    <div class="bg-white shadow-md rounded-lg overflow-hidden p-6 max-w-2xl mx-auto">
+        <form method="POST" action="{{ url_for('ingredientes.nuevo_ingrediente') }}">
+            {{ form.csrf_token }}
+            
+            <div class="mb-4">
+                <label for="nombreIngrediente" class="block text-sm font-medium text-chocolate-700 mb-1">
+                    {{ form.nombreIngrediente.label }}
+                </label>
+                {{ form.nombreIngrediente(class="w-full border-gray-300 rounded-md shadow-sm focus:border-cookie-500 focus:ring focus:ring-cookie-200") }}
+                {% if form.nombreIngrediente.errors %}
+                    <span class="text-red-600 text-sm">{{ form.nombreIngrediente.errors[0] }}</span>
+                {% endif %}
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="stock" class="block text-sm font-medium text-chocolate-700 mb-1">
+                        {{ form.stock.label }}
+                    </label>
+                    {{ form.stock(class="w-full border-gray-300 rounded-md shadow-sm focus:border-cookie-500 focus:ring focus:ring-cookie-200") }}
+                    {% if form.stock.errors %}
+                        <span class="text-red-600 text-sm">{{ form.stock.errors[0] }}</span>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label for="unidad" class="block text-sm font-medium text-chocolate-700 mb-1">
+                        {{ form.unidad.label }}
+                    </label>
+                    {{ form.unidad(class="w-full border-gray-300 rounded-md shadow-sm focus:border-cookie-500 focus:ring focus:ring-cookie-200") }}
+                    {% if form.unidad.errors %}
+                        <span class="text-red-600 text-sm">{{ form.unidad.errors[0] }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label for="stock_minimo" class="block text-sm font-medium text-chocolate-700 mb-1">
+                        {{ form.stock_minimo.label }}
+                    </label>
+                    {{ form.stock_minimo(class="w-full border-gray-300 rounded-md shadow-sm focus:border-cookie-500 focus:ring focus:ring-cookie-200") }}
+                    {% if form.stock_minimo.errors %}
+                        <span class="text-red-600 text-sm">{{ form.stock_minimo.errors[0] }}</span>
+                    {% endif %}
+                </div>
+                
+                <div>
+                    <label for="precio_unitario" class="block text-sm font-medium text-chocolate-700 mb-1">
+                        {{ form.precio_unitario.label }}
+                    </label>
+                    {{ form.precio_unitario(class="w-full border-gray-300 rounded-md shadow-sm focus:border-cookie-500 focus:ring focus:ring-cookie-200") }}
+                    {% if form.precio_unitario.errors %}
+                        <span class="text-red-600 text-sm">{{ form.precio_unitario.errors[0] }}</span>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="mb-6">
+                <label for="fecha_expiracion" class="block text-sm font-medium text-chocolate-700 mb-1">
+                    {{ form.fecha_expiracion.label }}
+                </label>
+                {{ form.fecha_expiracion(class="w-full border-gray-300 rounded-md shadow-sm focus:border-cookie-500 focus:ring focus:ring-cookie-200", type="date") }}
+                {% if form.fecha_expiracion.errors %}
+                    <span class="text-red-600 text-sm">{{ form.fecha_expiracion.errors[0] }}</span>
+                {% endif %}
+                <p class="text-gray-500 text-xs mt-1">Opcional. Dejar en blanco si no aplica.</p>
+            </div>
+            
+            <div class="flex justify-end space-x-3">
+                <a href="{{ url_for('ingredientes.index') }}" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded">
+                    Cancelar
+                </a>
+                <button type="submit" class="bg-cookie-600 hover:bg-cookie-700 text-white font-bold py-2 px-4 rounded">
+                    Agregar Ingrediente
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

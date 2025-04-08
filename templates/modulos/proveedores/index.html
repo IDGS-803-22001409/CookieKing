@@ -2,61 +2,10 @@
 {% block title %}Proveedores - Cookie King{% endblock %}
 
 {% block content %}
-<div class="container mx-auto px-4 py-6">
-    <div class="flex justify-between items-center mb-6">
-        <h1 class="text-2xl font-bold text-chocolate-800">Gestión de Proveedores</h1>
-        <a href="#" onclick="openModal()" class="bg-cookie-600 hover:bg-cookie-700 text-white font-bold py-2 px-4 rounded flex items-center">
-            <i class="fas fa-plus mr-2"></i> Nuevo Proveedor
-        </a>
-    </div>
-
-    <!-- Tabla de proveedores -->
-    <div class="bg-white shadow-md rounded-lg overflow-hidden mb-6">
-        <table class="min-w-full divide-y divide-cookie-200">
-            <thead class="bg-cookie-100">
-                <tr>
-                    {% for header in table_headers %}
-                    <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
-                        {{ header }}
-                    </th>
-                    {% endfor %}
-                    <th class="px-6 py-3 text-right text-xs font-medium text-chocolate-700 uppercase tracking-wider">
-                        Acciones
-                    </th>
-                </tr>
-            </thead>
-            <tbody class="bg-white divide-y divide-cookie-200">
-                {% if items %}
-                    {% for item in items %}
-                    <tr class="hover:bg-gray-100">
-                        {% for field in item.fields %}
-                        <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">{{ field }}</div>
-                        </td>
-                        {% endfor %}
-                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div class="flex justify-end space-x-2">
-                                <a href="#" onclick="editItem({{ item.id }})" 
-                                   class="text-amber-600 hover:text-amber-900" title="Editar">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <button onclick="confirmarEliminar({{ item.id }})" 
-                                        class="text-red-600 hover:text-red-900" title="Eliminar">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                {% else %}
-                    <tr>
-                        <td colspan="{{ table_headers|length + 1 }}" class="px-6 py-4 text-center text-gray-500">
-                            No hay proveedores registrados.
-                        </td>
-                    </tr>
-                {% endif %}
-            </tbody>
-        </table>
+<div class="min-h-[70vh] flex flex-col items-center justify-center bg-cream-50 rounded-lg border border-cookie-200 shadow-md p-8 text-center">
+    <!-- Icono de construcción -->
+    <div class="w-32 h-32 bg-cookie-100 rounded-full flex items-center justify-center mb-6 text-cookie-600">
+        <i class="fas fa-truck text-6xl"></i>
     </div>
     
     <!-- Botón de regreso -->
@@ -137,56 +86,38 @@
             </form>
         </div>
     </div>
+    
+    <!-- Funcionalidades próximas -->
+    <div class="max-w-lg w-full">
+        <h3 class="text-lg font-semibold text-chocolate-700 mb-4">Funcionalidades que encontrarás aquí:</h3>
+        <ul class="space-y-2 text-left bg-white p-4 rounded-lg border border-cookie-200">
+            <li class="flex items-start">
+                <i class="fas fa-cookie text-cookie-500 mt-1 mr-2"></i>
+                <span>Registro completo de proveedores</span>
+            </li>
+            <li class="flex items-start">
+                <i class="fas fa-cookie text-cookie-500 mt-1 mr-2"></i>
+                <span>Información de contacto y condiciones comerciales</span>
+            </li>
+            <li class="flex items-start">
+                <i class="fas fa-cookie text-cookie-500 mt-1 mr-2"></i>
+                <span>Catálogo de productos por proveedor</span>
+            </li>
+            <li class="flex items-start">
+                <i class="fas fa-cookie text-cookie-500 mt-1 mr-2"></i>
+                <span>Historial de compras realizadas</span>
+            </li>
+            <li class="flex items-start">
+                <i class="fas fa-cookie text-cookie-500 mt-1 mr-2"></i>
+                <span>Evaluación y calificación de proveedores</span>
+            </li>
+        </ul>
+    </div>
+    
+    <!-- Botón de regreso -->
+    <a href="{{ url_for('main.index') }}" class="mt-8 inline-flex items-center px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200">
+        <i class="fas fa-home mr-2"></i>
+        Volver al inicio
+    </a>
 </div>
-
-<script>
-    function openModal() {
-        // Mostrar modal
-        document.getElementById('formModal').classList.remove('hidden');
-    }
-    
-    function closeModal() {
-        document.getElementById('formModal').classList.add('hidden');
-    }
-    
-    function editItem(id) {
-        // Obtener datos del proveedor
-        fetch(`/proveedores/get/${id}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('Error al obtener los datos del proveedor');
-                }
-                return response.json();
-            })
-            .then(data => {
-                // Llenar formulario con datos
-                document.getElementById('id').value = data.idProveedor;
-                document.getElementById('nombre_proveedor').value = data.nombre_proveedor;
-                document.getElementById('telefono').value = data.telefono || '';
-                document.getElementById('correo').value = data.correo || '';
-                document.getElementById('direccion').value = data.direccion || '';
-                document.getElementById('rfc').value = data.rfc || '';
-                document.getElementById('estatus').value = data.estatus.toString();
-                
-                // Mostrar modal
-                openModal();
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Error al cargar los datos del proveedor');
-            });
-    }
-    
-    function confirmarEliminar(id) {
-        const modal = document.getElementById('modalEliminar');
-        const form = document.getElementById('formEliminar');
-        form.action = `/proveedores/delete/${id}`;
-        modal.classList.remove('hidden');
-    }
-    
-    function cerrarModal() {
-        const modal = document.getElementById('modalEliminar');
-        modal.classList.add('hidden');
-    }
-</script>
 {% endblock %}

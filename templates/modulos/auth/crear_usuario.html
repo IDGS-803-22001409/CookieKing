@@ -1,70 +1,122 @@
-{% extends "base.html" %}
+{% extends "layouts/base_layout.html" %}
 
-{% block contenido %}
-<section class="bg-gray-50 dark:bg-gray-900">
-    <div class="flex flex-col items-center justify-center px-6 py-8 mx-auto md:h-screen lg:py-0">
-        <div class="w-full bg-white rounded-lg shadow dark:border md:mt-0 sm:max-w-md xl:p-0 dark:bg-gray-800 dark:border-gray-700">
-            <div class="p-6 space-y-4 md:space-y-6 sm:p-8">
-                <h1 class="text-xl font-bold leading-tight tracking-tight text-gray-900 md:text-2xl dark:text-white">
-                    Crear Nuevo Usuario
-                </h1>
-                
-                {% with messages = get_flashed_messages(with_categories=true) %}
-                    {% if messages %}
-                        {% for category, message in messages %}
-                            <div class="p-4 mb-4 text-sm rounded-lg 
-                                {% if category == 'success' %}bg-green-50 text-green-800{% endif %}
-                                {% if category == 'error' %}bg-red-50 text-red-800{% endif %}
-                                {% if category == 'warning' %}bg-yellow-50 text-yellow-800{% endif %}" 
-                                 role="alert">
-                                {{ message }}
-                            </div>
-                        {% endfor %}
-                    {% endif %}
-                {% endwith %}
+{% block title %}Crear Usuario - Cookie King{% endblock %}
 
-                <form class="space-y-4 md:space-y-6" method="POST" action="{{ url_for('auth.crear_usuario') }}">
-                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                    <div>
-                        <label for="nombre_usuario" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Nombre de usuario</label>
-                        <input type="text" name="nombre_usuario" id="nombre_usuario" 
-                               class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
-                               placeholder="usuario123" required>
-                    </div>
-                    <div>
-                        <label for="correo" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Correo electrónico</label>
-                        <input type="email" name="correo" id="correo" 
-                               class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
-                               placeholder="nombre@empresa.com" required>
-                    </div>
-                    <div>
-                        <label for="contrasena" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Contraseña</label>
-                        <input type="password" name="contrasena" id="contrasena" 
-                               class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
-                               placeholder="••••••••" required>
-                    </div>
-                    <div>
-                        <label for="rol" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Rol</label>
-                        <select name="rol" id="rol" 
-                                class="bg-gray-50 border border-gray-300 text-gray-900 sm:text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" 
-                                required>
-                            <option value="">Selecciona un rol</option>
-                            <option value="admin">Administrador</option>
-                            <option value="empleado">Empleado</option>
-                            <option value="cliente">Cliente</option>
-                        </select>
-                    </div>
-                    <button type="submit" class="w-full text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
-                        Crear cuenta
-                    </button>
-                    <p class="text-sm font-light text-gray-500 dark:text-gray-400">
-                        <a href="{{ url_for('auth.catalogo_usuarios') }}" class="font-medium text-primary-600 hover:underline dark:text-primary-500">
-                            Volver al Catálogo de Usuarios
-                        </a>
-                    </p>
-                </form>
-            </div>
+{% block content %}
+<div class="p-6 bg-cream-50 rounded-lg shadow-lg">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-chocolate-800">Crear Nuevo Usuario</h1>
+        <div class="flex space-x-2">
+            <a href="{{ url_for('auth.catalogo_usuarios') }}" class="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Volver al Catálogo
+            </a>
+            <a href="{{ url_for('main.index') }}" class="inline-flex items-center px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200">
+                <i class="fas fa-home mr-2"></i>
+                Dashboard
+            </a>
         </div>
     </div>
-</section>
+
+    <!-- Mensajes Flash -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="mb-6 p-4 rounded-lg {% if category == 'success' %}bg-green-100 text-green-800{% elif category == 'error' %}bg-red-100 text-red-800{% else %}bg-cookie-100 text-cookie-800{% endif %}">
+                    <div class="flex items-center">
+                        <i class="{% if category == 'success' %}fas fa-check-circle{% elif category == 'error' %}fas fa-exclamation-circle{% else %}fas fa-info-circle{% endif %} mr-2"></i>
+                        <span>{{ message }}</span>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <!-- Formulario -->
+    <div class="bg-white p-6 rounded-lg shadow">
+        <form class="space-y-6" method="POST" action="{{ url_for('auth.crear_usuario') }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label for="nombre_usuario" class="block mb-2 text-sm font-medium text-chocolate-700">Nombre de usuario</label>
+                    <input type="text" name="nombre_usuario" id="nombre_usuario" 
+                           class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500" 
+                           placeholder="usuario123" required>
+                </div>
+                
+                <div>
+                    <label for="correo" class="block mb-2 text-sm font-medium text-chocolate-700">Correo electrónico</label>
+                    <input type="email" name="correo" id="correo" 
+                           class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500" 
+                           placeholder="nombre@empresa.com" required>
+                </div>
+                
+                <div>
+                    <label for="contrasena" class="block mb-2 text-sm font-medium text-chocolate-700">Contraseña</label>
+                    <div class="relative">
+                        <input type="password" name="contrasena" id="contrasena" 
+                               class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500" 
+                               placeholder="••••••••" required>
+                        <button type="button" id="toggle-password" class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-500 hover:text-cookie-700">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <p class="mt-1 text-xs text-gray-500">La contraseña debe tener al menos 8 caracteres, incluir mayúsculas, minúsculas, números y caracteres especiales.</p>
+                </div>
+                
+                <div>
+                    <label for="rol" class="block mb-2 text-sm font-medium text-chocolate-700">Rol</label>
+                    <select name="rol" id="rol" 
+                            class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500" 
+                            required>
+                        <option value="">Selecciona un rol</option>
+                        <option value="admin">Administrador</option>
+                        <option value="empleado">Empleado</option>
+                        <option value="cliente">Cliente</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="flex flex-col md:flex-row justify-end mt-6 space-y-3 md:space-y-0 md:space-x-3">
+                <a href="{{ url_for('auth.catalogo_usuarios') }}" 
+                   class="text-center px-5 py-2.5 border border-cookie-300 text-chocolate-700 rounded-lg hover:bg-cream-100 transition-colors">
+                    Cancelar
+                </a>
+                <button type="submit" 
+                        class="text-center px-5 py-2.5 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors">
+                    Crear Usuario
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Funcionalidad para mostrar/ocultar contraseña
+        const togglePassword = document.getElementById('toggle-password');
+        const passwordInput = document.getElementById('contrasena');
+        
+        if (togglePassword && passwordInput) {
+            togglePassword.addEventListener('click', function() {
+                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput.setAttribute('type', type);
+                
+                // Cambiar el ícono según el estado
+                const icon = this.querySelector('i');
+                if (type === 'text') {
+                    icon.classList.remove('fa-eye');
+                    icon.classList.add('fa-eye-slash');
+                } else {
+                    icon.classList.remove('fa-eye-slash');
+                    icon.classList.add('fa-eye');
+                }
+            });
+        }
+    });
+</script>
 {% endblock %}

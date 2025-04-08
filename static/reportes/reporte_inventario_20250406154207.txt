@@ -1,0 +1,2 @@
+Reporte generado: Inventario
+Tipo de reporte no implementado: movimientos

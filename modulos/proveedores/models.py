@@ -5,7 +5,7 @@ from datetime import datetime
 
 class Proveedor(db.Model):
     """Modelo para los proveedores"""
-    __tablename__ = 'Proveedores'  # Corregido: usar doble guión bajo
+    __tablename__ = 'Proveedores'
     idProveedor = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nombre_proveedor = db.Column(db.String(255), nullable=False)
     telefono = db.Column(db.String(20))
@@ -17,7 +17,7 @@ class Proveedor(db.Model):
    
     # Relaciones
     compras = db.relationship('CompraInsumo', backref='proveedor', lazy=True)
-   
+    
     def to_dict(self):
         """Convierte el modelo a un diccionario para facilitar la serialización"""
         return {

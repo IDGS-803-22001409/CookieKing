@@ -30,9 +30,49 @@ class AuthController:
             
             mail = current_app.extensions.get('mail')
             msg = Message(
-    'Código de Verificación',
+    '🍪 Código de Seguridad - Dulce Verificación',
     recipients=[usuario.correo],
-    body=f'Tu código de verificación es: {datos_totp["codigo"]}'
+    html=f'''
+    <html>
+        <head>
+            <style>
+                body {{ font-family: 'Arial', sans-serif; line-height: 1.6; color: #5a3e2b; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background-color: #fff5e6; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+                .content {{ padding: 20px; background-color: #fff9f0; }}
+                .code {{ font-size: 28px; font-weight: bold; color: #d35400; text-align: center; margin: 25px 0; 
+                        background: #fff; padding: 15px; border-radius: 8px; border: 2px dashed #e67e22; }}
+                .footer {{ margin-top: 30px; font-size: 12px; color: #8b6b4a; text-align: center; 
+                          background-color: #fff5e6; padding: 15px; border-radius: 0 0 10px 10px; }}
+                .logo {{ color: #e67e22; font-weight: bold; font-size: 24px; }}
+                .cookie-icon {{ font-size: 20px; vertical-align: middle; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h2><span class="cookie-icon">🍪</span> <span class="logo">CooKieKing</span></h2>
+                </div>
+                <div class="content">
+                    <p>¡Hola {usuario.nombre_usuario}!</p>
+                    <p>Alguien está intentando acceder a tu cuenta en <strong>CooKieKing</strong>. Para asegurarnos de que eres tú, por favor utiliza este dulce código de verificación:</p>
+                    
+                    <div class="code">{datos_totp["codigo"]}</div>
+                    
+                    <p>Este código es tan fresco como nuestras galletas recién horneadas, pero solo dura 5 minutos. Si no has solicitado iniciar sesión, por favor ignora este mensaje o contáctanos en <a href="mailto:galletascookieking@gmail.com" style="color: #e67e22;">galletascookieking@gmail.com</a>.</p>
+                    
+                    <p style="text-align: center; margin-top: 25px;">
+                        <span style="font-size: 18px;">🍪 🍪 🍪</span>
+                    </p>
+                </div>
+                <div class="footer">
+                    <p>© {datetime.now().year} CooKieKing. Todos los derechos reservados.</p>
+                    <p>Este es un mensaje automático - Por la seguridad de tu cuenta, no lo reenvíes.</p>
+                </div>
+            </div>
+        </body>
+    </html>
+    '''
 )
             mail.send(msg)
             
@@ -61,11 +101,20 @@ class AuthController:
             login_user(usuario)
             usuario.actualizar_ultimo_inicio_sesion()
             session.pop('totp_data', None)
-            return True, "Inicio de sesión exitoso"
+                        
+            if usuario.rol == 'admin':
+                msg = "¡Bienvenido Administrador! Has iniciado sesión correctamente."
+            elif usuario.rol == 'empleado':
+                msg = "¡Bienvenido! Has iniciado sesión como empleado."
+            else:
+                msg = "¡Bienvenido! Has iniciado sesión correctamente."
+                
+            return True, msg
+        
         return False, "Código TOTP inválido"
 
     @staticmethod
-    def registrar_usuario(data):
+    def registrar_usuario(data, usuario_actual=None):
         es_valida, mensaje = AuthController.validador.validar_contrasena(data['contrasena'])
         if not es_valida:
             return False, mensaje
@@ -78,21 +127,29 @@ class AuthController:
         if usuario_existente:
             return False, "Nombre de usuario o correo ya registrados"
         
+        # Lógica mejorada para asignación de roles
+        rol = data.get('rol', 'cliente')
+        
+        # Solo permitir asignación de roles admin/empleado si el usuario actual es admin
+        if rol in ['admin', 'empleado']:
+            if not (usuario_actual and usuario_actual.is_authenticated and usuario_actual.rol == 'admin'):
+                return False, "No tienes permisos para asignar este rol"
+        
         nuevo_usuario = Usuario(
             nombre_usuario=data['nombre_usuario'],
             correo=data['correo'],
             hash_contrasena=AuthController.validador.hash_contrasena(data['contrasena']),
-            rol=data.get('rol', 'usuario'),
+            rol=rol,
             esta_activo=True
         )
         
         try:
             db.session.add(nuevo_usuario)
             db.session.commit()
-            return True, "Registro exitoso. Inicie sesión."
+            return True, "Registro exitoso"
         except Exception as e:
             db.session.rollback()
-            return False, f"Error al registrar usuario: {str(e)}"
+            return False, f"Error al registrar: {str(e)}"
 
     @staticmethod
     def cerrar_sesion():
@@ -158,3 +215,4 @@ class AuthController:
         except Exception as e:
             db.session.rollback()
             return False, f"Error al cambiar estado: {str(e)}"
+            

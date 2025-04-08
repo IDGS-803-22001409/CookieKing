@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_required, current_user
 from models import db
+from modulos.main.routes import roles_required
 from modulos.ventas.models import Venta, DetalleVenta, PagoProveedor, PedidoCliente, DetallePedido
 from modulos.ventas.forms import (
     VentaForm, create_venta_form,
@@ -21,6 +22,8 @@ ventas_bp = Blueprint('ventas', __name__, url_prefix='/ventas')
 # ------------------------ RUTAS PARA VENTAS ------------------------ #
 
 @ventas_bp.route('/')
+@login_required
+@roles_required('admin', 'empleado')
 def index():
     """Vista principal para la administración de ventas"""
     # Obtener todas las ventas
@@ -52,6 +55,7 @@ def index():
                           headers=headers)
 
 @ventas_bp.route('/nueva', methods=['GET'])
+@login_required
 def nueva_venta():
     """Vista para crear una nueva venta"""
     # Obtener clientes activos para el formulario
@@ -68,6 +72,7 @@ def nueva_venta():
                           action=url_for('ventas.guardar'))
 
 @ventas_bp.route('/editar/<int:venta_id>', methods=['GET'])
+@login_required
 def editar_venta(venta_id):
     """Vista para editar una venta existente"""
     venta = VentaController.get_venta_by_id(venta_id)
@@ -93,6 +98,7 @@ def editar_venta(venta_id):
                           action=url_for('ventas.guardar'))
 
 @ventas_bp.route('/guardar', methods=['POST'])
+@login_required
 def guardar():
     """Guardar una venta (nueva o actualizada)"""
     try:
@@ -135,6 +141,7 @@ def guardar():
         return redirect(url_for('ventas.index'))
 
 @ventas_bp.route('/detalle/<int:venta_id>')
+@login_required
 def detalle(venta_id):
     """Ver detalles de una venta"""
     venta = VentaController.get_venta_by_id(venta_id)
@@ -152,6 +159,7 @@ def detalle(venta_id):
                           detalles=detalles)
 
 @ventas_bp.route('/ticket/<int:venta_id>')
+@login_required
 def ticket(venta_id):
     """Generar un ticket para una venta"""
     ticket_data = VentaController.generar_ticket(venta_id)
@@ -165,6 +173,7 @@ def ticket(venta_id):
                           ticket=ticket_data)
 
 @ventas_bp.route('/eliminar/<int:venta_id>', methods=['POST'])
+@login_required
 def eliminar(venta_id):
     """Eliminar una venta"""
     if VentaController.delete_venta(venta_id):
@@ -175,6 +184,7 @@ def eliminar(venta_id):
     return redirect(url_for('ventas.index'))
 
 @ventas_bp.route('/diarias')
+@login_required
 def ventas_diarias():
     """Ver ventas del día actual o una fecha específica"""
     fecha = request.args.get('fecha')
@@ -195,9 +205,9 @@ def ventas_diarias():
                           fecha_actual=fecha.strftime('%Y-%m-%d'))
 
 @ventas_bp.route('/productos-mas-vendidos')
+@login_required
 def productos_mas_vendidos():
-    """Ver productos más vendidos"""
-    # Obtener fechas del request, si no hay, usar el mes actual
+    """Ver productos más vendidos"""    
     fecha_inicio = request.args.get('fecha_inicio')
     fecha_fin = request.args.get('fecha_fin')
     
@@ -207,7 +217,7 @@ def productos_mas_vendidos():
     if not fecha_fin:
         fecha_fin = datetime.now().strftime('%Y-%m-%d')  # Hoy
     
-    resumen = PagoProveedorController.get_resumen_pagos(fecha_inicio, fecha_fin)
+    resumen = VentaController.get_productos_mas_vendidos(fecha_inicio, fecha_fin)
     
     return render_template('modulos/ventas/productos_mas_vendidos.html',
                           title="Resumen de Pagos a Proveedores",
@@ -218,6 +228,8 @@ def productos_mas_vendidos():
 # ------------------------ RUTAS PARA PEDIDOS DE CLIENTES ------------------------ #
 
 @ventas_bp.route('/pedidos')
+@login_required
+@roles_required('admin', 'empleado')
 def pedidos_index():
     """Vista principal para la administración de pedidos de clientes"""
     # Obtener todos los pedidos
@@ -257,6 +269,7 @@ def pedidos_index():
                           headers=headers)
 
 @ventas_bp.route('/pedidos/nuevo', methods=['GET'])
+@login_required
 def nuevo_pedido():
     """Vista para crear un nuevo pedido de cliente"""
     # Obtener clientes activos para el formulario
@@ -273,6 +286,7 @@ def nuevo_pedido():
                           action=url_for('ventas.guardar_pedido'))
 
 @ventas_bp.route('/pedidos/editar/<int:pedido_id>', methods=['GET'])
+@login_required
 def editar_pedido(pedido_id):
     """Vista para editar un pedido existente"""
     pedido = PedidoClienteController.get_pedido_by_id(pedido_id)
@@ -298,6 +312,7 @@ def editar_pedido(pedido_id):
                           action=url_for('ventas.guardar_pedido'))
 
 @ventas_bp.route('/pedidos/guardar', methods=['POST'])
+@login_required
 def guardar_pedido():
     """Guardar un pedido de cliente (nuevo o actualizado)"""
     try:
@@ -344,6 +359,7 @@ def guardar_pedido():
         return redirect(url_for('ventas.pedidos_index'))
 
 @ventas_bp.route('/pedidos/detalle/<int:pedido_id>')
+@login_required
 def detalle_pedido(pedido_id):
     """Ver detalles de un pedido"""
     pedido = PedidoClienteController.get_pedido_by_id(pedido_id)
@@ -361,6 +377,7 @@ def detalle_pedido(pedido_id):
                           detalles=detalles)
 
 @ventas_bp.route('/pedidos/eliminar/<int:pedido_id>', methods=['POST'])
+@login_required
 def eliminar_pedido(pedido_id):
     """Eliminar un pedido"""
     if PedidoClienteController.delete_pedido(pedido_id):
@@ -371,6 +388,7 @@ def eliminar_pedido(pedido_id):
     return redirect(url_for('ventas.pedidos_index'))
 
 @ventas_bp.route('/pedidos/cambiar-estatus/<int:pedido_id>', methods=['POST'])
+@login_required
 def cambiar_estatus_pedido(pedido_id):
     """Cambiar el estatus de un pedido"""
     nuevo_estatus = request.form.get('estatus')
@@ -389,6 +407,7 @@ def cambiar_estatus_pedido(pedido_id):
     return redirect(url_for('ventas.detalle_pedido', pedido_id=pedido_id))
 
 @ventas_bp.route('/pedidos/convertir-a-venta/<int:pedido_id>', methods=['POST'])
+@login_required
 def convertir_pedido_a_venta(pedido_id):
     """Convertir un pedido en una venta"""
     success, message, venta = PedidoClienteController.convertir_pedido_a_venta(pedido_id)
@@ -401,6 +420,7 @@ def convertir_pedido_a_venta(pedido_id):
         return redirect(url_for('ventas.detalle_pedido', pedido_id=pedido_id))
 
 @ventas_bp.route('/pedidos/pendientes')
+@login_required
 def pedidos_pendientes():
     """Ver pedidos pendientes"""
     pedidos = PedidoClienteController.get_pedidos_pendientes()
@@ -443,6 +463,7 @@ def pedidos_pendientes():
                           fecha_fin=fecha_fin)
 
 @ventas_bp.route('/tipos-venta')
+@login_required
 def tipos_venta():
     """Ver ventas por tipo (Individual vs Paquete)"""
     # Obtener fechas del request, si no hay, usar el mes actual
@@ -466,6 +487,7 @@ def tipos_venta():
 # ------------------------ RUTAS PARA PAGOS A PROVEEDORES ------------------------ #
 
 @ventas_bp.route('/pagos')
+@login_required
 def pagos_index():
     """Vista principal para la administración de pagos a proveedores"""
     # Obtener todos los pagos
@@ -498,6 +520,7 @@ def pagos_index():
                           headers=headers)
 
 @ventas_bp.route('/pagos/nuevo', methods=['GET'])
+@login_required
 def nuevo_pago():
     """Vista para crear un nuevo pago a proveedor"""
     # Obtener proveedores activos para el formulario
@@ -512,6 +535,7 @@ def nuevo_pago():
                           action=url_for('ventas.guardar_pago'))
 
 @ventas_bp.route('/pagos/editar/<int:pago_id>', methods=['GET'])
+@login_required
 def editar_pago(pago_id):
     """Vista para editar un pago existente"""
     pago = PagoProveedorController.get_pago_by_id(pago_id)
@@ -531,6 +555,7 @@ def editar_pago(pago_id):
                           action=url_for('ventas.guardar_pago'))
 
 @ventas_bp.route('/pagos/guardar', methods=['POST'])
+@login_required
 def guardar_pago():
     """Guardar un pago a proveedor (nuevo o actualizado)"""
     try:
@@ -577,6 +602,7 @@ def guardar_pago():
         return redirect(url_for('ventas.pagos_index'))
 
 @ventas_bp.route('/pagos/eliminar/<int:pago_id>', methods=['POST'])
+@login_required
 def eliminar_pago(pago_id):
     """Eliminar un pago a proveedor"""
     if PagoProveedorController.delete_pago(pago_id):
@@ -587,6 +613,7 @@ def eliminar_pago(pago_id):
     return redirect(url_for('ventas.pagos_index'))
 
 @ventas_bp.route('/pagos/resumen')
+@login_required
 def resumen_pagos():
     """Ver resumen de pagos a proveedores en un período"""
     # Obtener fechas del request, si no hay, usar el mes actual

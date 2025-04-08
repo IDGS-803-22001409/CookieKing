@@ -1,0 +1,216 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Historial de Reportes - Cookie King{% endblock %}
+
+{% block content %}
+<div class="p-6 bg-cream-50 rounded-lg shadow-lg">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-chocolate-800">Historial de Reportes</h1>
+        <div class="flex space-x-2">
+            <a href="{{ url_for('reportes.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white p-4 rounded-lg shadow-md mb-6">
+        <div class="flex flex-col md:flex-row md:items-end space-y-4 md:space-y-0 md:space-x-4">
+            <div class="flex-1">
+                <label for="tipo_filtro" class="block mb-2 text-sm font-medium text-chocolate-700">Tipo de Reporte</label>
+                <select id="tipo_filtro" class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500">
+                    <option value="">Todos</option>
+                    <option value="ventas">Ventas</option>
+                    <option value="inventario">Inventario</option>
+                    <option value="produccion">Producción</option>
+                    <option value="financiero">Financiero</option>
+                </select>
+            </div>
+            <div class="flex-1">
+                <label for="fecha_filtro" class="block mb-2 text-sm font-medium text-chocolate-700">Período</label>
+                <select id="fecha_filtro" class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500">
+                    <option value="">Todos</option>
+                    <option value="7">Últimos 7 días</option>
+                    <option value="30">Últimos 30 días</option>
+                    <option value="90">Últimos 90 días</option>
+                </select>
+            </div>
+            <div class="flex-1">
+                <label for="formato_filtro" class="block mb-2 text-sm font-medium text-chocolate-700">Formato</label>
+                <select id="formato_filtro" class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500">                    
+                    <option value="PDF">PDF</option>
+                </select>
+            </div>
+            <div>
+                <button id="btn_filtrar" class="px-4 py-2.5 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200">
+                    <i class="fas fa-filter mr-2"></i>
+                    Filtrar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de historial -->
+    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-cookie-200">
+                <thead class="bg-cookie-100">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                            Nombre
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                            Tipo
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                            Formato
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                            Usuario
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                            Fecha
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                            Acciones
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-reportes" class="bg-white divide-y divide-gray-200">
+                    {% for reporte in reportes %}
+                    <tr class="hover:bg-cream-50" data-tipo="{{ reporte.tipo.split('_')[0] }}" data-formato="{{ reporte.formato }}">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {{ reporte.nombre }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {{ reporte.tipo }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <span class="px-2 py-1 
+                                {% if reporte.formato == 'PDF' %}
+                                    bg-red-100 text-red-800
+                                {% elif reporte.formato == 'EXCEL' %}
+                                    bg-green-100 text-green-800
+                                {% elif reporte.formato == 'CSV' %}
+                                    bg-blue-100 text-blue-800
+                                {% else %}
+                                    bg-gray-100 text-gray-800
+                                {% endif %}
+                                rounded-full text-xs font-medium">
+                                {{ reporte.formato }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-700">
+                            {{ reporte.usuario or "Sistema" }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-700">
+                            {{ reporte.fechaGeneracion.strftime('%d/%m/%Y %H:%M') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <div class="flex justify-center space-x-2">
+                                <a href="{{ url_for('reportes.descargar_reporte', historial_id=reporte.idHistorial) }}" class="text-cookie-600 hover:text-cookie-800" title="Descargar">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                                
+                                <form action="{{ url_for('reportes.eliminar_historial', historial_id=reporte.idHistorial) }}" method="POST" onsubmit="return confirm('¿Está seguro de que desea eliminar este registro?')">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit" class="text-red-500 hover:text-red-700" title="Eliminar">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-4 text-center text-gray-500">
+                            No hay reportes registrados en el historial.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tipoFiltro = document.getElementById('tipo_filtro');
+        const fechaFiltro = document.getElementById('fecha_filtro');
+        const formatoFiltro = document.getElementById('formato_filtro');
+        const btnFiltrar = document.getElementById('btn_filtrar');
+        const tablaReportes = document.getElementById('tabla-reportes');
+        
+        btnFiltrar.addEventListener('click', function() {
+            const tipo = tipoFiltro.value;
+            const periodo = fechaFiltro.value;
+            const formato = formatoFiltro.value;
+            
+            // Filtrar filas de la tabla
+            const filas = tablaReportes.querySelectorAll('tr');
+            
+            filas.forEach(fila => {
+                if (!fila.hasAttribute('data-tipo')) return; // Ignorar filas sin atributos
+                
+                // Obtener atributos de la fila
+                const filaTipo = fila.getAttribute('data-tipo');
+                const filaFormato = fila.getAttribute('data-formato');
+                const filaFecha = new Date(fila.querySelector('td:nth-child(5)').textContent.trim());
+                
+                // Aplicar filtros
+                let mostrar = true;
+                
+                if (tipo && filaTipo !== tipo) {
+                    mostrar = false;
+                }
+                
+                if (formato && filaFormato !== formato) {
+                    mostrar = false;
+                }
+                
+                if (periodo) {
+                    const hoy = new Date();
+                    const limiteFecha = new Date();
+                    limiteFecha.setDate(hoy.getDate() - parseInt(periodo));
+                    
+                    if (filaFecha < limiteFecha) {
+                        mostrar = false;
+                    }
+                }
+                
+                // Mostrar u ocultar fila
+                fila.style.display = mostrar ? '' : 'none';
+            });
+            
+            // Mostrar mensaje si no hay resultados
+            let hayResultadosVisibles = false;
+            filas.forEach(fila => {
+                if (fila.style.display !== 'none' && fila.hasAttribute('data-tipo')) {
+                    hayResultadosVisibles = true;
+                }
+            });
+            
+            // Buscar o crear fila de mensaje
+            let filaMensaje = tablaReportes.querySelector('tr.fila-mensaje');
+            
+            if (!hayResultadosVisibles) {
+                if (!filaMensaje) {
+                    filaMensaje = document.createElement('tr');
+                    filaMensaje.className = 'fila-mensaje';
+                    filaMensaje.innerHTML = `<td colspan="6" class="px-6 py-4 text-center text-gray-500">No hay reportes que coincidan con los filtros seleccionados.</td>`;
+                    tablaReportes.appendChild(filaMensaje);
+                } else {
+                    filaMensaje.style.display = '';
+                }
+            } else if (filaMensaje) {
+                filaMensaje.style.display = 'none';
+            }
+        });
+    });
+</script>
+{% endblock %}

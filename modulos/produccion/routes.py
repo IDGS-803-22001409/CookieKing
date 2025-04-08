@@ -1,6 +1,8 @@
 # Actualización de routes.py
 from flask import Blueprint, render_template, redirect, url_for, request, flash
 from models import db
+from flask_login import login_required
+from modulos.main.routes import roles_required
 from modulos.galletas.models import Galletas
 from modulos.ingredientes.models import Ingrediente, MovimientoInsumo
 from modulos.recetas.models import Receta, RecetaIngrediente
@@ -13,24 +15,30 @@ produccion_bp = Blueprint('produccion', __name__, url_prefix='/produccion')
 
 
 @produccion_bp.route('/solicitud/')
+@login_required
 def solicitud():
     """Vista principal para la administración de solicitudes"""
     galletas = Galletas.query.all()
     return render_template('modulos/produccion/solicitud.html')
 
 @produccion_bp.route('/')
+@login_required
+@roles_required('admin', 'empleado')
 def index():
     """Vista principal para la administración de producción"""
     galletas = Galletas.query.all()
     return render_template('modulos/produccion/index.html', galletas=galletas)
 
 @produccion_bp.route('/inventarioGalletas', methods=['GET'])
+@login_required
+@roles_required('admin', 'empleado')
 def inventario_galletas():
     """Vista para inventario de galletas"""
     galletas = Galletas.query.all()
     return render_template('modulos/produccion/inventarioGalletas.html', galletas=galletas)
 
 @produccion_bp.route('/produccionGalletas/<int:galleta_id>', methods=['GET', 'POST'])
+@login_required
 def produccion_galletas(galleta_id):
     """Vista para producir galletas directamente"""
     # Obtener la galleta seleccionada
@@ -138,6 +146,7 @@ def produccion_galletas(galleta_id):
     )
 
 @produccion_bp.route('/inventario')
+@login_required
 def inventario():
     """Vista para inventario de galletas"""
     return render_template('modulos/produccion/inventario.html')

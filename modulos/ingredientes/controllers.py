@@ -140,7 +140,6 @@ class IngredienteController:
         except Exception:
             db.session.rollback()
             return False
-
     @staticmethod
     def get_movimientos_by_ingrediente(ingrediente_id):
         """Obtener todos los movimientos de un ingrediente específico"""

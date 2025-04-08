@@ -1,0 +1,158 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Reportes de Inventario - Cookie King{% endblock %}
+
+{% block content %}
+<div class="p-6 bg-cream-50 rounded-lg shadow-lg">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-chocolate-800">Generador de Reportes de Inventario</h1>
+        <div class="flex space-x-2">
+            <a href="{{ url_for('reportes.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Volver
+            </a>
+            <a href="{{ url_for('reportes.historial') }}" class="inline-flex items-center px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200">
+                <i class="fas fa-history mr-2"></i>
+                Historial
+            </a>
+        </div>
+    </div>
+
+    <!-- Formulario de generación de reporte -->
+    <div class="bg-white p-6 rounded-lg shadow-md mb-6">
+        <h2 class="text-xl font-semibold text-chocolate-800 mb-4">Configuración del Reporte</h2>
+        
+        <form method="POST" action="{{ url_for('reportes.reporte_inventario') }}">
+            {{ form.csrf_token }}
+            
+            <!-- Primera fila - Título y tipo de reporte -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                <div>
+                    <label for="titulo" class="block mb-2 text-sm font-medium text-chocolate-700">{{ form.titulo.label }}</label>
+                    {{ form.titulo(class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500") }}
+                </div>
+                <div>
+                    <label for="tipo_reporte" class="block mb-2 text-sm font-medium text-chocolate-700">{{ form.tipo_reporte.label }}</label>
+                    {{ form.tipo_reporte(class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500") }}
+                </div>
+            </div>
+            
+            <!-- Segunda fila - Formato y fechas (para movimientos) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div>
+                    <label for="formato" class="block mb-2 text-sm font-medium text-chocolate-700">{{ form.formato.label }}</label>
+                    {{ form.formato(class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500") }}
+                </div>
+                <div id="fecha-inicio-container" class="hidden">
+                    <label for="fecha_inicio" class="block mb-2 text-sm font-medium text-chocolate-700">{{ form.fecha_inicio.label }}</label>
+                    {{ form.fecha_inicio(class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500") }}
+                </div>
+                <div id="fecha-fin-container" class="hidden">
+                    <label for="fecha_fin" class="block mb-2 text-sm font-medium text-chocolate-700">{{ form.fecha_fin.label }}</label>
+                    {{ form.fecha_fin(class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500") }}
+                </div>
+            </div>                        
+            
+            <!-- Filtros por categoría -->
+            <div class="mb-4 p-4 border border-cookie-200 rounded-lg bg-cream-50">
+                <h3 class="text-md font-semibold text-chocolate-800 mb-3">Filtros Adicionales</h3>
+                
+                <div>
+                    <label for="categorias" class="block mb-2 text-sm font-medium text-chocolate-700">Filtrar por Unidad de Medida (Opcional)</label>
+                    {{ form.categorias(class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500", multiple="multiple", size="4") }}
+                    <p class="mt-1 text-xs text-gray-500">Mantenga presionado Ctrl para seleccionar múltiples unidades</p>
+                </div>
+            </div>
+            
+            <!-- Botones de acción -->
+            <div class="flex justify-end space-x-3">
+                <button type="reset" class="px-4 py-2 border border-cookie-300 rounded-lg text-chocolate-700 hover:bg-cream-100 transition-colors">
+                    Limpiar
+                </button>
+                <button type="submit" class="px-6 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors">
+                    <i class="fas fa-file-export mr-2"></i>
+                    Generar Reporte
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Panel de ayuda -->
+    <div class="bg-white p-6 rounded-lg shadow-md">
+        <h2 class="text-xl font-semibold text-chocolate-800 mb-4">Instrucciones</h2>
+        
+        <div class="mb-4">
+            <h3 class="text-md font-semibold text-chocolate-700 mb-2">Tipos de Reportes Disponibles</h3>
+            <div class="space-y-2">
+                <div class="p-3 bg-cream-50 rounded-lg">
+                    <p class="font-semibold">Stock Actual</p>
+                    <p class="text-sm text-gray-600">Muestra un inventario completo de todos los ingredientes con su stock y valor.</p>
+                </div>
+                <div class="p-3 bg-cream-50 rounded-lg">
+                    <p class="font-semibold">Fechas de Caducidad</p>
+                    <p class="text-sm text-gray-600">Reporte de fechas de caducidad de ingredientes, alertando sobre los próximos a caducar.</p>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const tipoReporte = document.getElementById('tipo_reporte');
+        const fechaInicioContainer = document.getElementById('fecha-inicio-container');
+        const fechaFinContainer = document.getElementById('fecha-fin-container');
+        const fechaInicio = document.getElementById('fecha_inicio');
+        const fechaFin = document.getElementById('fecha_fin');
+        
+        // Función para mostrar/ocultar campos de fecha
+        function toggleFechasVisibility() {
+            const showFechas = tipoReporte.value === 'movimientos';
+            
+            fechaInicioContainer.classList.toggle('hidden', !showFechas);
+            fechaFinContainer.classList.toggle('hidden', !showFechas);
+            
+            // Solo requerimos fechas para el reporte de movimientos
+            fechaInicio.required = showFechas;
+            fechaFin.required = showFechas;
+        }
+        
+        // Ejecutar al cargar la página
+        toggleFechasVisibility();
+        
+        // Ejecutar al cambiar el tipo de reporte
+        tipoReporte.addEventListener('change', toggleFechasVisibility);
+        
+        // Establecer fechas por defecto si están vacías
+        if (!fechaInicio.value) {
+            // Fecha de hace 30 días
+            const treintaDiasAtras = new Date();
+            treintaDiasAtras.setDate(treintaDiasAtras.getDate() - 30);
+            fechaInicio.valueAsDate = treintaDiasAtras;
+        }
+        
+        if (!fechaFin.value) {
+            // Fecha actual
+            fechaFin.valueAsDate = new Date();
+        }
+        
+        // Verificar que fecha fin no sea anterior a fecha inicio
+        fechaFin.addEventListener('change', function() {
+            if (fechaInicio.value && fechaFin.value < fechaInicio.value) {
+                alert('La fecha fin no puede ser anterior a la fecha inicio');
+                fechaFin.value = fechaInicio.value;
+            }
+        });
+        
+        fechaInicio.addEventListener('change', function() {
+            if (fechaFin.value && fechaFin.value < fechaInicio.value) {
+                fechaFin.value = fechaInicio.value;
+            }
+        });
+    });
+</script>
+{% endblock %}

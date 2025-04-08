@@ -1,6 +1,9 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from datetime import datetime
 from models import db
+from modulos.main.routes import roles_required
+from flask_login import login_required
+
 from modulos.recetas.models import Receta, RecetaIngrediente
 from modulos.recetas.forms import create_receta_form, RecetaForm
 from modulos.recetas.controllers import RecetaController
@@ -13,6 +16,8 @@ from modulos.ingredientes.controllers import IngredienteController
 recetas_bp = Blueprint('recetas', __name__, url_prefix='/recetas')
 
 @recetas_bp.route('/')
+@login_required
+@roles_required('admin', 'empleado')
 def index():
     """Vista principal para la administración de recetas"""
     # Obtener todas las recetas con sus tipos de galleta relacionados
@@ -50,6 +55,8 @@ def index():
                           form_action=url_for('recetas.save'))
 
 @recetas_bp.route('/save', methods=['POST'])
+@login_required
+@roles_required('admin', 'empleado')
 def save():
     """Guardar una receta nueva o actualizada"""
     # Crear una instancia del formulario y validar
@@ -96,6 +103,7 @@ def save():
     return redirect(url_for('recetas.index'))
 
 @recetas_bp.route('/get/<int:receta_id>')
+@login_required
 def get_receta(receta_id):
     """Obtener datos de una receta para solicitudes AJAX"""
     receta = RecetaController.get_receta_by_id(receta_id)
@@ -106,6 +114,7 @@ def get_receta(receta_id):
     return jsonify(receta.to_dict())
 
 @recetas_bp.route('/delete/<int:receta_id>', methods=['POST'])
+@login_required
 def delete(receta_id):
     """Eliminar una receta"""
     if RecetaController.delete_receta(receta_id):
@@ -124,6 +133,7 @@ def delete(receta_id):
     return redirect(url_for('recetas.index'))
 
 @recetas_bp.route('/details/<int:receta_id>')
+@login_required
 def details(receta_id):
     """Ver detalles de una receta incluyendo ingredientes"""
     receta = RecetaController.get_receta_by_id(receta_id)
@@ -145,6 +155,7 @@ def details(receta_id):
 
 # Rutas para administrar los ingredientes de las recetas
 @recetas_bp.route('/ingredientes/<int:receta_id>')
+@login_required
 def ingredientes(receta_id):
     """Administrar ingredientes para una receta específica"""
     receta = RecetaController.get_receta_by_id(receta_id)
@@ -165,6 +176,7 @@ def ingredientes(receta_id):
                           available_ingredientes=available_ingredientes)
 
 @recetas_bp.route('/add_ingrediente', methods=['POST'])
+@login_required
 def add_ingrediente():
     """Añadir un ingrediente a una receta"""
     receta_id = request.form.get('receta_id')
@@ -187,6 +199,7 @@ def add_ingrediente():
     return redirect(url_for('recetas.ingredientes', receta_id=receta_id))
 
 @recetas_bp.route('/delete_ingrediente', methods=['POST'])
+@login_required
 def delete_ingrediente():
     """Eliminar un ingrediente de una receta"""
     receta_id = request.form.get('receta_id')

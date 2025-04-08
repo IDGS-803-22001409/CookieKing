@@ -1,0 +1,41 @@
+<!-- templates/errors/unauthorized.html -->
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Acceso Denegado - Cookie King{% endblock %}
+
+{% block content %}
+<div class="bg-cream-50 min-h-screen flex items-center justify-center">
+    <div class="text-center p-6 bg-white rounded-lg shadow-lg max-w-md">
+        <div class="mb-4">
+            <i class="fas fa-lock text-6xl text-yellow-500 mb-4"></i>
+            <h1 class="text-3xl font-bold text-chocolate-800">Acceso Denegado</h1>
+            <p class="text-xl text-gray-600 mt-2">No tienes permiso para acceder a esta página</p>
+        </div>
+        <p class="mb-6 text-gray-600">Lo sentimos, no tienes los permisos necesarios para ver el contenido solicitado.</p>
+        
+        {% if current_user.is_authenticated %}
+            {% if current_user.rol == 'admin' %}
+                <a href="{{ url_for('auth.catalogo_usuarios') }}" class="px-5 py-2.5 text-sm font-medium text-white bg-cookie-600 hover:bg-cookie-700 rounded-lg mr-3">
+                    Ir al Panel de Administración
+                </a>
+            {% elif current_user.rol == 'empleado' %}
+                <a href="{{ url_for('main.index') }}" class="px-5 py-2.5 text-sm font-medium text-white bg-cookie-600 hover:bg-cookie-700 rounded-lg mr-3">
+                    Ir al Dashboard
+                </a>
+            {% elif current_user.rol == 'cliente' %}
+                <a href="{{ url_for('main.cliente_portal') }}" class="px-5 py-2.5 text-sm font-medium text-white bg-cookie-600 hover:bg-cookie-700 rounded-lg mr-3">
+                    Ir a Mis Pedidos
+                </a>
+            {% endif %}
+        {% else %}
+            <a href="{{ url_for('auth.iniciar_sesion') }}" class="px-5 py-2.5 text-sm font-medium text-white bg-cookie-600 hover:bg-cookie-700 rounded-lg mr-3">
+                Iniciar Sesión
+            </a>
+        {% endif %}
+        
+        <a href="{{ url_for('main.root_redirect') }}" class="px-5 py-2.5 text-sm font-medium bg-gray-200 hover:bg-gray-300 rounded-lg">
+            Volver al Inicio
+        </a>
+    </div>
+</div>
+{% endblock %}
