@@ -14,7 +14,7 @@ def create_app(config_name='development'):
     app.config.from_object(config[config_name])
     
         # Configuración de la base de datos
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:sergio@localhost:3306/CookieKing'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:conejillo18@localhost:3306/CookieKing'
     
     # Initialize extensions
     db.init_app(app)

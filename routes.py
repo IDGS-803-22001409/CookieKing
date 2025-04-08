@@ -4,15 +4,16 @@ from modulos.galletas.routes import galletas_bp
 from modulos.clientes.routes import clientes_bp
 from modulos.ventas.routes import ventas_bp
 from modulos.auth.routes import auth_bp
+from modulos.produccion.routes import produccion_bp
+from modulos.compras.routes import compras_bp
+from modulos.ingredientes.routes import ingredientes_bp
+from modulos.proveedores.routes import proveedores_bp
+from modulos.reportes.routes import reportes_bp
 
 
 # Importar blueprints temporales (excluimos clientes ya que ahora usamos la implementación real)
 from modulos.temp.routes import (
     usuarios_bp,
-    proveedores_bp,
-    compras_bp, 
-    ingredientes_bp,    
-    reportes_bp
 )
 
 def register_blueprints(app):
