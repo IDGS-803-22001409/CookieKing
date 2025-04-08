@@ -31,7 +31,7 @@ class IngredienteController:
             
             ingrediente = Ingrediente(
                 nombreIngrediente=data.get('nombreIngrediente'),
-                stock=float(data.get('stock', 0)),
+                stock=float(data.get('stock', 0)),  # Esto ya acepta 0
                 unidad=data.get('unidad', ''),
                 stock_minimo=float(data.get('stock_minimo', 0)),
                 precio_unitario=float(data.get('precio_unitario', 0)),
@@ -86,7 +86,6 @@ class IngredienteController:
             return False
         
         # Verificar si hay relaciones que impidan eliminarlo
-        # (Asumimos que necesitarás verificar otras relaciones en el futuro)
         if len(ingrediente.movimientos) > 0:
             return False
         
@@ -99,10 +98,16 @@ class IngredienteController:
             return False
     
     @staticmethod
-    def actualizar_stock(ingrediente_id, cantidad, tipo_movimiento, referencia=None):
+    def actualizar_stock(ingrediente_id, cantidad, tipo_movimiento, referencia=None, fecha_expiracion=None):
         """
         Actualizar el stock de un ingrediente
-        tipo_movimiento: 1 = Consumo (restar), 0 = Reabastecimiento (sumar)
+        
+        Args:
+            ingrediente_id: ID del ingrediente
+            cantidad: Cantidad a agregar/restar
+            tipo_movimiento: 0 = Reabastecimiento (sumar), 1 = Consumo (restar)
+            referencia: Información adicional sobre el movimiento (opcional)
+            fecha_expiracion: Fecha de expiración del ingrediente (opcional, solo para reabastecimiento)
         """
         ingrediente = Ingrediente.query.get(ingrediente_id)
         
@@ -116,6 +121,9 @@ class IngredienteController:
                 ingrediente.stock -= cantidad
             else:  # Reabastecimiento
                 ingrediente.stock += cantidad
+                # Actualizar fecha de expiración si se proporciona
+                if fecha_expiracion:
+                    ingrediente.fecha_expiracion = fecha_expiracion
             
             # Registrar el movimiento
             movimiento = MovimientoInsumo(
@@ -132,7 +140,7 @@ class IngredienteController:
         except Exception:
             db.session.rollback()
             return False
-            
+
     @staticmethod
     def get_movimientos_by_ingrediente(ingrediente_id):
         """Obtener todos los movimientos de un ingrediente específico"""

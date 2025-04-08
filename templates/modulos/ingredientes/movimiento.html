@@ -1,0 +1,130 @@
+{% extends "layouts/base_layout.html" %}
+{% block title %}Registrar Movimiento - {{ ingrediente.nombreIngrediente }} - Cookie King{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6 max-w-2xl">
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-chocolate-800">Registrar Movimiento</h1>
+            <p class="text-chocolate-600 mt-1">Ingrediente: {{ ingrediente.nombreIngrediente }}</p>
+        </div>
+        <div>
+            <a href="{{ url_for('ingredientes.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded flex items-center">
+                <i class="fas fa-arrow-left mr-2"></i> Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- Información del ingrediente -->
+    <div class="bg-cookie-50 border-l-4 border-cookie-500 p-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <p class="text-sm font-semibold text-gray-600">Stock Actual</p>
+                <p class="text-lg font-bold text-chocolate-800">{{ ingrediente.stock }} {{ ingrediente.unidad }}</p>
+            </div>
+            <div>
+                <p class="text-sm font-semibold text-gray-600">Stock Mínimo</p>
+                <p class="text-lg font-bold text-chocolate-800">{{ ingrediente.stock_minimo }} {{ ingrediente.unidad }}</p>
+            </div>
+            <div>
+                <p class="text-sm font-semibold text-gray-600">Precio Unitario</p>
+                <p class="text-lg font-bold text-chocolate-800">${{ ingrediente.precio_unitario|round(2) }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de movimiento -->
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <form method="POST" action="{{ url_for('ingredientes.registrar_movimiento', ingrediente_id=ingrediente.idIngrediente) }}">
+            {{ form.csrf_token }}
+            
+            <div class="mb-4">
+                <label for="tipo_movimiento" class="block text-sm font-medium text-gray-700 mb-1">
+                    {{ form.tipo_movimiento.label }}
+                </label>
+                <div class="flex space-x-4">
+                    {% for subfield in form.tipo_movimiento %}
+                    <div class="flex items-center">
+                        <input type="radio" 
+                               name="{{ form.tipo_movimiento.name }}" 
+                               id="{{ subfield.id }}" 
+                               value="{{ subfield.data }}" 
+                               {% if loop.index == 1 %}checked{% endif %}
+                               class="h-4 w-4 text-cookie-600 focus:ring-cookie-500 border-gray-300">
+                        <label for="{{ subfield.id }}" class="ml-2 block text-sm text-gray-700">
+                            {{ subfield.label }}
+                        </label>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if form.tipo_movimiento.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ form.tipo_movimiento.errors[0] }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="mb-4">
+                <label for="cantidad" class="block text-sm font-medium text-gray-700 mb-1">
+                    {{ form.cantidad.label }} ({{ ingrediente.unidad }})
+                </label>
+                <input type="number" 
+                       name="{{ form.cantidad.name }}" 
+                       id="{{ form.cantidad.id }}" 
+                       step="0.01" 
+                       min="0.01" 
+                       class="mt-1 focus:ring-cookie-500 focus:border-cookie-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                {% if form.cantidad.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ form.cantidad.errors[0] }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="mb-6">
+                <label for="referencia" class="block text-sm font-medium text-gray-700 mb-1">
+                    {{ form.referencia.label }}
+                </label>
+                <input type="text" 
+                       name="{{ form.referencia.name }}" 
+                       id="{{ form.referencia.id }}" 
+                       placeholder="Ej. Orden #123, Producción diaria, etc." 
+                       class="mt-1 focus:ring-cookie-500 focus:border-cookie-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                {% if form.referencia.errors %}
+                <p class="text-red-500 text-xs mt-1">{{ form.referencia.errors[0] }}</p>
+                {% endif %}
+            </div>
+            
+            <div class="flex justify-end">
+                <button type="submit" class="bg-cookie-600 hover:bg-cookie-700 text-white font-bold py-2 px-6 rounded focus:outline-none focus:shadow-outline">
+                    <i class="fas fa-save mr-2"></i> Guardar Movimiento
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Enlace a historial -->
+    <div class="text-center mt-6">
+        <a href="{{ url_for('ingredientes.historial', ingrediente_id=ingrediente.idIngrediente) }}" class="text-cookie-600 hover:text-cookie-800">
+            <i class="fas fa-history mr-1"></i> Ver historial de movimientos
+        </a>
+    </div>
+</div>
+
+<script>
+    // Script para validar que no se pueda consumir más del stock disponible
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.querySelector('form');
+        const tipoMovimientoRadios = document.getElementsByName('{{ form.tipo_movimiento.name }}');
+        const cantidadInput = document.getElementById('{{ form.cantidad.id }}');
+        const stockActual = {{ ingrediente.stock }};
+        
+        form.addEventListener('submit', function(e) {
+            // Verificar si es tipo consumo (1) y si la cantidad es mayor al stock
+            const tipoMovimiento = Array.from(tipoMovimientoRadios).find(radio => radio.checked).value;
+            const cantidad = parseFloat(cantidadInput.value);
+            
+            if (tipoMovimiento == 1 && cantidad > stockActual) {
+                e.preventDefault();
+                alert('No hay suficiente stock disponible para esta salida. Stock actual: ' + stockActual);
+            }
+        });
+    });
+</script>
+{% endblock %}

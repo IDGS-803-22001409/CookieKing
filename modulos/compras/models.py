@@ -37,6 +37,7 @@ class CompraDetalle(db.Model):
     cantidad = db.Column(db.Float, nullable=False)
     precio_unitario = db.Column(db.Float, nullable=False)
     subtotal = db.Column(db.Float, nullable=False)
+    fecha_expiracion = db.Column(db.Date, nullable=True)  # Nuevo campo
     
     # Relaciones
     ingrediente = db.relationship('Ingrediente', backref='compras_detalle', lazy=True)
@@ -50,5 +51,6 @@ class CompraDetalle(db.Model):
             'nombre_ingrediente': self.ingrediente.nombreIngrediente if self.ingrediente else None,
             'cantidad': self.cantidad,
             'precio_unitario': self.precio_unitario,
-            'subtotal': self.subtotal
+            'subtotal': self.subtotal,
+            'fecha_expiracion': self.fecha_expiracion.strftime('%Y-%m-%d') if self.fecha_expiracion else None
         }

@@ -1,0 +1,412 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}{{ title }} - Cookie King{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Cabecera del formulario -->
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-chocolate-800">
+            <i class="fas fa-shopping-cart mr-2"></i>{{ title }}
+        </h2>
+        <a href="{{ url_for('compras.index') }}"
+            class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i>Volver a compras
+        </a>
+    </div>
+
+    <!-- Formulario de compra -->
+    <form id="formulario-compra" action="{{ action }}" method="POST" class="bg-white shadow-md rounded-lg p-6">
+        <!-- Agregar token CSRF -->
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="detalles" id="detalles-json" value="">
+
+        <!-- Campo oculto para el ID de compra si estamos editando -->
+        {% if compra %}
+        <input type="hidden" name="id" value="{{ compra.idCompra }}">
+        {% endif %}
+
+        <!-- Información general de la compra -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+                <label for="fecha" class="block text-sm font-medium text-chocolate-700 mb-1">Fecha</label>
+                <input type="date" id="fecha" name="fecha"
+                    value="{{ compra.fecha.strftime('%Y-%m-%d') if compra and compra.fecha else '' }}"
+                    class="w-full px-3 py-2 border border-cookie-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cookie-500"
+                    required>
+            </div>
+
+            <div>
+                <label for="idProveedor" class="block text-sm font-medium text-chocolate-700 mb-1">Proveedor</label>
+                <select id="idProveedor" name="idProveedor"
+                    class="w-full px-3 py-2 border border-cookie-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cookie-500"
+                    required>
+                    <option value="">Seleccionar proveedor</option>
+                    {% for proveedor in proveedores %}
+                    <option value="{{ proveedor.idProveedor }}" {{ 'selected' if compra and
+                        compra.idProveedor==proveedor.idProveedor else '' }}>
+                        {{ proveedor.nombre_proveedor }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="numero_factura" class="block text-sm font-medium text-chocolate-700 mb-1">Número de
+                    Factura</label>
+                <input type="text" id="numero_factura" name="numero_factura"
+                    value="{{ compra.numero_factura if compra else '' }}"
+                    class="w-full px-3 py-2 border border-cookie-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cookie-500"
+                    placeholder="Opcional">
+            </div>
+
+            <div>
+                <label for="estatus" class="block text-sm font-medium text-chocolate-700 mb-1">Estado de Pago</label>
+                <select id="estatus" name="estatus"
+                    class="w-full px-3 py-2 border border-cookie-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cookie-500"
+                    required>
+                    <option value="1" {{ 'selected' if not compra or compra.estatus==1 else '' }}>Pagado</option>
+                    <option value="0" {{ 'selected' if compra and compra.estatus==0 else '' }}>Pendiente</option>
+                    <option value="2" {{ 'selected' if compra and compra.estatus==2 else '' }}>Cancelado</option>
+                </select>
+            </div>
+        </div>
+
+        <hr class="my-6 border-cookie-200">
+
+        <!-- Detalles de la compra -->
+        <div class="mb-6">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-chocolate-800">Detalles de la Compra</h3>
+                <button type="button" id="agregar-detalle"
+                    class="bg-cookie-600 hover:bg-cookie-700 text-white px-3 py-1 rounded-lg text-sm flex items-center">
+                    <i class="fas fa-plus mr-1"></i>Agregar ingrediente
+                </button>
+            </div>
+
+            <!-- Tabla de detalles -->
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-cookie-200">
+                    <thead class="bg-cookie-100">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">Ingrediente</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">Cantidad</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">Unidad</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">Precio Unit.</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">Subtotal</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">Fecha Exp.</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-chocolate-700 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody id="detalles-tabla" class="bg-white divide-y divide-cookie-100">
+                        <!-- Los detalles se cargarán dinámicamente con JavaScript -->
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-cream-50">
+                            <td colspan="4" class="px-6 py-3 text-right font-medium text-chocolate-800">TOTAL:</td>
+                            <td class="px-6 py-3 font-medium text-chocolate-800" id="total-compra">$0.00</td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            <!-- Mensaje si no hay detalles -->
+            <div id="no-detalles" class="p-4 text-center text-cookie-700">
+                Aún no ha agregado ningún ingrediente a la compra
+            </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="flex justify-end space-x-3 mt-8">
+            <a href="{{ url_for('compras.index') }}"
+                class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">Cancelar</a>
+            <button type="submit" class="px-4 py-2 bg-cookie-600 text-white rounded hover:bg-cookie-700">Guardar
+                Compra</button>
+        </div>
+    </form>
+</div>
+
+<!-- Modal para agregar detalle -->
+<div id="modal-detalle" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
+        <h3 class="text-lg font-medium text-chocolate-900 mb-4">Agregar Ingrediente</h3>
+
+        <div class="space-y-4">
+            <div>
+                <label for="modal-ingrediente"
+                    class="block text-sm font-medium text-chocolate-700 mb-1">Ingrediente</label>
+                <select id="modal-ingrediente"
+                    class="w-full px-3 py-2 border border-cookie-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cookie-500">
+                    <option value="">Seleccionar ingrediente</option>
+                    {% for ingrediente in ingredientes %}
+                    <option value="{{ ingrediente.idIngrediente }}" data-unidad="{{ ingrediente.unidad }}">
+                        {{ ingrediente.nombreIngrediente }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="modal-cantidad"
+                        class="block text-sm font-medium text-chocolate-700 mb-1">Cantidad</label>
+                    <input type="number" id="modal-cantidad" min="0.01" step="0.01"
+                        class="w-full px-3 py-2 border border-cookie-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cookie-500">
+                </div>
+
+                <div>
+                    <label for="modal-unidad" class="block text-sm font-medium text-chocolate-700 mb-1">Unidad</label>
+                    <input type="text" id="modal-unidad" readonly
+                        class="w-full px-3 py-2 bg-gray-100 border border-cookie-300 rounded-md">
+                </div>
+            </div>
+            <div>
+                <label for="modal-fecha-expiracion" class="block text-sm font-medium text-chocolate-700 mb-1">Fecha de
+                    Expiración</label>
+                <input type="date" id="modal-fecha-expiracion"
+                    class="w-full px-3 py-2 border border-cookie-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cookie-500">
+                <p class="text-xs text-gray-500 mt-1">Opcional. Si no se especifica, se mantendrá la fecha actual en el
+                    inventario.</p>
+            </div>
+
+            <div>
+                <label for="modal-precio" class="block text-sm font-medium text-chocolate-700 mb-1">Precio Unitario
+                    ($)</label>
+                <input type="number" id="modal-precio" min="0.01" step="0.01"
+                    class="w-full px-3 py-2 border border-cookie-300 rounded-md focus:outline-none focus:ring-2 focus:ring-cookie-500">
+            </div>
+
+            <div>
+                <label for="modal-subtotal" class="block text-sm font-medium text-chocolate-700 mb-1">Total
+                    ($)</label>
+                <input type="text" id="modal-subtotal" readonly
+                    class="w-full px-3 py-2 bg-gray-100 border border-cookie-300 rounded-md">
+            </div>
+        </div>
+
+        <div class="flex justify-end space-x-2 mt-6">
+            <button onclick="cerrarModalDetalle()"
+                class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">Cancelar</button>
+            <button onclick="guardarDetalle()"
+                class="px-4 py-2 bg-cookie-600 text-white rounded hover:bg-cookie-700">Agregar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Array para almacenar los detalles de la compra
+    let detalles = [];
+    let editandoIndex = -1;
+
+    // Al cargar la página
+    document.addEventListener('DOMContentLoaded', function () {
+        // Cargar detalles existentes si estamos editando
+        {% if detalles %}
+        {% for detalle in detalles %}
+        detalles.push({
+            idIngrediente: {{ detalle.idIngrediente }},
+            nombreIngrediente: "{{ detalle.ingrediente.nombreIngrediente }}",
+            cantidad: {{ detalle.cantidad }},
+            unidad: "{{ detalle.ingrediente.unidad }}",
+            precio_unitario: {{ detalle.precio_unitario }},
+            subtotal: {{ detalle.subtotal }},
+            fecha_expiracion: "{{ detalle.fecha_expiracion.strftime('%Y-%m-%d') if detalle.fecha_expiracion else '' }}"
+        });
+        {% endfor %}
+        actualizarTablaDetalles();
+        {% endif %}
+
+        // Event listener para el botón de agregar detalle
+        document.getElementById('agregar-detalle').addEventListener('click', abrirModalDetalle);
+
+        // Event listeners para calcular subtotal automáticamente
+        document.getElementById('modal-cantidad').addEventListener('input', calcularSubtotal);
+        document.getElementById('modal-precio').addEventListener('input', calcularSubtotal);
+
+        // Event listener para cambio de ingrediente
+        document.getElementById('modal-ingrediente').addEventListener('change', function () {
+            const select = document.getElementById('modal-ingrediente');
+            const option = select.options[select.selectedIndex];
+            if (option && option.value) {
+                document.getElementById('modal-unidad').value = option.dataset.unidad || '';
+
+                // Obtener más información del ingrediente vía AJAX
+                fetch(`{{ url_for('compras.get_ingrediente', ingrediente_id=0) }}`.replace('0', option.value))
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!document.getElementById('modal-precio').value) {
+                            document.getElementById('modal-precio').value = data.precio_unitario;
+                            calcularSubtotal();
+                        }
+                    });
+            } else {
+                document.getElementById('modal-unidad').value = '';
+            }
+        });
+
+        // Event listener para envío del formulario
+        document.getElementById('formulario-compra').addEventListener('submit', function (e) {
+            if (detalles.length === 0) {
+                e.preventDefault();
+                alert('Debe agregar al menos un ingrediente a la compra');
+                return false;
+            }
+
+            // Convertir array de detalles a JSON y añadirlo al campo oculto
+            document.getElementById('detalles-json').value = JSON.stringify(detalles);
+            return true;
+        });
+    });
+
+    // Calcular subtotal en el modal
+    function calcularSubtotal() {
+        const cantidad = parseFloat(document.getElementById('modal-cantidad').value) || 0;
+        const precio = parseFloat(document.getElementById('modal-precio').value) || 0;
+        const subtotal = cantidad * precio;
+        document.getElementById('modal-subtotal').value = subtotal.toFixed(2);
+    }
+
+    // Abrir modal para agregar detalle
+    function abrirModalDetalle(editarIndex = -1) {
+        // Limpiar campos
+        document.getElementById('modal-ingrediente').value = '';
+        document.getElementById('modal-cantidad').value = '';
+        document.getElementById('modal-unidad').value = '';
+        document.getElementById('modal-precio').value = '';
+        document.getElementById('modal-subtotal').value = '';
+        document.getElementById('modal-fecha-expiracion').value = '';
+
+        // Si estamos editando un detalle existente
+        if (editarIndex >= 0) {
+            const detalle = detalles[editarIndex];
+            document.getElementById('modal-ingrediente').value = detalle.idIngrediente;
+            document.getElementById('modal-cantidad').value = detalle.cantidad;
+            document.getElementById('modal-unidad').value = detalle.unidad;
+            document.getElementById('modal-precio').value = detalle.precio_unitario;
+            document.getElementById('modal-fecha-expiracion').value = detalle.fecha_expiracion || '';
+            calcularSubtotal();
+            editandoIndex = editarIndex;
+        } else {
+            editandoIndex = -1;
+        }
+
+        // Mostrar modal
+        document.getElementById('modal-detalle').classList.remove('hidden');
+    }
+
+    // Cerrar modal
+    function cerrarModalDetalle() {
+        document.getElementById('modal-detalle').classList.add('hidden');
+    }
+
+    // Guardar detalle desde el modal
+    function guardarDetalle() {
+        // Validar campos
+        const ingredienteSelect = document.getElementById('modal-ingrediente');
+        const idIngrediente = ingredienteSelect.value;
+        const nombreIngrediente = ingredienteSelect.options[ingredienteSelect.selectedIndex]?.text || '';
+        const cantidad = parseFloat(document.getElementById('modal-cantidad').value);
+        const unidad = document.getElementById('modal-unidad').value;
+        const precio_unitario = parseFloat(document.getElementById('modal-precio').value);
+        const subtotal = parseFloat(document.getElementById('modal-subtotal').value);
+        const fecha_expiracion = document.getElementById('modal-fecha-expiracion').value;
+
+        if (!idIngrediente || isNaN(cantidad) || cantidad <= 0 || isNaN(precio_unitario) || precio_unitario <= 0) {
+            alert('Todos los campos son obligatorios y deben ser válidos');
+            return;
+        }
+
+        // Crear objeto de detalle
+        const detalle = {
+            idIngrediente: parseInt(idIngrediente),
+            nombreIngrediente,
+            cantidad,
+            unidad,
+            precio_unitario,
+            subtotal,
+            fecha_expiracion
+        };
+
+        // Agregar o actualizar en el array
+        if (editandoIndex >= 0) {
+            detalles[editandoIndex] = detalle;
+        } else {
+            detalles.push(detalle);
+        }
+
+        // Actualizar tabla y cerrar modal
+        actualizarTablaDetalles();
+        cerrarModalDetalle();
+    }
+
+    // Actualizar tabla de detalles
+    function actualizarTablaDetalles() {
+        const tabla = document.getElementById('detalles-tabla');
+        const noDetalles = document.getElementById('no-detalles');
+
+        // Mostrar mensaje si no hay detalles
+        if (detalles.length === 0) {
+            tabla.innerHTML = '';
+            noDetalles.classList.remove('hidden');
+            document.getElementById('total-compra').textContent = '$0.00';
+            return;
+        }
+
+        // Ocultar mensaje y llenar tabla
+        noDetalles.classList.add('hidden');
+        let html = '';
+        let total = 0;
+
+        detalles.forEach((detalle, index) => {
+            total += detalle.subtotal;
+            
+            // Formatear fecha de expiración para mostrar
+            let fechaExpText = 'No especificada';
+            if (detalle.fecha_expiracion && detalle.fecha_expiracion.trim() !== '') {
+                try {
+                    fechaExpText = new Date(detalle.fecha_expiracion + 'T00:00:00').toLocaleDateString();
+                } catch (e) {
+                    console.error("Error al formatear fecha:", e);
+                    fechaExpText = detalle.fecha_expiracion;
+                }
+            }
+
+            html += `
+            <tr>
+                <td class="px-6 py-3">${detalle.nombreIngrediente}</td>
+                <td class="px-6 py-3">${detalle.cantidad.toFixed(2)}</td>
+                <td class="px-6 py-3">${detalle.unidad}</td>
+                <td class="px-6 py-3">$${detalle.precio_unitario.toFixed(2)}</td>
+                <td class="px-6 py-3">$${detalle.subtotal.toFixed(2)}</td>
+                <td class="px-6 py-3">${fechaExpText}</td>
+                <td class="px-6 py-3 text-right">
+                    <button type="button" onclick="editarDetalle(${index})" class="text-cookie-600 hover:text-cookie-800 mr-2">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button type="button" onclick="eliminarDetalle(${index})" class="text-red-600 hover:text-red-900">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+        });
+
+        tabla.innerHTML = html;
+        document.getElementById('total-compra').textContent = `$${total.toFixed(2)}`;
+    }
+
+    // Editar detalle
+    function editarDetalle(index) {
+        abrirModalDetalle(index);
+    }
+
+    // Eliminar detalle
+    function eliminarDetalle(index) {
+        if (confirm('¿Está seguro de eliminar este ingrediente de la compra?')) {
+            detalles.splice(index, 1);
+            actualizarTablaDetalles();
+        }
+    }
+</script>
+{% endblock %}

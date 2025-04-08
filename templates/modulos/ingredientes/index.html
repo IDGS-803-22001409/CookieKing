@@ -93,7 +93,14 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex justify-end space-x-2">
-                               
+                                <a href="{{ url_for('ingredientes.registrar_movimiento', ingrediente_id=ingrediente.idIngrediente) }}" 
+                                   class="text-cookie-600 hover:text-cookie-900" title="Registrar movimiento">
+                                    <i class="fas fa-exchange-alt"></i>
+                                </a>
+                                <a href="{{ url_for('ingredientes.historial', ingrediente_id=ingrediente.idIngrediente) }}" 
+                                   class="text-blue-600 hover:text-blue-900" title="Ver historial">
+                                    <i class="fas fa-history"></i>
+                                </a>
                                 <a href="{{ url_for('ingredientes.editar_ingrediente', ingrediente_id=ingrediente.idIngrediente) }}" 
                                    class="text-amber-600 hover:text-amber-900" title="Editar">
                                     <i class="fas fa-edit"></i>
@@ -160,4 +167,4 @@ window.addEventListener('click', function(event) {
     }
 });
 </script>
-{% endblock %}
+{% endblock %}

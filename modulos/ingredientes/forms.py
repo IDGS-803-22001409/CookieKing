@@ -7,9 +7,9 @@ class IngredienteForm(FlaskForm):
     """Formulario para la creación y edición de ingredientes"""
     nombreIngrediente = StringField('Nombre del Ingrediente', validators=[DataRequired(message='El nombre es obligatorio')])
     
-    stock = FloatField('Cantidad en Stock', 
-                      validators=[DataRequired(message='El stock es obligatorio'), 
-                                 NumberRange(min=0, message='El stock no puede ser negativo')])
+    stock = FloatField('Cantidad en Stock',
+                  validators=[Optional(),
+                             NumberRange(min=0, message='El stock no puede ser negativo')])
     
     unidad = SelectField('Unidad de Medida', 
                         choices=[

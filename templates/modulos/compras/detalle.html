@@ -1,0 +1,147 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Detalle de Compra - Cookie King{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <!-- Cabecera -->
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-chocolate-800">
+            <i class="fas fa-file-invoice mr-2"></i>Detalle de Compra #{{ compra.idCompra }}
+        </h2>
+        <div class="flex space-x-2">
+            <a href="{{ url_for('compras.editar_compra', compra_id=compra.idCompra) }}" class="bg-cookie-600 hover:bg-cookie-700 text-white px-4 py-2 rounded-lg flex items-center">
+                <i class="fas fa-edit mr-2"></i>Editar
+            </a>
+            <a href="{{ url_for('compras.index') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg flex items-center">
+                <i class="fas fa-arrow-left mr-2"></i>Volver
+            </a>
+        </div>
+    </div>
+
+    <!-- Tarjeta de información general -->
+    <div class="bg-white shadow-md rounded-lg p-6 mb-6">
+        <h3 class="text-lg font-medium text-chocolate-800 mb-4 pb-2 border-b border-cookie-200">Información General</h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div>
+                <p class="text-sm text-chocolate-600 font-medium">Número de Compra</p>
+                <p class="text-lg text-chocolate-800">#{{ compra.idCompra }}</p>
+            </div>
+            
+            <div>
+                <p class="text-sm text-chocolate-600 font-medium">Fecha</p>
+                <p class="text-lg text-chocolate-800">{{ compra.fecha.strftime('%d/%m/%Y') }}</p>
+            </div>
+            
+            <div>
+                <p class="text-sm text-chocolate-600 font-medium">Proveedor</p>
+                <p class="text-lg text-chocolate-800">{{ compra.proveedor.nombre_proveedor if compra.proveedor else "Desconocido" }}</p>
+            </div>
+            
+            <div>
+                <p class="text-sm text-chocolate-600 font-medium">Número de Factura</p>
+                <p class="text-lg text-chocolate-800">{{ compra.numero_factura or "N/A" }}</p>
+            </div>
+            
+            <div>
+                <p class="text-sm text-chocolate-600 font-medium">Total</p>
+                <p class="text-lg text-chocolate-800 font-bold">${{ "%.2f"|format(compra.total) }}</p>
+            </div>
+            
+            <div>
+                <p class="text-sm text-chocolate-600 font-medium">Estado</p>
+                <p class="text-lg">
+                    <span class="px-2 py-1 rounded-full text-xs {{ 'bg-green-100 text-green-800' if compra.estatus == 1 else 'bg-yellow-100 text-yellow-800' if compra.estatus == 0 else 'bg-red-100 text-red-800' }}">
+                        {{ "Pagado" if compra.estatus == 1 else "Pendiente" if compra.estatus == 0 else "Cancelado" }}
+                    </span>
+                </p>
+            </div>
+            
+            <div>
+                <p class="text-sm text-chocolate-600 font-medium">Fecha de Registro</p>
+                <p class="text-lg text-chocolate-800">{{ compra.fecha_registro.strftime('%d/%m/%Y %H:%M') }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Tabla de detalles -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden mb-6">
+        <h3 class="text-lg font-medium text-chocolate-800 p-6 pb-4 border-b border-cookie-200">Detalle de Ingredientes</h3>
+        
+        {% if detalles %}
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-cookie-200">
+                    <thead class="bg-cookie-100">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">Ingrediente</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">Cantidad</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">Unidad</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">Precio Unit.</th>
+                            <th class="px-6 py-3 text-right text-xs font-medium text-chocolate-700 uppercase tracking-wider">Subtotal</th>
+                            
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-cookie-100">
+                        {% for detalle in detalles %}
+                            <tr class="hover:bg-cream-50">
+                                <td class="px-6 py-4 text-sm text-chocolate-600">{{ detalle.ingrediente.nombreIngrediente }}</td>
+                                <td class="px-6 py-4 text-sm text-chocolate-600">{{ "%.2f"|format(detalle.cantidad) }}</td>
+                                <td class="px-6 py-4 text-sm text-chocolate-600">{{ detalle.ingrediente.unidad }}</td>
+                                <td class="px-6 py-4 text-sm text-chocolate-600">${{ "%.2f"|format(detalle.precio_unitario) }}</td>
+                                <td class="px-6 py-4 text-sm text-chocolate-600 text-right">${{ "%.2f"|format(detalle.subtotal) }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot>
+                        <tr class="bg-cream-50">
+                            <td colspan="4" class="px-6 py-3 text-right font-medium text-chocolate-800">TOTAL:</td>
+                            <td class="px-6 py-3 font-medium text-chocolate-800 text-right">${{ "%.2f"|format(compra.total) }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        {% else %}
+            <div class="p-8 text-center text-cookie-700">
+                <p>No hay detalles registrados para esta compra</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <!-- Botones de acción -->
+    <div class="flex justify-end space-x-3 mt-8">
+        <a href="{{ url_for('compras.index') }}" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">
+            <i class="fas fa-arrow-left mr-1"></i>Volver
+        </a>
+        <a href="{{ url_for('compras.editar_compra', compra_id=compra.idCompra) }}" class="px-4 py-2 bg-cookie-600 text-white rounded hover:bg-cookie-700">
+            <i class="fas fa-edit mr-1"></i>Editar
+        </a>
+        
+    </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div id="modal-eliminar" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded-lg shadow-lg">
+        <h3 class="text-lg font-medium text-chocolate-900 mb-4">¿Confirma que desea eliminar esta compra?</h3>
+        <p class="text-chocolate-700 mb-6">Esta acción no se puede deshacer y afectará al inventario de ingredientes.</p>
+        <div class="flex justify-end space-x-2">
+            <button onclick="cerrarModal()" class="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300">Cancelar</button>
+            <form id="form-eliminar" method="POST" action="">
+                <button type="submit" class="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Eliminar</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmarEliminar(id) {
+        document.getElementById('form-eliminar').action = "{{ url_for('compras.eliminar', compra_id=0) }}".replace('0', id);
+        document.getElementById('modal-eliminar').classList.remove('hidden');
+    }
+    
+    function cerrarModal() {
+        document.getElementById('modal-eliminar').classList.add('hidden');
+    }
+</script>
+{% endblock %}
