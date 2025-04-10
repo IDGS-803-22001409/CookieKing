@@ -3,10 +3,233 @@
 {% block title %}{{ title }} - Cookie King{% endblock %}
 
 {% block extra_css %}
-<!-- Estilos adicionales para el formulario de ventas -->
 <style>
+    /* Estilos para tarjetas de productos */
+    .product-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        transition: box-shadow 0.3s;
+        background-color: white;
+    }
+    
+    .product-card:hover {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    .product-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+    }
+    
+    .product-name {
+        font-weight: 700;
+        font-size: 1.125rem;
+        color: #4D2917; /* chocolate-800 */
+    }
+    
+    .product-price {
+        font-weight: 700;
+        color: #F3AD4E; /* cookie-600 */
+    }
+    
+    .product-badge {
+        display: inline-block;
+        padding: 0.25rem 1rem;
+        font-size: 0.875rem;
+        border-radius: 9999px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .product-badge.available {
+        background-color: #dcfce7;
+        color: #166534;
+    }
+    
+    .product-badge.low {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+    
+    .product-badge.out {
+        background-color: #fee2e2;
+        color: #b91c1c;
+    }
+    
+    .stock-info {
+        font-size: 0.875rem;
+        color: #4b5563;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stock-bar {
+        width: 100%;
+        height: 6px;
+        background-color: #e5e7eb;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stock-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+    }
+    
+    .stock-bar-fill.high {
+        background-color: #F3AD4E;
+    }
+    
+    .stock-bar-fill.medium {
+        background-color: #f59e0b;
+    }
+    
+    .stock-bar-fill.low {
+        background-color: #ef4444;
+    }
+    
+    .controls-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .quantity-control label {
+        font-size: 1rem;
+        font-weight: 500;
+        color: #4D2917;
+    }
+    
+    .quantity-input {
+        width: 4rem;
+        height: 2.25rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.25rem;
+        text-align: center;
+        font-size: 1rem;
+    }
+    
+    .type-control {
+        margin-bottom: 0.5rem;
+    }
+    
+    .type-select {
+        width: 100%;
+        height: 2.5rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.25rem;
+        padding: 0 0.5rem;
+        font-size: 1rem;
+        background-color: white;
+    }
+    
+    .add-button {
+        width: 100%;
+        background-color: #F3AD4E;
+        color: white;
+        border: none;
+        border-radius: 0.25rem;
+        padding: 0.625rem 1rem;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .add-button:hover {
+        background-color: #E69235;
+    }
+    
+    .add-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    /* Estilos para el carrito de compra */
+    .cart-container {
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+    }
+    
+    .cart-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #4D2917;
+        margin-bottom: 1rem;
+    }
+    
+    .cart-empty {
+        text-align: center;
+        padding: 2rem 0;
+        color: #6b7280;
+    }
+    
+    .cart-items {
+        max-height: 20rem;
+        overflow-y: auto;
+        margin-bottom: 1rem;
+    }
+    
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding-bottom: 0.75rem;
+        margin-bottom: 0.75rem;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    
+    .cart-total {
+        display: flex;
+        justify-content: space-between;
+        font-weight: 700;
+        padding-top: 1rem;
+        margin-bottom: 1rem;
+        border-top: 1px solid #e5e7eb;
+    }
+    
     .detail-row:nth-child(odd) {
         background-color: rgba(242, 226, 210, 0.2);
+    }
+    
+    /* Filtro de productos */
+    .product-filter {
+        margin-bottom: 1rem;
+    }
+    
+    /* Alertas */
+    .alert {
+        border-radius: 0.375rem;
+        padding: 0.75rem 1rem;
+        margin-bottom: 1rem;
+        border-width: 1px;
+    }
+    
+    .alert-warning {
+        border-color: #f59e0b;
+        background-color: #fffbeb;
+        color: #92400e;
+    }
+    
+    .alert-danger {
+        border-color: #ef4444;
+        background-color: #fee2e2;
+        color: #b91c1c;
     }
 </style>
 {% endblock %}
@@ -16,17 +239,24 @@
     <!-- Encabezado -->
     <div class="flex justify-between items-center mb-6">
         <h1 class="text-2xl font-bold text-chocolate-800">{{ title }}</h1>
-        <a href="{{ url_for('ventas.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
-            <i class="fas fa-arrow-left mr-2"></i>
-            Volver
-        </a>
+        <div class="flex space-x-2">
+            <a href="{{ url_for('main.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
+                <i class="fas fa-home mr-2"></i>
+                Inicio
+            </a>
+            <a href="{{ url_for('ventas.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors duration-200">
+                <i class="fas fa-arrow-left mr-2"></i>
+                Volver
+            </a>
+        </div>
     </div>
 
     <!-- Formulario de venta -->
     <form id="venta-form" method="POST" action="{{ action }}">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <!-- Información de la Venta - 1 columna -->
             <div class="bg-white p-4 rounded-lg shadow">
                 <h2 class="text-lg font-semibold text-chocolate-800 mb-4">Información de la Venta</h2>
                 
@@ -64,114 +294,159 @@
                                 <span class="font-semibold">Información</span>
                             </div>
                         </div>
-                        <p class="mt-2">Agregue productos a la venta utilizando el panel de la derecha.</p>
+                        <p class="mt-2">Agregue productos a la venta seleccionándolos de la lista de productos disponibles.</p>
                     </div>
+                </div>
+                
+                <!-- Alerta de stock -->
+                <div id="alerta-stock" class="alert alert-warning hidden mt-4">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <span id="mensaje-alerta"></span>
+                </div>
+                
+                <!-- Carrito de venta -->
+                <div class="mt-6">
+                    <h3 class="text-md font-semibold text-chocolate-800 mb-2">Productos en Venta</h3>
+                    
+                    <div id="carrito-vacio" class="cart-empty">
+                        <i class="fas fa-shopping-cart text-4xl mb-2"></i>
+                        <p>No hay productos en la venta</p>
+                        <p class="text-sm">Agrega productos para continuar</p>
+                    </div>
+                    
+                    <div id="carrito-items" class="hidden">
+                        <div class="cart-items" id="items-container">
+                            <!-- Aquí se agregarán dinámicamente los items -->
+                        </div>
+                        
+                        <div class="cart-total">
+                            <span>Total:</span>
+                            <span id="venta-total">$0.00</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Botones de acción -->
+                <div class="mt-6 flex justify-end space-x-3">
+                    <a 
+                        href="{{ url_for('ventas.index') }}" 
+                        class="px-4 py-2 border border-cookie-300 rounded-lg text-chocolate-700 hover:bg-cream-100 transition-colors"
+                    >
+                        Cancelar
+                    </a>
+                    <button 
+                        type="submit" 
+                        id="btn-guardar"
+                        class="px-6 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors opacity-50 cursor-not-allowed"
+                        disabled
+                    >
+                        Guardar Venta
+                    </button>
                 </div>
             </div>
             
-            <div class="bg-white p-4 rounded-lg shadow">
-                <h2 class="text-lg font-semibold text-chocolate-800 mb-4">Agregar Productos</h2>
+            <!-- Productos disponibles - 2 columnas -->
+            <div class="md:col-span-2 bg-white p-4 rounded-lg shadow">
+                <h2 class="text-lg font-semibold text-chocolate-800 mb-4">Productos Disponibles</h2>
                 
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label for="producto" class="block mb-2 text-sm font-medium text-chocolate-700">Producto</label>
-                        <select id="producto" class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500">
-                            <option value="">Seleccionar producto</option>
-                            {% for galleta in galletas %}
-                                <option value="{{ galleta.idGalleta }}" 
-                                        data-nombre="{{ galleta.nombreGalleta }}" 
-                                        data-precio="{{ galleta.precio_unitario }}">
-                                    {{ galleta.nombreGalleta }} - ${{ "%.2f"|format(galleta.precio_unitario) }}
-                                </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    <div>
-                        <label for="tipo-venta" class="block mb-2 text-sm font-medium text-chocolate-700">Tipo de Venta</label>
-                        <select id="tipo-venta" class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500">
-                            <option value="1">Individual</option>
-                            <option value="0">Paquete</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div class="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label for="cantidad" class="block mb-2 text-sm font-medium text-chocolate-700">Cantidad</label>
-                        <input type="number" id="cantidad" min="1" value="1" class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500">
-                    </div>
-                    <div class="flex items-end">
-                        <button 
-                            type="button" 
-                            id="btn-agregar-producto" 
-                            class="inline-flex items-center px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200 w-full justify-center"
+                <!-- Filtro de búsqueda -->
+                <div class="product-filter">
+                    <div class="relative">
+                        <input 
+                            type="text" 
+                            id="filtro-productos" 
+                            placeholder="Buscar productos..." 
+                            class="border border-cookie-200 rounded-lg p-2.5 pl-8 w-full focus:ring-cookie-500 focus:border-cookie-500"
                         >
-                            <i class="fas fa-plus mr-2"></i>
-                            Agregar
-                        </button>
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-2.5 pointer-events-none">
+                            <i class="fas fa-search text-gray-400"></i>
+                        </div>
                     </div>
                 </div>
                 
-                <hr class="my-4 border-cookie-200">
-                
-                <h3 class="text-md font-semibold text-chocolate-800 mb-2">Productos en Venta</h3>
-                <div id="detalles-container" class="border border-cookie-200 rounded-lg overflow-hidden mb-4 max-h-64 overflow-y-auto">
-                    <div class="bg-cookie-100 text-chocolate-700 p-2 text-sm grid grid-cols-12 gap-2 font-medium">
-                        <div class="col-span-5">Producto</div>
-                        <div class="col-span-2 text-center">Tipo</div>
-                        <div class="col-span-2 text-center">Cantidad</div>
-                        <div class="col-span-2 text-right">Subtotal</div>
-                        <div class="col-span-1 text-center">Acciones</div>
-                    </div>
-                    <div id="detalles-list" class="text-sm">
-                        <!-- Aquí se cargan dinámicamente los detalles -->
-                        {% if venta and detalles %}
-                            {% for detalle in detalles %}
-                                <div class="grid grid-cols-12 gap-2 p-2 detail-row" data-id="{{ detalle.galleta_id }}" data-tipo="{{ detalle.tipo_venta }}">
-                                    <div class="col-span-5">{{ detalle.galleta.nombreGalleta }}</div>
-                                    <div class="col-span-2 text-center">{{ "Individual" if detalle.tipo_venta == 1 else "Paquete" }}</div>
-                                    <div class="col-span-2 text-center">{{ detalle.cantidad }}</div>
-                                    <div class="col-span-2 text-right">${{ "%.2f"|format(detalle.subtotal) }}</div>
-                                    <div class="col-span-1 text-center">
-                                        <button type="button" class="text-red-500 hover:text-red-700 btn-eliminar-detalle">
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            {% endfor %}
+                <!-- Grid de productos responsivo -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto max-h-screen">
+                    {% for galleta in galletas %}
+                    {% if galleta.existencias > 0 %}
+                    <div class="product-card product-item" data-nombre="{{ galleta.nombreGalleta | lower }}">
+                        <!-- Cabecera del producto con nombre y precio -->
+                        <div class="product-header">
+                            <h3 class="product-name">{{ galleta.nombreGalleta }}</h3>
+                            <span class="product-price">${{ "%.2f"|format(galleta.precio_unitario) }}</span>
+                        </div>
+                        
+                        <!-- Indicador de stock -->
+                        {% if galleta.existencias > 10 %}
+                            <span class="product-badge available">Disponible</span>
                         {% else %}
-                            <div id="no-detalles" class="p-3 text-center text-gray-500">
-                                No hay productos agregados
-                            </div>
+                            <span class="product-badge low">Stock bajo: {{ galleta.existencias }}</span>
                         {% endif %}
+                        
+                        <!-- Información de stock -->
+                        <div class="stock-info">
+                            <span>Stock disponible:</span>
+                            <span class="font-medium">{{ galleta.existencias }} unidades</span>
+                        </div>
+                        
+                        <!-- Barra de progreso para visualizar stock -->
+                        <div class="stock-bar">
+                            {% set percentage = (galleta.existencias / 100) * 100 %}
+                            {% if percentage > 50 %}
+                                {% set color_class = "high" %}
+                            {% elif percentage > 20 %}
+                                {% set color_class = "medium" %}
+                            {% else %}
+                                {% set color_class = "low" %}
+                            {% endif %}
+                            
+                            <div class="stock-bar-fill {{ color_class }}" style="width: {{ percentage if percentage <= 100 else 100 }}%"></div>
+                        </div>
+                        
+                        <!-- Controles para agregar -->
+                        <div class="controls-container">
+                            <div class="grid grid-cols-2 gap-2 mb-2">
+                                <div>
+                                    <label class="text-sm font-medium text-chocolate-700 mb-1 block">Cantidad:</label>
+                                    <input 
+                                        type="number" 
+                                        class="cantidad-input border border-cookie-200 rounded-lg p-2 w-full"
+                                        value="1" 
+                                        min="1" 
+                                        max="{{ galleta.existencias }}"
+                                    >
+                                </div>
+                                <div>
+                                    <label class="text-sm font-medium text-chocolate-700 mb-1 block">Tipo:</label>
+                                    <select class="tipo-select border border-cookie-200 rounded-lg p-2 w-full">
+                                        <option value="1">Individual</option>
+                                        <!-- Solo mostrar opción de paquete si hay suficiente stock -->
+                                        {% if galleta.existencias >= 5 %}
+                                        <option value="0">Paquete (5 uds)</option>
+                                        {% endif %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <button 
+                                type="button" 
+                                class="add-button btn-agregar-producto"
+                                data-id="{{ galleta.idGalleta }}"
+                                data-nombre="{{ galleta.nombreGalleta }}"
+                                data-precio="{{ galleta.precio_unitario }}"
+                                data-stock="{{ galleta.existencias }}"
+                            >
+                                <i class="fas fa-plus mr-1"></i> Agregar
+                            </button>
+                        </div>
                     </div>
-                </div>
-                
-                <div class="flex justify-between items-center font-semibold text-chocolate-800">
-                    <span>Total:</span>
-                    <span id="total-venta">$0.00</span>
+                    {% endif %}
+                    {% endfor %}
                 </div>
             </div>
         </div>
         
         <!-- Detalles JSON (se envía al servidor) -->
         <input type="hidden" id="detalles-json" name="detalles">
-        
-        <!-- Botones de acción -->
-        <div class="flex justify-end space-x-3">
-            <a 
-                href="{{ url_for('ventas.index') }}" 
-                class="px-4 py-2 border border-cookie-300 rounded-lg text-chocolate-700 hover:bg-cream-100 transition-colors"
-            >
-                Cancelar
-            </a>
-            <button 
-                type="submit" 
-                class="px-6 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors"
-            >
-                Guardar Venta
-            </button>
-        </div>
     </form>
 </div>
 {% endblock %}
@@ -179,236 +454,321 @@
 {% block extra_js %}
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const detallesList = document.getElementById('detalles-list');
-        const noDetalles = document.getElementById('no-detalles');
-        const btnAgregarProducto = document.getElementById('btn-agregar-producto');
+        // Elementos del DOM
+        const carritoVacio = document.getElementById('carrito-vacio');
+        const carritoItems = document.getElementById('carrito-items');
+        const itemsContainer = document.getElementById('items-container');
+        const ventaTotal = document.getElementById('venta-total');
         const detallesJson = document.getElementById('detalles-json');
-        const totalVenta = document.getElementById('total-venta');
+        const filtroProductos = document.getElementById('filtro-productos');
+        const alertaStock = document.getElementById('alerta-stock');
+        const mensajeAlerta = document.getElementById('mensaje-alerta');
+        const btnGuardar = document.getElementById('btn-guardar');
         
-        const selectProducto = document.getElementById('producto');
-        const selectTipoVenta = document.getElementById('tipo-venta');
-        const inputCantidad = document.getElementById('cantidad');
+        // Carrito de venta
+        let carrito = [];
         
-        // Detalles de la venta (array)
-        let detalles = [];
+        // Registro de unidades por galleta para validación
+        let unidadesPorGalleta = {};
         
-        // Inicializar detalles si estamos editando
+        // Inicializar carrito si estamos editando
         {% if venta and detalles %}
             {% for detalle in detalles %}
-            detalles.push({
+            carrito.push({
                 galleta_id: {{ detalle.galleta_id }},
+                nombre_galleta: "{{ detalle.galleta.nombreGalleta }}",
                 tipo_venta: {{ detalle.tipo_venta }},
-                cantidad: {{ detalle.cantidad }}
+                precio_unitario: {{ detalle.precio_unitario }},
+                cantidad: {{ detalle.cantidad }},
+                subtotal: {{ detalle.subtotal }},
+                stock_original: {{ detalle.galleta.existencias + detalle.cantidad }}
             });
+            
+            // Actualizar el registro de unidades
+            const galletaId = {{ detalle.galleta_id }};
+            const unidadesReales = {{ detalle.tipo_venta }} === 0 ? {{ detalle.cantidad }} * 5 : {{ detalle.cantidad }};
+            
+            if (unidadesPorGalleta[galletaId]) {
+                unidadesPorGalleta[galletaId] += unidadesReales;
+            } else {
+                unidadesPorGalleta[galletaId] = unidadesReales;
+            }
             {% endfor %}
+            actualizarVistaCarrito();
         {% endif %}
         
-        // Actualizar JSON y total
-        actualizarDetallesJson();
+        // Filtrar productos
+        if (filtroProductos) {
+            filtroProductos.addEventListener('keyup', function() {
+                const filtro = this.value.toLowerCase();
+                const productos = document.querySelectorAll('.product-item');
+                
+                productos.forEach(function(producto) {
+                    const nombre = producto.getAttribute('data-nombre');
+                    if (nombre.includes(filtro)) {
+                        producto.style.display = '';
+                    } else {
+                        producto.style.display = 'none';
+                    }
+                });
+            });
+        }
         
-        // Agregar producto a la venta
-        btnAgregarProducto.addEventListener('click', function() {
-            const productoId = selectProducto.value;
-            if (!productoId) {
-                alert('Seleccione un producto');
-                return;
-            }
-            
-            const cantidad = parseInt(inputCantidad.value);
-            if (isNaN(cantidad) || cantidad < 1) {
-                alert('Ingrese una cantidad válida');
-                return;
-            }
-            
-            const tipoVenta = parseInt(selectTipoVenta.value);
-            const productoOption = selectProducto.options[selectProducto.selectedIndex];
-            const productoNombre = productoOption.getAttribute('data-nombre');
-            const productoPrecio = parseFloat(productoOption.getAttribute('data-precio'));
-            
-            // Calcular precio según tipo de venta
-            let precioFinal = productoPrecio;
-            if (tipoVenta === 0) { // Paquete
-                precioFinal = productoPrecio * 0.9; // 10% de descuento
-            }
-            
-            const subtotal = precioFinal * cantidad;
-            
-            // Verificar si ya existe este producto con el mismo tipo
-            const detalleExistente = detalles.findIndex(d => 
-                d.galleta_id === parseInt(productoId) && 
-                d.tipo_venta === tipoVenta
-            );
-            
-            if (detalleExistente >= 0) {
-                // Actualizar cantidad
-                detalles[detalleExistente].cantidad += cantidad;
-                actualizarDetallesVisual();
+        // Agregar producto al carrito
+        const botonesAgregar = document.querySelectorAll('.btn-agregar-producto');
+        botonesAgregar.forEach(function(boton) {
+            boton.addEventListener('click', function() {
+                const productoCard = this.closest('.product-card');
+                const productoId = parseInt(this.getAttribute('data-id'));
+                const productoNombre = this.getAttribute('data-nombre');
+                const productoPrecio = parseFloat(this.getAttribute('data-precio'));
+                const stockDisponible = parseInt(this.getAttribute('data-stock'));
+                
+                // Obtener los valores del formulario
+                const cantidad = parseInt(productoCard.querySelector('.cantidad-input').value);
+                const tipoVenta = parseInt(productoCard.querySelector('.tipo-select').value);
+                
+                // Validaciones
+                if (isNaN(cantidad) || cantidad <= 0) {
+                    mostrarAlerta('Por favor, ingrese una cantidad válida', 'warning');
+                    return;
+                }
+                
+                // Calcular unidades reales según tipo de venta
+                const unidadesReales = tipoVenta === 0 ? cantidad * 5 : cantidad;
+                
+                // Calcular unidades totales para esta galleta (existentes + nuevas)
+                let unidadesTotales = unidadesPorGalleta[productoId] || 0;
+                unidadesTotales += unidadesReales;
+                
+                // Verificar disponibilidad de stock
+                if (unidadesTotales > stockDisponible) {
+                    mostrarAlerta(`No hay suficiente stock. Disponible: ${stockDisponible}, Solicitado: ${unidadesTotales}`, 'danger');
+                    return;
+                }
+                
+                // Calcular precio según tipo de venta
+                let precioFinal = productoPrecio;
+                if (tipoVenta === 0) { // Paquete
+                    precioFinal = productoPrecio * 0.9 * 5; // 10% descuento por paquete
+                }
+                
+                const subtotal = precioFinal * cantidad;
+                
+                // Verificar si ya existe este producto con el mismo tipo
+                const itemExistente = carrito.findIndex(item => 
+                    item.galleta_id === productoId && 
+                    item.tipo_venta === tipoVenta
+                );
+                
+                if (itemExistente >= 0) {
+                    // Actualizar cantidad del item existente
+                    carrito[itemExistente].cantidad += cantidad;
+                    carrito[itemExistente].subtotal = carrito[itemExistente].precio_unitario * carrito[itemExistente].cantidad;
+                } else {
+                    // Agregar nuevo item
+                    carrito.push({
+                        galleta_id: productoId,
+                        nombre_galleta: productoNombre,
+                        tipo_venta: tipoVenta,
+                        precio_unitario: precioFinal,
+                        cantidad: cantidad,
+                        subtotal: subtotal,
+                        stock_original: stockDisponible
+                    });
+                }
+                
+                // Actualizar registro de unidades
+                unidadesPorGalleta[productoId] = unidadesTotales;
+                
+                // Actualizar vista del carrito
+                actualizarVistaCarrito();
+                
+                // Mostrar mensaje de éxito
+                mostrarAlerta(`${cantidad} ${cantidad > 1 ? 'unidades' : 'unidad'} de ${productoNombre} ${tipoVenta === 0 ? '(paquete)' : ''} agregada a la venta`, 'success');
+                
+                // Resetear cantidad
+                productoCard.querySelector('.cantidad-input').value = 1;
+            });
+        });
+        
+        // Función para actualizar la vista del carrito
+        function actualizarVistaCarrito() {
+            if (carrito.length === 0) {
+                carritoVacio.classList.remove('hidden');
+                carritoItems.classList.add('hidden');
+                btnGuardar.disabled = true;
+                btnGuardar.classList.add('opacity-50', 'cursor-not-allowed');
             } else {
-                // Agregar nuevo detalle
-                detalles.push({
-                    galleta_id: parseInt(productoId),
-                    tipo_venta: tipoVenta,
-                    cantidad: cantidad
+                carritoVacio.classList.add('hidden');
+                carritoItems.classList.remove('hidden');
+                btnGuardar.disabled = false;
+                btnGuardar.classList.remove('opacity-50', 'cursor-not-allowed');
+                
+                // Limpiar el contenedor
+                itemsContainer.innerHTML = '';
+                
+                // Calcular total
+                let total = 0;
+                
+                // Agregar items
+                carrito.forEach((item, index) => {
+                    total += item.subtotal;
+                    
+                    const itemElement = document.createElement('div');
+                    itemElement.className = 'cart-item';
+                    
+                    const tipoTexto = item.tipo_venta === 1 ? 'Individual' : 'Paquete';
+                    const unidadesReales = item.tipo_venta === 0 ? item.cantidad * 5 : item.cantidad;
+                    
+                    itemElement.innerHTML = `
+                        <div>
+                            <h4 class="font-medium text-chocolate-800">${item.nombre_galleta}</h4>
+                            <div class="text-sm text-gray-600">
+                                <span>${item.cantidad} x ${item.precio_unitario.toFixed(2)}</span>
+                                <span class="ml-2 text-xs bg-gray-100 px-1 rounded">
+                                    ${tipoTexto}
+                                </span>
+                            </div>
+                            <div class="text-xs text-gray-500">
+                                ${unidadesReales} unidades totales
+                            </div>
+                        </div>
+                        <div class="flex items-center">
+                            <span class="font-medium mr-2">${item.subtotal.toFixed(2)}</span>
+                            <button type="button" class="text-red-500 hover:text-red-700 btn-eliminar-item" data-index="${index}">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `;
+                    
+                    itemsContainer.appendChild(itemElement);
                 });
                 
-                // Crear elemento visual
-                if (noDetalles) {
-                    noDetalles.remove();
-                }
-                
-                const row = document.createElement('div');
-                row.className = 'grid grid-cols-12 gap-2 p-2 detail-row';
-                row.setAttribute('data-id', productoId);
-                row.setAttribute('data-tipo', tipoVenta);
-                
-                row.innerHTML = `
-                    <div class="col-span-5">${productoNombre}</div>
-                    <div class="col-span-2 text-center">${tipoVenta === 1 ? 'Individual' : 'Paquete'}</div>
-                    <div class="col-span-2 text-center">${cantidad}</div>
-                    <div class="col-span-2 text-right">$${subtotal.toFixed(2)}</div>
-                    <div class="col-span-1 text-center">
-                        <button type="button" class="text-red-500 hover:text-red-700 btn-eliminar-detalle">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                `;
-                
-                detallesList.appendChild(row);
-                
-                // Agregar evento para eliminar
-                const btnEliminar = row.querySelector('.btn-eliminar-detalle');
-                btnEliminar.addEventListener('click', function() {
-                    eliminarDetalle(productoId, tipoVenta);
+                // Asignar evento a los botones de eliminar
+                document.querySelectorAll('.btn-eliminar-item').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const index = parseInt(this.getAttribute('data-index'));
+                        eliminarItem(index);
+                    });
                 });
+                
+                // Actualizar total
+                ventaTotal.textContent = `${total.toFixed(2)}`;
+                
+                // Actualizar JSON para el formulario
+                detallesJson.value = JSON.stringify(carrito.map(item => ({
+                    galleta_id: item.galleta_id,
+                    tipo_venta: item.tipo_venta,
+                    cantidad: item.cantidad
+                })));
+            }
+        }
+        
+        // Función para eliminar un item del carrito
+        function eliminarItem(index) {
+            const item = carrito[index];
+            const idGalleta = item.galleta_id;
+            const unidadesEliminadas = item.tipo_venta === 0 ? item.cantidad * 5 : item.cantidad;
+            
+            // Actualizar registro de unidades
+            unidadesPorGalleta[idGalleta] -= unidadesEliminadas;
+            if (unidadesPorGalleta[idGalleta] <= 0) {
+                delete unidadesPorGalleta[idGalleta];
             }
             
-            // Actualizar JSON y total
-            actualizarDetallesJson();
-            
-            // Limpiar selección
-            selectProducto.value = '';
-            inputCantidad.value = 1;
-        });
-        
-        // Eliminar evento a botones existentes
-        document.querySelectorAll('.btn-eliminar-detalle').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const row = this.closest('.detail-row');
-                const productoId = parseInt(row.getAttribute('data-id'));
-                const tipoVenta = parseInt(row.getAttribute('data-tipo'));
-                eliminarDetalle(productoId, tipoVenta);
-            });
-        });
-        
-        // Función para eliminar un detalle
-        function eliminarDetalle(productoId, tipoVenta) {
             // Eliminar del array
-            detalles = detalles.filter(d => 
-                !(d.galleta_id === productoId && d.tipo_venta === tipoVenta)
-            );
+            carrito.splice(index, 1);
             
-            // Actualizar visualización
-            actualizarDetallesVisual();
+            // Actualizar vista
+            actualizarVistaCarrito();
             
-            // Actualizar JSON y total
-            actualizarDetallesJson();
+            // Mostrar mensaje
+            mostrarAlerta(`${item.nombre_galleta} eliminada de la venta`, 'info');
         }
         
-        // Función para actualizar la visualización de detalles
-        function actualizarDetallesVisual() {
-            // Limpiar lista
-            detallesList.innerHTML = '';
-            
-            if (detalles.length === 0) {
-                detallesList.innerHTML = `
-                    <div id="no-detalles" class="p-3 text-center text-gray-500">
-                        No hay productos agregados
+        // Función para mostrar alertas
+        function mostrarAlerta(mensaje, tipo) {
+            // Para alertas permanentes en el formulario
+            if (tipo === 'danger' || tipo === 'warning') {
+                alertaStock.classList.remove('hidden');
+                alertaStock.className = `alert alert-${tipo === 'danger' ? 'danger' : 'warning'}`;
+                mensajeAlerta.textContent = mensaje;
+                
+                // Ocultar después de 5 segundos
+                setTimeout(() => {
+                    alertaStock.classList.add('hidden');
+                }, 5000);
+            } else {
+                // Alerta flotante para mensajes informativos
+                const alertaElement = document.createElement('div');
+                alertaElement.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-lg max-w-xs ${
+                    tipo === 'success' ? 'bg-green-100 text-green-800 border-green-200' :
+                    tipo === 'error' ? 'bg-red-100 text-red-800 border-red-200' :
+                    tipo === 'info' ? 'bg-blue-100 text-blue-800 border-blue-200' :
+                    'bg-yellow-100 text-yellow-800 border-yellow-200'
+                } border z-50`;
+                
+                alertaElement.innerHTML = `
+                    <div class="flex items-center">
+                        <i class="fas fa-${
+                            tipo === 'success' ? 'check-circle' :
+                            tipo === 'error' ? 'exclamation-circle' :
+                            tipo === 'info' ? 'info-circle' :
+                            'exclamation-triangle'
+                        } mr-2"></i>
+                        <span>${mensaje}</span>
                     </div>
                 `;
-                return;
+                
+                // Agregar al DOM
+                document.body.appendChild(alertaElement);
+                
+                // Eliminar después de 3 segundos
+                setTimeout(() => {
+                    alertaElement.style.opacity = '0';
+                    alertaElement.style.transition = 'opacity 0.3s ease';
+                    setTimeout(() => {
+                        document.body.removeChild(alertaElement);
+                    }, 300);
+                }, 3000);
             }
-            
-            // Recrear filas
-            detalles.forEach(detalle => {
-                const option = Array.from(selectProducto.options).find(
-                    opt => opt.value === detalle.galleta_id.toString()
-                );
-                
-                if (!option) return;
-                
-                const productoNombre = option.getAttribute('data-nombre');
-                const productoPrecio = parseFloat(option.getAttribute('data-precio'));
-                
-                // Calcular precio según tipo de venta
-                let precioFinal = productoPrecio;
-                if (detalle.tipo_venta === 0) { // Paquete
-                    precioFinal = productoPrecio * 0.9; // 10% de descuento
-                }
-                
-                const subtotal = precioFinal * detalle.cantidad;
-                
-                const row = document.createElement('div');
-                row.className = 'grid grid-cols-12 gap-2 p-2 detail-row';
-                row.setAttribute('data-id', detalle.galleta_id);
-                row.setAttribute('data-tipo', detalle.tipo_venta);
-                
-                row.innerHTML = `
-                    <div class="col-span-5">${productoNombre}</div>
-                    <div class="col-span-2 text-center">${detalle.tipo_venta === 1 ? 'Individual' : 'Paquete'}</div>
-                    <div class="col-span-2 text-center">${detalle.cantidad}</div>
-                    <div class="col-span-2 text-right">$${subtotal.toFixed(2)}</div>
-                    <div class="col-span-1 text-center">
-                        <button type="button" class="text-red-500 hover:text-red-700 btn-eliminar-detalle">
-                            <i class="fas fa-times"></i>
-                        </button>
-                    </div>
-                `;
-                
-                detallesList.appendChild(row);
-                
-                // Agregar evento para eliminar
-                const btnEliminar = row.querySelector('.btn-eliminar-detalle');
-                btnEliminar.addEventListener('click', function() {
-                    eliminarDetalle(detalle.galleta_id, detalle.tipo_venta);
-                });
-            });
-        }
-        
-        // Función para actualizar el JSON y el total
-        function actualizarDetallesJson() {
-            // Actualizar JSON
-            detallesJson.value = JSON.stringify(detalles);
-            
-            // Calcular y actualizar total
-            let total = 0;
-            detalles.forEach(detalle => {
-                const option = Array.from(selectProducto.options).find(
-                    opt => opt.value === detalle.galleta_id.toString()
-                );
-                
-                if (!option) return;
-                
-                const productoPrecio = parseFloat(option.getAttribute('data-precio'));
-                
-                // Calcular precio según tipo de venta
-                let precioFinal = productoPrecio;
-                if (detalle.tipo_venta === 0) { // Paquete
-                    precioFinal = productoPrecio * 0.9; // 10% de descuento
-                }
-                
-                total += precioFinal * detalle.cantidad;
-            });
-            
-            totalVenta.textContent = `$${total.toFixed(2)}`;
         }
         
         // Validar formulario antes de enviar
         document.getElementById('venta-form').addEventListener('submit', function(e) {
-            if (detalles.length === 0) {
+            if (carrito.length === 0) {
                 e.preventDefault();
-                alert('Debe agregar al menos un producto a la venta');
+                mostrarAlerta('Debe agregar al menos un producto a la venta', 'error');
                 return false;
             }
+            
+            // Verificar stock nuevamente antes de enviar
+            let stockValido = true;
+            let mensajeError = '';
+            
+            // Recorremos todas las galletas en el carrito
+            Object.keys(unidadesPorGalleta).forEach(galletaId => {
+                // Buscar elemento de galleta en la página para obtener stock actualizado
+                const botonesGalleta = document.querySelectorAll(`.btn-agregar-producto[data-id="${galletaId}"]`);
+                if (botonesGalleta.length > 0) {
+                    const stockActual = parseInt(botonesGalleta[0].getAttribute('data-stock'));
+                    const unidadesSolicitadas = unidadesPorGalleta[galletaId];
+                    
+                    if (unidadesSolicitadas > stockActual) {
+                        stockValido = false;
+                        const nombreGalleta = botonesGalleta[0].getAttribute('data-nombre');
+                        mensajeError = `No hay suficiente stock para ${nombreGalleta}. Disponible: ${stockActual}, Solicitado: ${unidadesSolicitadas}`;
+                    }
+                }
+            });
+            
+            if (!stockValido) {
+                e.preventDefault();
+                mostrarAlerta(mensajeError, 'danger');
+                return false;
+            }
+            
             return true;
         });
     });

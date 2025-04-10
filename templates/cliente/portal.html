@@ -2,6 +2,216 @@
 
 {% block title %}Portal de Cliente - Cookie King{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Estilos mejorados para tarjetas de productos */
+    .product-card {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        padding: 1.5rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.5rem;
+        transition: box-shadow 0.3s;
+        background-color: white;
+    }
+    
+    .product-card:hover {
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    }
+    
+    .product-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.5rem;
+    }
+    
+    .product-name {
+        font-weight: 700;
+        font-size: 1.125rem;
+        color: #4D2917; /* chocolate-800 */
+    }
+    
+    .product-price {
+        font-weight: 700;
+        color: #F3AD4E; /* cookie-600 */
+    }
+    
+    .product-badge {
+        display: inline-block;
+        padding: 0.25rem 1rem;
+        font-size: 0.875rem;
+        border-radius: 9999px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .product-badge.available {
+        background-color: #dcfce7;
+        color: #166534;
+    }
+    
+    .product-badge.low {
+        background-color: #fef3c7;
+        color: #92400e;
+    }
+    
+    .product-badge.out {
+        background-color: #fee2e2;
+        color: #b91c1c;
+    }
+    
+    .product-description {
+        font-size: 0.875rem;
+        color: #4b5563;
+        margin-bottom: 1rem;
+        flex-grow: 1;
+    }
+    
+    .stock-info {
+        font-size: 0.875rem;
+        color: #4b5563;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stock-bar {
+        width: 100%;
+        height: 6px;
+        background-color: #e5e7eb;
+        border-radius: 3px;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+    
+    .stock-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+    }
+    
+    .stock-bar-fill.high {
+        background-color: #F3AD4E;
+    }
+    
+    .stock-bar-fill.medium {
+        background-color: #f59e0b;
+    }
+    
+    .stock-bar-fill.low {
+        background-color: #ef4444;
+    }
+    
+    .controls-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .quantity-control {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    
+    .quantity-control label {
+        font-size: 1rem;
+        font-weight: 500;
+        color: #4D2917;
+    }
+    
+    .quantity-input {
+        width: 4rem;
+        height: 2.25rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.25rem;
+        text-align: center;
+        font-size: 1rem;
+    }
+    
+    .type-control {
+        margin-bottom: 0.5rem;
+    }
+    
+    .type-select {
+        width: 100%;
+        height: 2.5rem;
+        border: 1px solid #e5e7eb;
+        border-radius: 0.25rem;
+        padding: 0 0.5rem;
+        font-size: 1rem;
+        background-color: white;
+    }
+    
+    .add-button {
+        width: 100%;
+        background-color: #F3AD4E;
+        color: white;
+        border: none;
+        border-radius: 0.25rem;
+        padding: 0.625rem 1rem;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .add-button:hover {
+        background-color: #E69235;
+    }
+    
+    .add-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+    
+    /* Estilos para el carrito de compra */
+    .cart-container {
+        background-color: white;
+        border-radius: 0.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        padding: 1.5rem;
+    }
+    
+    .cart-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #4D2917;
+        margin-bottom: 1rem;
+    }
+    
+    .cart-empty {
+        text-align: center;
+        padding: 2rem 0;
+        color: #6b7280;
+    }
+    
+    .cart-items {
+        max-height: 16rem;
+        overflow-y: auto;
+        margin-bottom: 1rem;
+    }
+    
+    .cart-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        padding-bottom: 0.75rem;
+        margin-bottom: 0.75rem;
+        border-bottom: 1px solid #f3f4f6;
+    }
+    
+    .cart-total {
+        display: flex;
+        justify-content: space-between;
+        font-weight: 700;
+        padding-top: 1rem;
+        margin-bottom: 1rem;
+        border-top: 1px solid #e5e7eb;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="bg-cream-50 min-h-screen py-8">
     <div class="max-w-6xl mx-auto px-4">
@@ -26,39 +236,89 @@
         </div>
 
         <!-- Formulario de Pedido y Lista de Productos -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Productos -->
-            <div class="lg:col-span-2">
-                <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Productos - ocupan 3 columnas en pantallas grandes -->
+            <div class="lg:col-span-3">
+                <div class="bg-white rounded-lg shadow p-6 mb-6">
                     <h2 class="text-xl font-bold text-chocolate-800 mb-4">Nuestras Galletas</h2>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    
+                    <!-- Grid de productos responsivo -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-4">
+                        <!-- Bucle para mostrar las galletas disponibles -->
                         {% for galleta in galletas %}
                         {% if galleta.estatus == 1 %}
-                        <div class="border border-gray-200 rounded-lg p-4 flex flex-col hover:shadow-md transition-shadow">
-                            <div class="flex justify-between items-start mb-2">
-                                <h3 class="text-lg font-bold text-chocolate-800">{{ galleta.nombreGalleta }}</h3>
-                                <span class="text-cookie-600 font-bold">${{ "%.2f"|format(galleta.precio_unitario) }}</span>
+                        <div class="product-card">
+                            <!-- Cabecera del producto con nombre y precio -->
+                            <div class="product-header">
+                                <h3 class="product-name">{{ galleta.nombreGalleta }}</h3>
+                                <span class="product-price">${{ "%.2f"|format(galleta.precio_unitario) }}</span>
                             </div>
-                            <p class="text-gray-600 text-sm mb-4 flex-grow">{{ galleta.descripcion }}</p>
-                            <div class="flex space-x-2 items-center">
-                                <label for="cantidad-{{ galleta.idGalleta }}" class="text-sm text-gray-600">Cantidad:</label>
-                                <input 
-                                    type="number" 
-                                    id="cantidad-{{ galleta.idGalleta }}" 
-                                    class="w-16 border border-gray-300 rounded-md p-1 text-center" 
-                                    value="0" 
-                                    min="0"
-                                >
-                                <select 
-                                    id="tipo-{{ galleta.idGalleta }}" 
-                                    class="border border-gray-300 rounded-md p-1 text-sm"
-                                >
-                                    <option value="1">Individual</option>
-                                    <option value="0">Paquete</option>
-                                </select>
+                            
+                            <!-- Indicador de stock -->
+                            {% if galleta.existencias > 10 %}
+                                <span class="product-badge available">Disponible</span>
+                            {% elif galleta.existencias > 0 %}
+                                <span class="product-badge low">Stock bajo: {{ galleta.existencias }}</span>
+                            {% else %}
+                                <span class="product-badge out">Agotado</span>
+                            {% endif %}
+                            
+                            <!-- Descripción del producto -->
+                            <p class="product-description">{{ galleta.descripcion }}</p>
+                            
+                            <!-- Información de stock -->
+                            <div class="stock-info">
+                                <span>Stock disponible:</span>
+                                <span class="font-medium">{{ galleta.existencias }} unidades</span>
+                            </div>
+                            
+                            <!-- Barra de progreso para visualizar stock -->
+                            <div class="stock-bar">
+                                {% set percentage = (galleta.existencias / 1000) * 100 %}
+                                {% if percentage > 50 %}
+                                    {% set color_class = "high" %}
+                                {% elif percentage > 20 %}
+                                    {% set color_class = "medium" %}
+                                {% else %}
+                                    {% set color_class = "low" %}
+                                {% endif %}
+                                
+                                <div class="stock-bar-fill {{ color_class }}" style="width: {{ percentage if percentage <= 100 else 100 }}%"></div>
+                            </div>
+                            
+                            <!-- Controles mejorados y más grandes -->
+                            <div class="controls-container">
+                                <div class="quantity-control">
+                                    <label for="cantidad-{{ galleta.idGalleta }}">Cantidad:</label>
+                                    <input 
+                                        type="number" 
+                                        id="cantidad-{{ galleta.idGalleta }}" 
+                                        class="quantity-input" 
+                                        value="1" 
+                                        min="1" 
+                                        max="{{ galleta.existencias }}"
+                                        {% if galleta.existencias <= 0 %}disabled{% endif %}
+                                    >
+                                </div>
+                                
+                                <div class="type-control">
+                                    <select 
+                                        id="tipo-{{ galleta.idGalleta }}" 
+                                        class="type-select"
+                                        {% if galleta.existencias <= 0 %}disabled{% endif %}
+                                    >
+                                        <option value="1">Individual</option>
+                                        <!-- Solo mostrar opción de paquete si hay suficiente stock -->
+                                        {% if galleta.existencias >= 5 %}
+                                        <option value="0">Paquete (5 uds)</option>
+                                        {% endif %}
+                                    </select>
+                                </div>
+                                
                                 <button 
-                                    onclick="agregarAlPedido({{ galleta.idGalleta }}, '{{ galleta.nombreGalleta }}', {{ galleta.precio_unitario }})" 
-                                    class="ml-auto bg-cookie-600 hover:bg-cookie-700 text-white text-sm px-2 py-1 rounded"
+                                    onclick="agregarAlPedido({{ galleta.idGalleta }}, '{{ galleta.nombreGalleta }}', {{ galleta.precio_unitario }}, {{ galleta.existencias }})" 
+                                    class="add-button"
+                                    {% if galleta.existencias <= 0 %}disabled{% endif %}
                                 >
                                     Agregar
                                 </button>
@@ -70,27 +330,25 @@
                 </div>
             </div>
 
-            <!-- Resumen del Pedido -->
+            <!-- Carrito - ocupa 1 columna en pantallas grandes -->
             <div class="lg:col-span-1">
-                <div class="bg-white rounded-lg shadow-lg p-6 sticky top-6">
-                    <h2 class="text-xl font-bold text-chocolate-800 mb-4">Tu Pedido</h2>
+                <div class="cart-container sticky top-6">
+                    <h2 class="cart-title">Tu Pedido</h2>
                     
-                    <div id="pedido-vacio" class="text-center text-gray-500 py-8">
+                    <div id="pedido-vacio" class="cart-empty">
                         <i class="fas fa-shopping-cart text-4xl mb-2"></i>
                         <p>Tu pedido está vacío</p>
                         <p class="text-sm">Agrega productos para comenzar</p>
                     </div>
                     
                     <div id="pedido-items" class="hidden">
-                        <div class="space-y-4 max-h-64 overflow-y-auto mb-4" id="items-container">
+                        <div class="cart-items" id="items-container">
                             <!-- Aquí se agregarán dinámicamente los items del pedido -->
                         </div>
                         
-                        <div class="border-t border-gray-200 pt-4 mb-4">
-                            <div class="flex justify-between font-bold">
-                                <span>Total:</span>
-                                <span id="pedido-total">$0.00</span>
-                            </div>
+                        <div class="cart-total">
+                            <span>Total:</span>
+                            <span id="pedido-total">$0.00</span>
                         </div>
                         
                         <form id="form-pedido" method="POST" action="{{ url_for('main.guardar_pedido') }}">
@@ -156,56 +414,58 @@
             
             {% if pedidos_cliente %}
             <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-cookie-100">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
-                                Pedido #
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
-                                Fecha
-                            </th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
-                                Entrega
-                            </th>
-                            <th class="px-6 py-3 text-right text-xs font-medium text-chocolate-700 uppercase tracking-wider">
-                                Total
-                            </th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-chocolate-700 uppercase tracking-wider">
-                                Estado
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        {% for pedido in pedidos_cliente %}
-                        <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                {{ pedido.idPedido }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                {{ pedido.fechaPedido.strftime('%d/%m/%Y') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                {{ pedido.fechaEntrega.strftime('%d/%m/%Y') if pedido.fechaEntrega else 'Sin definir' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
-                                ${{ "%.2f"|format(pedido.total) }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                {% if pedido.estatus == 0 %}
-                                    <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Pendiente</span>
-                                {% elif pedido.estatus == 1 %}
-                                    <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">En Proceso</span>
-                                {% elif pedido.estatus == 2 %}
-                                    <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Completado</span>
-                                {% else %}
-                                    <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Cancelado</span>
-                                {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-cookie-100">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                    Pedido #
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                    Fecha
+                                </th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                    Entrega
+                                </th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                    Total
+                                </th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-chocolate-700 uppercase tracking-wider">
+                                    Estado
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for pedido in pedidos_cliente %}
+                            <tr class="hover:bg-gray-50">
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {{ pedido.idPedido }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {{ pedido.fechaPedido.strftime('%d/%m/%Y') }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {{ pedido.fechaEntrega.strftime('%d/%m/%Y') if pedido.fechaEntrega else 'Sin definir' }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-right">
+                                    ${{ "%.2f"|format(pedido.total) }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-center">
+                                    {% if pedido.estatus == 0 %}
+                                        <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs font-medium">Pendiente</span>
+                                    {% elif pedido.estatus == 1 %}
+                                        <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">En Proceso</span>
+                                    {% elif pedido.estatus == 2 %}
+                                        <span class="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs font-medium">Completado</span>
+                                    {% else %}
+                                        <span class="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">Cancelado</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
             {% else %}
             <div class="bg-white rounded-lg shadow-lg p-8 text-center">
@@ -216,6 +476,23 @@
             {% endif %}
         </div>
         {% endif %}
+    </div>
+</div>
+
+<!-- Modal para ver detalles del pedido -->
+<div id="modal-detalles-pedido" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-2xl mx-4 overflow-hidden">
+        <div class="bg-cookie-100 px-6 py-4 flex justify-between items-center">
+            <h3 class="text-lg font-semibold text-chocolate-800">Detalles del Pedido</h3>
+            <button id="cerrar-modal" class="text-gray-500 hover:text-gray-700">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="p-6" id="contenido-detalles">
+            <div class="flex justify-center">
+                <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-cookie-600"></div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}
@@ -231,25 +508,68 @@
             fechaEntrega.min = tomorrow.toISOString().split('T')[0];
             fechaEntrega.value = tomorrow.toISOString().split('T')[0];
         }
+        
+        // Configurar el modal
+        const modal = document.getElementById('modal-detalles-pedido');
+        const cerrarModal = document.getElementById('cerrar-modal');
+        
+        if (cerrarModal) {
+            cerrarModal.addEventListener('click', function() {
+                modal.classList.add('hidden');
+            });
+        }
+        
+        // Cerrar modal al hacer clic fuera
+        if (modal) {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    modal.classList.add('hidden');
+                }
+            });
+        }
     });
     
     // Array para almacenar los items del pedido
     let itemsPedido = [];
+    // Registro de unidades reales por galleta para validación de stock
+    let unidadesPorGalleta = {};
     
     // Función para agregar un item al pedido
-    function agregarAlPedido(idGalleta, nombreGalleta, precioUnitario) {
+    function agregarAlPedido(idGalleta, nombreGalleta, precioUnitario, existencias) {
         const cantidad = parseInt(document.getElementById(`cantidad-${idGalleta}`).value);
         const tipoVenta = parseInt(document.getElementById(`tipo-${idGalleta}`).value);
         
         if (cantidad <= 0) {
-            alert('Por favor, ingrese una cantidad válida');
+            mostrarAlerta('Por favor, ingrese una cantidad válida', 'error');
+            return;
+        }
+        
+        // Calcular unidades reales según tipo de venta
+        const unidadesReales = tipoVenta === 0 ? cantidad * 5 : cantidad;
+        
+        // Verificar disponibilidad de stock considerando todos los items existentes
+        let unidadesExistentes = 0;
+        
+        // Buscar todas las instancias de esta galleta en el pedido actual
+        itemsPedido.forEach(item => {
+            if (item.galleta_id === idGalleta) {
+                unidadesExistentes += (item.tipo_venta === 0) ? item.cantidad * 5 : item.cantidad;
+            }
+        });
+        
+        // Calcular total de unidades (existentes + nuevas)
+        const unidadesTotales = unidadesExistentes + unidadesReales;
+        
+        // Verificar si hay suficiente stock
+        if (unidadesTotales > existencias) {
+            mostrarAlerta(`Stock insuficiente. Solo hay ${existencias} unidades disponibles y estás solicitando ${unidadesTotales}.`, 'warning');
             return;
         }
         
         // Calcular precio según tipo de venta
         let precioFinal = precioUnitario;
         if (tipoVenta === 0) { // Paquete
-            precioFinal = precioUnitario * 0.9; // 10% de descuento
+            precioFinal = precioUnitario * 0.9 * 5; // 10% de descuento por 5 unidades
         }
         
         const subtotal = precioFinal * cantidad;
@@ -263,6 +583,7 @@
         if (itemExistente >= 0) {
             // Actualizar cantidad del item existente
             itemsPedido[itemExistente].cantidad += cantidad;
+            itemsPedido[itemExistente].subtotal = itemsPedido[itemExistente].precio_unitario * itemsPedido[itemExistente].cantidad;
         } else {
             // Agregar nuevo item
             itemsPedido.push({
@@ -270,12 +591,19 @@
                 nombre_galleta: nombreGalleta,
                 tipo_venta: tipoVenta,
                 precio_unitario: precioFinal,
-                cantidad: cantidad
+                cantidad: cantidad,
+                subtotal: subtotal
             });
         }
         
+        // Actualizar registro de unidades por galleta
+        unidadesPorGalleta[idGalleta] = unidadesTotales;
+        
         // Resetear campo de cantidad
-        document.getElementById(`cantidad-${idGalleta}`).value = 0;
+        document.getElementById(`cantidad-${idGalleta}`).value = 1;
+        
+        // Mostrar mensaje de éxito
+        mostrarAlerta(`${cantidad} ${cantidad > 1 ? 'unidades' : 'unidad'} de ${nombreGalleta} ${tipoVenta === 0 ? '(paquete)' : ''} agregada(s) al pedido`, 'success');
         
         // Actualizar vista del pedido
         actualizarVistaPedido();
@@ -283,7 +611,26 @@
     
     // Función para eliminar un item del pedido
     function eliminarItem(index) {
+        // Guardar referencia al item antes de eliminarlo
+        const itemEliminado = itemsPedido[index];
+        const idGalleta = itemEliminado.galleta_id;
+        const unidadesEliminadas = itemEliminado.tipo_venta === 0 ? itemEliminado.cantidad * 5 : itemEliminado.cantidad;
+        
+        // Eliminar del array
         itemsPedido.splice(index, 1);
+        
+        // Actualizar registro de unidades por galleta
+        if (unidadesPorGalleta[idGalleta]) {
+            unidadesPorGalleta[idGalleta] -= unidadesEliminadas;
+            if (unidadesPorGalleta[idGalleta] <= 0) {
+                delete unidadesPorGalleta[idGalleta];
+            }
+        }
+        
+        // Mostrar mensaje
+        mostrarAlerta(`${itemEliminado.nombre_galleta} eliminada del pedido`, 'info');
+        
+        // Actualizar vista del pedido
         actualizarVistaPedido();
     }
     
@@ -310,23 +657,29 @@
             
             // Agregar items
             itemsPedido.forEach((item, index) => {
-                const subtotal = item.precio_unitario * item.cantidad;
-                total += subtotal;
+                total += item.subtotal;
                 
                 const itemElement = document.createElement('div');
-                itemElement.className = 'flex justify-between items-start border-b border-gray-100 pb-3';
+                itemElement.className = 'cart-item';
+                
+                // Mostrar unidades reales para claridad
+                const unidadesReales = item.tipo_venta === 0 ? item.cantidad * 5 : item.cantidad;
+                
                 itemElement.innerHTML = `
                     <div>
                         <h4 class="font-medium text-chocolate-800">${item.nombre_galleta}</h4>
                         <div class="text-sm text-gray-600">
-                            <span>${item.cantidad} x $${item.precio_unitario.toFixed(2)}</span>
+                            <span>${item.cantidad} x ${item.precio_unitario.toFixed(2)}</span>
                             <span class="ml-2 text-xs bg-gray-100 px-1 rounded">
                                 ${item.tipo_venta === 1 ? 'Individual' : 'Paquete'}
                             </span>
                         </div>
+                        <div class="text-xs text-gray-500">
+                            ${unidadesReales} unidades totales
+                        </div>
                     </div>
                     <div class="flex items-center">
-                        <span class="font-medium mr-2">$${subtotal.toFixed(2)}</span>
+                        <span class="font-medium mr-2">${item.subtotal.toFixed(2)}</span>
                         <button type="button" onclick="eliminarItem(${index})" class="text-red-500 hover:text-red-700">
                             <i class="fas fa-times"></i>
                         </button>
@@ -337,7 +690,7 @@
             });
             
             // Actualizar total
-            pedidoTotal.textContent = `$${total.toFixed(2)}`;
+            pedidoTotal.textContent = `${total.toFixed(2)}`;
             
             // Actualizar detalles hidden para el formulario
             pedidoDetalles.value = JSON.stringify(itemsPedido.map(item => ({
@@ -347,5 +700,79 @@
             })));
         }
     }
+    
+    // Función para mostrar alertas
+    function mostrarAlerta(mensaje, tipo) {
+        // Crear elemento de alerta
+        const alertaElement = document.createElement('div');
+        alertaElement.className = `fixed bottom-4 right-4 p-4 rounded-lg shadow-lg max-w-xs ${
+            tipo === 'success' ? 'bg-green-100 text-green-800 border-green-200' :
+            tipo === 'error' ? 'bg-red-100 text-red-800 border-red-200' :
+            tipo === 'warning' ? 'bg-yellow-100 text-yellow-800 border-yellow-200' :
+            'bg-blue-100 text-blue-800 border-blue-200'
+        } border z-50`;
+        
+        alertaElement.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas fa-${
+                    tipo === 'success' ? 'check-circle' :
+                    tipo === 'error' ? 'exclamation-circle' :
+                    tipo === 'warning' ? 'exclamation-triangle' :
+                    'info-circle'
+                } mr-2"></i>
+                <span>${mensaje}</span>
+            </div>
+        `;
+        
+        // Agregar al DOM
+        document.body.appendChild(alertaElement);
+        
+        // Eliminar después de 3 segundos
+        setTimeout(() => {
+            alertaElement.style.opacity = '0';
+            alertaElement.style.transition = 'opacity 0.3s ease';
+            setTimeout(() => {
+                document.body.removeChild(alertaElement);
+            }, 300);
+        }, 3000);
+    }
+    
+    // Función para validar el formulario antes de enviar
+    document.addEventListener('DOMContentLoaded', function() {
+        const formPedido = document.getElementById('form-pedido');
+        if (formPedido) {
+            formPedido.addEventListener('submit', function(e) {
+                if (itemsPedido.length === 0) {
+                    e.preventDefault();
+                    mostrarAlerta('Tu pedido está vacío. Agrega productos antes de continuar.', 'error');
+                    return false;
+                }
+                
+                // Validación final de stock para cada galleta
+                let stockValido = true;
+                let mensajeError = '';
+                
+                // Verificar disponibilidad de stock para cada galleta
+                Object.keys(unidadesPorGalleta).forEach(galletaId => {
+                    const galletaElement = document.querySelector(`.product-card [data-id="${galletaId}"]`).closest('.product-card');
+                    const stockDisponible = parseInt(galletaElement.querySelector('.stock-info .font-medium').textContent.split(' ')[0]);
+                    
+                    if (unidadesPorGalleta[galletaId] > stockDisponible) {
+                        stockValido = false;
+                        const nombreGalleta = galletaElement.querySelector('.product-name').textContent;
+                        mensajeError = `No hay suficiente stock para ${nombreGalleta}. Disponible: ${stockDisponible}, Solicitado: ${unidadesPorGalleta[galletaId]}.`;
+                    }
+                });
+                
+                if (!stockValido) {
+                    e.preventDefault();
+                    mostrarAlerta(mensajeError, 'error');
+                    return false;
+                }
+                
+                return true;
+            });
+        }
+    });
 </script>
 {% endblock %}

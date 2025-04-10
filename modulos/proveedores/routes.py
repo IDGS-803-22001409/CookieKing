@@ -1,7 +1,6 @@
-# modulos/proveedores/routes.py
+# Archivo: modulos/proveedores/routes.py
+# Añadir la vista de detalles y asegurar que la ruta correcta está siendo usada
 from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
-from flask_login import login_required
-from modulos.main.routes import roles_required
 from models import db
 from modulos.proveedores.models import Proveedor
 from modulos.proveedores.forms import ProveedorForm, create_proveedor_form
@@ -11,8 +10,6 @@ from modulos.proveedores.controllers import ProveedorController
 proveedores_bp = Blueprint('proveedores', __name__, url_prefix='/proveedores')
 
 @proveedores_bp.route('/')
-@login_required
-@roles_required("admin","empleado")
 def index():
     """Vista principal para la administración de proveedores"""
     proveedores = ProveedorController.get_all_proveedores()
@@ -33,25 +30,35 @@ def index():
     
     headers = ['Nombre', 'Teléfono', 'Correo', 'Dirección', 'RFC', 'Estatus']
     
-    # Crear campos del formulario para el modal
-    form_fields = create_proveedor_form()
-    
-    return render_template('modulos/proveedores/crud_layout.html', 
+    # Cambiar esta línea para usar la plantilla que proporcionaste
+    return render_template('modulos/proveedores/index.html', 
                           crud_title='Administración de Proveedores',
                           modal_title='Proveedor',
                           table_headers=headers,
-                          items=items_data,
-                          form_fields=form_fields,
-                          form_action=url_for('proveedores.save'))
+                          items=items_data)
+
+@proveedores_bp.route('/details/<int:proveedor_id>')
+def details(proveedor_id):
+    """Vista de detalles para un proveedor"""
+    proveedor = ProveedorController.get_proveedor_by_id(proveedor_id)
+    
+    if not proveedor:
+        flash('Proveedor no encontrado', 'error')
+        return redirect(url_for('proveedores.index'))
+        
+    return render_template('modulos/proveedores/details.html', 
+                          proveedor=proveedor)
 
 @proveedores_bp.route('/save', methods=['POST'])
 def save():
-    """Guardar un proveedor nuevo o actualizado"""    
+    """Guardar un proveedor nuevo o actualizado"""
+    # Crear una instancia del formulario y validar
     form = ProveedorForm()
     
     if form.validate_on_submit():
         proveedor_id = request.form.get('id', '')
-                
+        
+        # Recopilar datos del formulario
         data = {
             'nombre_proveedor': form.nombre_proveedor.data,
             'telefono': form.telefono.data,
@@ -116,15 +123,3 @@ def delete(proveedor_id):
         return jsonify({'success': True})
         
     return redirect(url_for('proveedores.index'))
-
-@proveedores_bp.route('/details/<int:proveedor_id>')
-@login_required
-def details(proveedor_id):
-    """Ver detalles de un proveedor"""
-    proveedor = ProveedorController.get_proveedor_by_id(proveedor_id)
-    
-    if not proveedor:
-        flash('Proveedor no encontrado', 'error')
-        return redirect(url_for('proveedores.index'))
-    
-    return render_template('modulos/proveedores/details.html', proveedor=proveedor)

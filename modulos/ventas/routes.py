@@ -116,6 +116,19 @@ def guardar():
             flash('Debe agregar al menos un detalle a la venta', 'error')
             return redirect(url_for('ventas.index'))
         
+        # Verificar disponibilidad de stock
+        try:
+            stock_suficiente, mensaje = VentaController.verificar_stock(detalles_data)
+            if not stock_suficiente:
+                flash(f'Error: {mensaje}', 'error')
+                if venta_id and venta_id.isdigit():
+                    return redirect(url_for('ventas.editar_venta', venta_id=venta_id))
+                else:
+                    return redirect(url_for('ventas.nueva_venta'))
+        except Exception as e:
+            flash(f'Error al verificar stock: {str(e)}', 'error')
+            return redirect(url_for('ventas.index'))
+        
         # Preparar datos de la venta
         data = {
             'IdCliente': int(id_cliente) if id_cliente and id_cliente != '' else None,
@@ -124,15 +137,20 @@ def guardar():
         
         if venta_id and venta_id.isdigit():
             # Actualizar venta existente
-            venta = VentaController.update_venta(int(venta_id), data, detalles_data)
-            if venta:
+            try:
+                venta = VentaController.update_venta(int(venta_id), data, detalles_data)
                 flash('Venta actualizada exitosamente', 'success')
-            else:
-                flash('Error al actualizar la venta', 'error')
+            except ValueError as e:
+                flash(f'Error: {str(e)}', 'error')
+                return redirect(url_for('ventas.editar_venta', venta_id=venta_id))
         else:
             # Crear nueva venta
-            venta = VentaController.create_venta(data, detalles_data)
-            flash('Venta registrada exitosamente', 'success')
+            try:
+                venta = VentaController.create_venta(data, detalles_data)
+                flash('Venta registrada exitosamente', 'success')
+            except ValueError as e:
+                flash(f'Error: {str(e)}', 'error')
+                return redirect(url_for('ventas.nueva_venta'))
         
         return redirect(url_for('ventas.index'))
         

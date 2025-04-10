@@ -107,8 +107,21 @@ def cliente_portal():
     
     if current_user.is_authenticated and current_user.rol == 'cliente':
         try:
-            pedidos_cliente = PedidoCliente.query.filter_by(idCliente=current_user.id)\
-                              .order_by(PedidoCliente.fechaPedido.desc()).all()
+            # Asegurarse de que el usuario actual se identifique correctamente
+            from modulos.auth.models import Usuario
+            from modulos.clientes.models import Cliente
+            
+            # Buscar el cliente asociado al usuario actual
+            cliente = Cliente.query.filter_by(correo=current_user.correo).first()
+            
+            if cliente:
+                # Si encontramos el cliente por su correo, usamos su ID
+                pedidos_cliente = PedidoCliente.query.filter_by(idCliente=cliente.idCliente)\
+                                .order_by(PedidoCliente.fechaPedido.desc()).all()
+            else:
+                # Si no encontramos al cliente por correo, usamos el ID del usuario
+                pedidos_cliente = PedidoCliente.query.filter_by(idCliente=current_user.id)\
+                                .order_by(PedidoCliente.fechaPedido.desc()).all()
         except Exception as e:
             print(f"Error obteniendo pedidos: {e}")
 
@@ -134,13 +147,55 @@ def guardar_pedido():
             flash('Debes agregar al menos un producto', 'error')
             return redirect(url_for('main.cliente_portal'))
         
+        # Buscar el cliente asociado al usuario actual
+        from modulos.clientes.models import Cliente
+        cliente = Cliente.query.filter_by(correo=current_user.correo).first()
+        
+        if cliente:
+            # Si encontramos el cliente por su correo
+            cliente_id = cliente.idCliente
+        else:
+            # Si no encontramos al cliente por correo, usamos el ID del usuario
+            cliente_id = current_user.id
+            
+            # Intentamos crear un cliente asociado al usuario actual si no existe
+            try:
+                nuevo_cliente = Cliente(
+                    nombreCliente=current_user.nombre_usuario,
+                    correo=current_user.correo,
+                    telefono="Sin especificar",
+                    estatus=1
+                )
+                db.session.add(nuevo_cliente)
+                db.session.commit()
+                cliente_id = nuevo_cliente.idCliente
+            except Exception as e:
+                print(f"Error al crear cliente: {e}")
+        
+        # Preparamos los datos del pedido
         data = {
-            'idCliente': current_user.id,
+            'idCliente': cliente_id,
             'instrucciones': instrucciones,
             'fechaEntrega': fecha_entrega,
-            'estatus': 0
+            'estatus': 0  # Pendiente
         }
         
+        # Verificamos stock antes de crear el pedido
+        for detalle in detalles_data:
+            galleta_id = detalle.get('galleta_id')
+            cantidad = int(detalle.get('cantidad', 0))
+            
+            galleta = Galletas.query.get(galleta_id)
+            if not galleta:
+                flash(f'Producto no encontrado', 'error')
+                return redirect(url_for('main.cliente_portal'))
+            
+            # Verificar stock (opcional para pedidos)
+            if galleta.existencias < cantidad:
+                flash(f'Stock insuficiente para {galleta.nombreGalleta}. Disponible: {galleta.existencias}, Solicitado: {cantidad}', 'warning')
+                # No es necesario retornar aquí, ya que es sólo un pedido sin reducción inmediata de stock
+        
+        # Crear el pedido
         PedidoClienteController.create_pedido(data, detalles_data)
         flash('Pedido registrado exitosamente', 'success')
         return redirect(url_for('main.cliente_portal'))
