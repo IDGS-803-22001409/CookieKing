@@ -13,7 +13,7 @@ class RecetaForm(FlaskForm):
     id = WTFHiddenField('id')
     nombreReceta = WTFStringField('Nombre de la Receta', validators=[DataRequired()])
     instruccionesReceta = WTFTextAreaField('Instrucciones', validators=[DataRequired()])
-    galletasProducidas = WTFIntegerField('Galletas Producidas', validators=[NumberRange(min=1)])
+    galletasProducidas = WTFIntegerField('Galletas Producidas',)
     idGalleta = WTFSelectField('Tipo de Galleta', validators=[DataRequired()], coerce=int)
     
     # Cambiar a string para la validación y hacer la conversión manualmente
@@ -54,9 +54,7 @@ def create_receta_form(receta=None, galletas=None):
         TextField('nombreReceta', 'nombreReceta', 'Nombre de la Receta', 
                  "" if receta is None else receta.nombreReceta, True).get_dict(),
         TextAreaField('instruccionesReceta', 'instruccionesReceta', 'Instrucciones', 
-                      "" if receta is None else receta.instruccionesReceta, True, rows=6).get_dict(),
-        NumberField('galletasProducidas', 'galletasProducidas', 'Galletas Producidas', 
-                    "" if receta is None else receta.galletasProducidas, 1, None, True).get_dict(),
+                      "" if receta is None else receta.instruccionesReceta, True, rows=6).get_dict(),       
         SelectField('idGalleta', 'idGalleta', 'Tipo de Galleta', 
                    [{'value': str(g[0]), 'label': g[1]} for g in galletas_choices],
                    id_galleta_value, True).get_dict(),

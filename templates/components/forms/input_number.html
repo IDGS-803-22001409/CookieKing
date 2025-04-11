@@ -7,7 +7,7 @@
     {% if field.max is not none %}max="{{ field.max }}"{% endif %}
     {% if field.required %}required{% endif %}
     placeholder="{{ field.attrs.placeholder|default('') }}"
-    class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5"
+    class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500"
     {% for attr_name, attr_value in field.attrs.items() %}
         {% if attr_name != 'placeholder' %}
             {{ attr_name }}="{{ attr_value }}"

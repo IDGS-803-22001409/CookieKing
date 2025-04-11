@@ -1,0 +1,290 @@
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Registro de Mermas - Cookie King{% endblock %}
+
+{% block content %}
+<div class="container mx-auto py-8">
+    <div class="bg-cream-50 rounded-lg border border-cookie-200 shadow-md p-8 w-full">
+        <!-- Título y botones -->
+        <div class="flex justify-between items-center mb-8">
+            <div class="flex items-center">
+                <a href="{{ url_for('produccion.index') }}" class="bg-gray-200 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-300 transition mr-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd" />
+                    </svg>
+                    Regresar
+                </a>
+                <h2 class="text-3xl font-bold text-chocolate-800">Registro de Mermas</h2>
+            </div>
+            <button type="button" id="btnNuevaMerma"
+                class="bg-cookie-600 text-white px-4 py-2 rounded-lg hover:bg-cookie-700 transition">
+                Nueva Merma
+            </button>
+        </div>
+
+        <!-- Alerta personalizada -->
+        <div id="customAlert" class="hidden mb-6 rounded-lg border p-4 relative">
+            <div class="flex items-start">
+                <div id="alertIcon" class="mr-3 flex-shrink-0 mt-0.5"></div>
+                <div class="flex-grow">
+                    <p id="alertMessage" class="text-sm"></p>
+                </div>
+                <button type="button" id="closeAlert" class="ml-4 inline-flex text-gray-400 hover:text-gray-500">
+                    <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabla de Historial de Mermas -->
+        <div class="overflow-x-auto">
+            <table class="w-full bg-white border border-cookie-200 rounded-lg shadow-md">
+                <thead class="bg-cookie-600 text-white">
+                    <tr>
+                        <th class="py-3 px-4">Fecha</th>
+                        <th class="py-3 px-4">Galleta</th>
+                        <th class="py-3 px-4">Cantidad</th>
+                        <th class="py-3 px-4">Descripción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for merma in mermas %}
+                    <tr class="border-b border-cookie-300">
+                        <td class="py-3 px-4">{{ merma.fecha_registro.strftime('%d/%m/%Y %H:%M') }}</td>
+                        <td class="py-3 px-4">{{ merma.galleta.nombreGalleta }}</td>
+                        <td class="py-3 px-4 text-red-600 font-bold">-{{ merma.cantidad }}</td>
+                        <td class="py-3 px-4">{{ merma.descripcion }}</td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="4" class="py-6 px-4 text-center text-gray-500">No hay registros de mermas</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para Registrar Merma -->
+<div id="mermaModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-xl p-8 max-w-md w-full">
+        <h3 class="text-2xl font-bold text-chocolate-800 mb-6">Registrar Merma de Galletas</h3>
+        
+        <form id="formMerma" action="{{ url_for('produccion.registrar_merma') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div class="mb-4">
+                <label for="galleta_id" class="block text-gray-700 font-bold mb-2">Galleta:</label>
+                <select id="galleta_id" name="galleta_id" required
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cookie-600">
+                    <option value="">Selecciona una galleta</option>
+                    {% for galleta in galletas %}
+                    <option value="{{ galleta.idGalleta }}" data-existencias="{{ galleta.existencias }}">
+                        {{ galleta.nombreGalleta }} (Existencias: {{ galleta.existencias }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <div class="mb-4">
+                <label for="cantidad" class="block text-gray-700 font-bold mb-2">Cantidad (piezas):</label>
+                <input type="number" id="cantidad" name="cantidad" min="1" step="1" required
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cookie-600"
+                    onkeypress="return event.charCode >= 48 && event.charCode <= 57">
+                <small id="cantidadHelp" class="text-gray-500">Máximo disponible: <span id="maxDisponible">0</span></small>
+            </div>
+            
+            <div class="mb-6">
+                <label for="descripcion" class="block text-gray-700 font-bold mb-2">Descripción del motivo:</label>
+                <textarea id="descripcion" name="descripcion" rows="3" required
+                    class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-cookie-600"
+                    placeholder="Describe el motivo de la merma..."></textarea>
+            </div>
+            
+            <div class="flex justify-end space-x-4">
+                <button type="button" id="btnCancelar"
+                    class="bg-gray-400 text-white px-4 py-2 rounded-lg hover:bg-gray-500 transition">
+                    Cancelar
+                </button>
+                <button type="submit"
+                    class="bg-cookie-600 text-white px-4 py-2 rounded-lg hover:bg-cookie-700 transition">
+                    Registrar Merma
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Referencias a elementos del modal
+    const modal = document.getElementById('mermaModal');
+    const btnNuevaMerma = document.getElementById('btnNuevaMerma');
+    const btnCancelar = document.getElementById('btnCancelar');
+    const galletaSelect = document.getElementById('galleta_id');
+    const maxDisponible = document.getElementById('maxDisponible');
+    const cantidadInput = document.getElementById('cantidad');
+    const formMerma = document.getElementById('formMerma');
+    
+    // Referencias a elementos de la alerta personalizada
+    const customAlert = document.getElementById('customAlert');
+    const alertMessage = document.getElementById('alertMessage');
+    const alertIcon = document.getElementById('alertIcon');
+    const closeAlert = document.getElementById('closeAlert');
+    
+    // Función para mostrar alertas personalizadas
+    function showCustomAlert(message, type = 'success') {
+        // Configurar el mensaje
+        alertMessage.textContent = message;
+        
+        // Configurar tipo de alerta
+        customAlert.className = 'mb-6 rounded-lg border p-4 relative';
+        
+        if (type === 'success') {
+            customAlert.classList.add('bg-green-50', 'border-green-200', 'text-green-800');
+            alertIcon.innerHTML = '<svg class="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>';
+        } else if (type === 'error') {
+            customAlert.classList.add('bg-red-50', 'border-red-200', 'text-red-800');
+            alertIcon.innerHTML = '<svg class="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path></svg>';
+        } else if (type === 'warning') {
+            customAlert.classList.add('bg-yellow-50', 'border-yellow-200', 'text-yellow-800');
+            alertIcon.innerHTML = '<svg class="h-5 w-5 text-yellow-500" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>';
+        }
+        
+        // Mostrar la alerta
+        customAlert.classList.remove('hidden');
+        
+        // Se elimina el auto-cierre para que solo se cierre con la X
+    }
+    
+    // Cerrar alerta al hacer clic en la X
+    closeAlert.addEventListener('click', function() {
+        customAlert.classList.add('hidden');
+    });
+    
+    // Abrir modal
+    btnNuevaMerma.addEventListener('click', function() {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+    });
+    
+    // Cerrar modal
+    btnCancelar.addEventListener('click', function() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        formMerma.reset();
+    });
+    
+    // Cerrar modal al hacer clic fuera del contenido
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            formMerma.reset();
+        }
+    });
+    
+    // Actualizar máximo disponible al seleccionar una galleta
+    galletaSelect.addEventListener('change', function() {
+        const selectedOption = galletaSelect.options[galletaSelect.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+            const existencias = selectedOption.getAttribute('data-existencias');
+            maxDisponible.textContent = existencias || '0';
+            cantidadInput.max = existencias;
+            cantidadInput.value = ''; // Reiniciar el campo cuando cambia la galleta
+        } else {
+            maxDisponible.textContent = '0';
+            cantidadInput.max = 0;
+            cantidadInput.value = '';
+        }
+    });
+    
+    // Validar que la cantidad no exceda el máximo disponible y sea un entero positivo
+    cantidadInput.addEventListener('input', function() {
+        // Eliminar cualquier carácter que no sea número
+        this.value = this.value.replace(/[^0-9]/g, '');
+        
+        // Convertir a entero
+        let valor = parseInt(this.value, 10);
+        
+        // Si no es un número, dejarlo vacío
+        if (isNaN(valor)) {
+            this.value = '';
+            return;
+        }
+        
+        // Si es menor que 1, establecerlo en 1
+        if (valor < 1) {
+            this.value = '1';
+            return;
+        }
+        
+        // Si es mayor que el máximo disponible, establecerlo al máximo
+        const max = parseInt(this.max, 10);
+        if (valor > max) {
+            this.value = max.toString();
+        }
+    });
+    
+    // Prevenir que el usuario pegue contenido no válido
+    cantidadInput.addEventListener('paste', function(e) {
+        e.preventDefault();
+        const text = (e.originalEvent || e).clipboardData.getData('text/plain');
+        const intValue = parseInt(text, 10);
+        if (!isNaN(intValue) && intValue > 0) {
+            const max = parseInt(this.max, 10);
+            this.value = Math.min(intValue, max);
+        }
+    });
+    
+    // Enviar formulario mediante AJAX
+    formMerma.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Validar formulario antes de enviar
+        if (!galletaSelect.value) {
+            showCustomAlert('Por favor, selecciona una galleta', 'error');
+            return;
+        }
+        
+        if (!cantidadInput.value || cantidadInput.value <= 0) {
+            showCustomAlert('Por favor, ingresa una cantidad válida', 'error');
+            return;
+        }
+        
+        const formData = new FormData(formMerma);
+        
+        fetch('{{ url_for("produccion.registrar_merma") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+                
+                showCustomAlert(data.message, 'success');
+                
+                setTimeout(() => {
+                    window.location.reload();
+                }, 5000);
+            } else {
+                showCustomAlert('Error: ' + data.message, 'error');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showCustomAlert('Ocurrió un error al procesar la solicitud', 'error');
+        });
+    });
+});
+</script>
+{% endblock %}

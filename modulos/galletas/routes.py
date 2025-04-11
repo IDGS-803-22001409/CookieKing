@@ -6,6 +6,7 @@ from modulos.galletas.models import Galletas
 from modulos.galletas.forms import GalletaForm, create_galleta_form
 from modulos.galletas.controllers import GalletaController
 
+
 # Crear blueprint para las rutas de galletas
 galletas_bp = Blueprint('galletas', __name__, url_prefix='/galletas')
 
@@ -26,7 +27,7 @@ def index():
                 galleta.nombreGalleta,
                 galleta.descripcion[:50] + '...' if galleta.descripcion and len(galleta.descripcion) > 50 else galleta.descripcion,
                 galleta.estado,
-                f"{galleta.peso_por_unidad} g",
+                f"{galleta.peso_por_unidad} kg",
                 f"${galleta.precio_unitario:.2f}",
                 "Activo" if galleta.estatus == 1 else "Inactivo"
             ]
@@ -38,7 +39,7 @@ def index():
     # Crear campos del formulario para el modal
     form_fields = create_galleta_form()
     
-    return render_template('modulos/galletas/crud_layout.html', 
+    return render_template('modulos/galletas/index.html', 
                           crud_title='Administración de Galletas',                          
                           modal_title='Galleta',
                           table_headers=headers,
@@ -48,42 +49,67 @@ def index():
 
 @galletas_bp.route('/save', methods=['POST'])
 @login_required
+@roles_required('admin', 'empleado')
 def save():
     """Guardar una galleta nueva o actualizada"""
-    # Crear una instancia del formulario y validar
-    form = GalletaForm()
-    
-    if form.validate_on_submit():
-        galleta_id = request.form.get('id', '')
+    try:
+        print("Recibiendo datos del formulario:", request.form)
+        print("Archivos recibidos:", request.files)
         
-        # Recopilar datos del formulario
-        data = {
-            'nombreGalleta': form.nombreGalleta.data,
-            'descripcion': form.descripcion.data,
-            'estado': form.estado.data,
-            'peso_por_unidad': form.peso_por_unidad.data,
-            'precio_unitario': form.precio_unitario.data,
-            'estatus': 1 if form.estatus.data == '1' else 0
-        }
+        # Obtener datos del formulario
+        nombreGalleta = request.form.get('nombreGalleta')
+        descripcion = request.form.get('descripcion')
+        estado = request.form.get('estado')
         
-        if galleta_id and galleta_id.isdigit():
-            # Actualizar galleta existente usando el controlador
-            galleta = GalletaController.update_galleta(int(galleta_id), data)
-            if galleta:
-                flash('Galleta actualizada exitosamente', 'success')
-            else:
-                flash('No se encontró la galleta a actualizar', 'error')
-        else:
-            # Crear nueva galleta usando el controlador
-            galleta = GalletaController.create_galleta(data)
-            flash('Galleta creada exitosamente', 'success')
+        # Convertir a float con manejo de error
+        try:
+            peso_por_unidad = float(request.form.get('peso_por_unidad', 0))
+        except ValueError:
+            peso_por_unidad = 0
+            
+        try:
+            precio_unitario = float(request.form.get('precio_unitario', 0))
+        except ValueError:
+            precio_unitario = 0
+            
+        estatus = int(request.form.get('estatus', 1))
         
-        return redirect(url_for('galletas.index'))
-    
-    # Si la validación del formulario falla
-    for field, errors in form.errors.items():
-        for error in errors:
-            flash(f"Error en {getattr(form, field).label.text}: {error}", 'error')
+        # Verificar datos obligatorios
+        if not nombreGalleta or not estado:
+            flash('Nombre y estado son campos obligatorios', 'error')
+            return redirect(url_for('galletas.index'))
+
+        # Crear la galleta
+        galleta = Galletas(
+            nombreGalleta=nombreGalleta,
+            descripcion=descripcion,
+            estado=estado,
+            peso_por_unidad=peso_por_unidad,
+            precio_unitario=precio_unitario,
+            estatus=estatus
+        )
+        
+        # Procesar la foto
+        foto = request.files.get('foto')
+        if foto and foto.filename:
+            try:
+                # Guarda los datos binarios directamente
+                foto_data = foto.read()
+                galleta.foto = foto_data  
+            except Exception as e:
+                flash(f'Error al procesar la imagen: {str(e)}', 'error')
+                print(f"Error con la imagen: {str(e)}")
+        
+        # IMPORTANTE: Agregar la galleta a la sesión
+        db.session.add(galleta)
+        # Ahora hacemos el commit
+        db.session.commit()
+        flash('Galleta guardada exitosamente', 'success')
+        
+    except Exception as e:
+        db.session.rollback()  # Importante: hacer rollback en caso de error
+        flash(f'Error al guardar la galleta: {str(e)}', 'error')
+        print(f"Error general: {str(e)}")
     
     return redirect(url_for('galletas.index'))
 
@@ -129,12 +155,15 @@ def delete(galleta_id):
 
 @galletas_bp.route('/details/<int:galleta_id>')
 @login_required
+@roles_required('admin', 'empleado')
 def details(galleta_id):
     """Ver detalles de una galleta"""
     galleta = GalletaController.get_galleta_by_id(galleta_id)
+    # mostrar la foto de la galleta
+    
     
     if not galleta:
         flash('Galleta no encontrada', 'error')
         return redirect(url_for('galletas.index'))
     
-    return render_template('modulos/galletas/details.html', galleta=galleta) 
+    return render_template('modulos/galletas/details.html', galleta=galleta)

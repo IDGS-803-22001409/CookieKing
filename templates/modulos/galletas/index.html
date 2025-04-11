@@ -27,7 +27,7 @@
                 type="text" 
                 id="table-search" 
                 class="border border-cookie-200 rounded-lg p-2.5 pl-10 w-full focus:ring-cookie-500 focus:border-cookie-500" 
-                placeholder="Buscar recetas..."
+                placeholder="Buscar galletas..."
             >
         </div>
     </div>
@@ -51,19 +51,27 @@
                     {% endfor %}
                     <td class="py-3 px-4 text-center">
                         <a
-                            href="{{ url_for('recetas.details', receta_id=item.id) }}"
+                            href="{{ url_for('galletas.details', galleta_id=item.id) }}"
                             class="text-cookie-600 hover:text-cookie-700 mr-2"
                             title="Ver detalles"
                         >
                             <i class="fas fa-eye"></i>
-                        </a>
+                        </a>                                                                            
+                        <button
+                            data-item-id="{{ item.id }}"
+                            onclick="deleteItem({{ item.id }})"
+                            class="text-red-500 hover:text-red-700"
+                            title="Eliminar"
+                        >
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </td>
                 </tr>
                 {% endfor %}
                 {% if not items %}
                 <tr>
                     <td colspan="{{ table_headers|length + 1 }}" class="py-4 px-4 text-center text-gray-500">
-                        No hay recetas para mostrar
+                        No hay galletas para mostrar
                     </td>
                 </tr>
                 {% endif %}
@@ -72,117 +80,65 @@
     </div>
 </div>
 
-<!-- Modal para añadir/editar -->
-<div
-    id="crud-modal"
-    tabindex="-1"
-    aria-hidden="true"
-    class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
->
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-md">
-        <div class="flex justify-between items-center bg-cookie-100 p-4 rounded-t-lg">
-            <h3 class="text-lg font-semibold text-chocolate-800">{{ modal_title }}</h3>
-            <button id="btn-close-modal" class="text-gray-500 hover:text-gray-700" data-modal-hide="crud-modal">
-                <i class="fas fa-times"></i>
-            </button>
+<!-- Modal para agregar galletas -->
+<div id="crud-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-4xl p-6">
+      <h2 class="text-2xl font-bold mb-4 text-center">Agregar Galleta</h2>
+      <form id="formularioGalleta" action="{{ url_for('galletas.save') }}" method="POST" enctype="multipart/form-data" class="grid grid-cols-2 gap-4">
+        <!-- CSRF Token -->
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+        
+        <!-- ID de la galleta (para edición) -->
+        <input type="hidden" id="item-id" name="idGalleta" value="" />
+        
+        <!-- Columna izquierda -->
+        <div>
+          <label for="nombreGalleta" class="block font-medium">Nombre de la Galleta</label>
+          <input type="text" id="nombreGalleta" name="nombreGalleta" class="w-full border border-gray-300 rounded p-2" />
         </div>
-        <form id="crud-form" action="{{ form_action }}" method="POST" class="p-4">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-            <input type="hidden" id="item-id" name="id" value="">
-            
-            {% for field in form_fields %}
-            {% if field.template != "components/forms/input_hidden.html" %}
-            <div class="mb-4">
-                <label for="{{ field.id }}" class="block mb-2 text-sm font-medium text-chocolate-700">{{ field.label }}</label>
-                {% if field.template == "components/forms/input_text.html" %}
-                    <input 
-                        type="text" 
-                        id="{{ field.id }}" 
-                        name="{{ field.name }}" 
-                        value="{{ field.value }}" 
-                        {% if field.required %}required{% endif %}
-                        class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500"
-                    >
-                {% elif field.template == "components/forms/input_textarea.html" %}
-                    <textarea 
-                        id="{{ field.id }}" 
-                        name="{{ field.name }}" 
-                        rows="{{ field.rows|default(4) }}"
-                        {% if field.required %}required{% endif %}
-                        class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500"
-                    >{{ field.value }}</textarea>
-                {% elif field.template == "components/forms/input_select.html" %}
-                    <select 
-                        id="{{ field.id }}" 
-                        name="{{ field.name }}" 
-                        {% if field.required %}required{% endif %}
-                        class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500"
-                    >
-                        <option value="">Seleccionar...</option>
-                        {% if field.options %}
-                            {% for option in field.options %}
-                                <option value="{{ option.value }}" {% if option.value == field.value|string %}selected{% endif %}>
-                                    {{ option.label }}
-                                </option>
-                            {% endfor %}
-                        {% endif %}
-                    </select>
-                {% elif field.template == "components/forms/input_number.html" %}
-                    <input 
-                        type="number" 
-                        id="{{ field.id }}" 
-                        name="{{ field.name }}" 
-                        value="{{ field.value }}" 
-                        {% if field.min is not none %}min="{{ field.min }}"{% endif %}
-                        {% if field.max is not none %}max="{{ field.max }}"{% endif %}
-                        {% if field.required %}required{% endif %}
-                        class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500"
-                    >
-                {% endif %}
-            </div>
-            {% else %}
-                <input 
-                    type="hidden" 
-                    id="{{ field.id }}" 
-                    name="{{ field.name }}" 
-                    value="{{ field.value }}"
-                >
-            {% endif %}
-            {% endfor %}
-
-            <div class="mt-6 flex justify-end">
-                <button
-                    type="button"
-                    id="btn-cancel"
-                    class="px-4 py-2 border border-cookie-300 rounded-lg text-chocolate-700 mr-2 hover:bg-cream-100 transition-colors"
-                    data-modal-hide="crud-modal"
-                >
-                    Cancelar
-                </button>
-                <button 
-                    type="submit" 
-                    class="px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors"
-                >
-                    Guardar
-                </button>
-            </div>
-        </form>
+      
+        <div>
+          <label for="estado" class="block font-medium">Estado</label>
+          <input type="text" id="estado" name="estado" class="w-full border border-gray-300 rounded p-2" />
+        </div>
+      
+        <div class="col-span-2">
+          <label for="descripcion" class="block font-medium">Descripción</label>
+          <textarea id="descripcion" name="descripcion" rows="3" class="w-full border border-gray-300 rounded p-2"></textarea>
+        </div>              
+        <div>
+          <label for="estatus" class="block font-medium">Estatus</label>
+          <select id="estatus" name="estatus" class="w-full border border-gray-300 rounded p-2">
+            <option value="1">Activo</option>
+            <option value="0">Inactivo</option>
+          </select>
+        </div>
+      
+        <div>
+          <label for="foto" class="block font-medium">Imagen</label>
+          <input type="file" id="foto" name="foto" accept="image/*" class="w-full border border-gray-300 rounded p-2" />
+        </div>
+      
+        <!-- Botones -->
+        <div class="col-span-2 flex justify-end gap-2 mt-4">
+          <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2 rounded">
+            Guardar
+          </button>
+          <button type="button" data-modal-hide="crud-modal" class="bg-gray-300 hover:bg-gray-400 text-black font-semibold px-6 py-2 rounded">
+            Cancelar
+          </button>
+        </div>
+      </form>
     </div>
-</div>
-
+  </div>
 <!-- Modal de confirmación de eliminación -->
-<div 
-    id="delete-modal" 
-    tabindex="-1" 
-    aria-hidden="true" 
-    class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
->
-    <div class="bg-white rounded-lg shadow-lg w-full max-w-md">
+<div id="delete-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-sm">
         <div class="bg-red-100 text-red-800 px-4 py-3 rounded-t-lg">
             <h3 class="text-lg font-semibold">Confirmar eliminación</h3>
         </div>
         <div class="p-4">
-            <p class="mb-4">¿Estás seguro de que deseas eliminar esta receta? Esta acción no se puede deshacer.</p>
+            <p class="mb-4">¿Estás seguro de que deseas eliminar esta galleta? Esta acción no se puede deshacer.</p>
             <form id="delete-form" method="POST">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <div class="flex justify-end">
@@ -219,8 +175,6 @@
         const btnCancel = document.getElementById("btn-cancel");
         const btnCancelarEliminar = document.getElementById("btn-cancelar-eliminar");
         const searchInput = document.getElementById("table-search");
-        const editButtons = document.querySelectorAll(".btn-edit");
-        const deleteButtons = document.querySelectorAll(".btn-delete");
 
         // Función para abrir modal (Nuevo)
         function openModal() {
@@ -296,77 +250,44 @@
                 });
             });
         }
-        
-        // Asignar eventos a los botones que tienen el data-modal-hide
-        document.querySelectorAll('[data-modal-hide]').forEach(function(element) {
-            element.addEventListener('click', function() {
-                const modalId = element.getAttribute('data-modal-hide');
-                document.getElementById(modalId).classList.add('hidden');
-            });
-        });
-        
-        // Asignar evento a botones de editar
-        editButtons.forEach(function(button) {
-            button.addEventListener("click", function() {
-                const itemId = this.getAttribute("data-id");
-                editItem(itemId);
-            });
-        });
-        
-        // Asignar evento a botones de eliminar
-        deleteButtons.forEach(function(button) {
-            button.addEventListener("click", function() {
-                const itemId = this.getAttribute("data-id");
-                deleteItem(itemId);
-            });
-        });
     });
 
-    // Función para editar un elemento
+    // Función para editar una galleta
     function editItem(itemId) {
         const modal = document.getElementById("crud-modal");
         const idField = document.getElementById('item-id');
         
-        // Hacer una petición para obtener los datos del elemento
-        fetch(/recetas/get/${itemId})
+        fetch(/galletas/get/${itemId})
             .then(response => response.json())
             .then(data => {
                 // Establecer el ID
-                idField.value = data.id || data.idReceta;
+                idField.value = data.id || data.idGalleta;
                 
                 // Asignar valores a los campos del formulario
-                document.getElementById('nombreReceta').value = data.nombreReceta || '';
-                document.getElementById('instruccionesReceta').value = data.instruccionesReceta || '';
-                document.getElementById('galletasProducidas').value = data.galletasProducidas || '';
-                
-                // Establecer el tipo de galleta
-                const selectGalleta = document.getElementById('idGalleta');
-                if (selectGalleta) {
-                    selectGalleta.value = data.idGalleta;
-                }
-                
-                // Establecer el estatus
-                const selectEstatus = document.getElementById('estatus');
-                if (selectEstatus) {
-                    selectEstatus.value = data.estatus.toString();
-                }
+                document.getElementById('nombreGalleta').value = data.nombreGalleta || '';
+                document.getElementById('descripcion').value = data.descripcion || '';
+                document.getElementById('estado').value = data.estado || '';
+                document.getElementById('peso_por_unidad').value = data.peso_por_unidad || '';
+                document.getElementById('precio_unitario').value = data.precio_unitario || '';
+                document.getElementById('estatus').value = data.estatus || '1';
+                document.getElementById('foto').value = data.foto || '';
                 
                 // Mostrar el modal
                 modal.classList.remove("hidden");
             })
             .catch(error => {
                 console.error("Error al cargar los datos:", error);
-                alert("Error al cargar los datos de la receta");
+                alert("Error al cargar los datos de la galleta");
             });
     }
 
-    // Función para eliminar un elemento
+    // Función para eliminar una galleta
     function deleteItem(itemId) {
         const deleteModal = document.getElementById("delete-modal");
         const deleteForm = document.getElementById("delete-form");
         
         // Configurar la acción del formulario
-        deleteForm.action = /recetas/delete/${itemId};
+        deleteForm.action = /galletas/delete/${itemId};
         
         // Mostrar el modal de confirmación
         deleteModal.classList.remove("hidden");

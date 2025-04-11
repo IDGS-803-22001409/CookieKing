@@ -1,4 +1,6 @@
 from models import db
+from datetime import datetime
+import base64
 
 class Galletas(db.Model):
     """Modelo para las galletas"""
@@ -6,10 +8,11 @@ class Galletas(db.Model):
     idGalleta = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nombreGalleta = db.Column(db.String(255), nullable=False)
     descripcion = db.Column(db.Text)
-    estado = db.Column(db.String(90), nullable=False)
-    existencias = db.Column(db.Integer, nullable=False)
+    estado = db.Column(db.String(90), nullable=True)
+    existencias = db.Column(db.Integer, nullable=True, default=0)
     peso_por_unidad = db.Column(db.Float)
     precio_unitario = db.Column(db.Float)
+    foto = db.Column(db.LargeBinary(length=16777215))
     estatus = db.Column(db.Integer, nullable=False)
     
     # Relaciones
@@ -26,3 +29,21 @@ class Galletas(db.Model):
             'precio_unitario': self.precio_unitario,
             'estatus': self.estatus
         } 
+    
+    def get_galleta_foto(self):
+        if self.foto:
+            return f"data:image/jpeg;base64,{base64.b64encode(self.foto).decode('utf-8')}"
+        else:
+            return None
+    
+class MermaGalletas(db.Model):
+    """Modelo para registrar las mermas de galletas"""
+    __tablename__ = 'MermaGalletas'
+    idMerma = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    galleta_id = db.Column(db.Integer, db.ForeignKey('Galletas.idGalleta'), nullable=False)
+    cantidad = db.Column(db.Integer, nullable=False)
+    descripcion = db.Column(db.Text, nullable=False)
+    fecha_registro = db.Column(db.DateTime, default=datetime.now)
+    
+    # Relación con Galletas
+    galleta = db.relationship('Galletas', backref='mermas', lazy=True)

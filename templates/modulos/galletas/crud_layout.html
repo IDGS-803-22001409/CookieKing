@@ -1,224 +1,365 @@
-{% extends "layouts/base_layout.html" %} {% block content %}
-<div class="p-4">
-  <h1 class="text-2xl font-bold mb-4">{{ crud_title }}</h1>
+{% extends "layouts/base_layout.html" %}
 
-  <div class="flex justify-between mb-4">
-    <div class="flex items-center">
-      <input
-        type="text"
-        id="table-search"
-        class="border rounded px-3 py-2 mr-2"
-        placeholder="Buscar..."
-      />
-      <button id="btn-search" class="bg-blue-500 text-white px-4 py-2 rounded">
-        Buscar
-      </button>
+{% block title %}{{ crud_title }} - Cookie King{% endblock %}
+
+{% block content %}
+<div class="p-6 bg-cream-50 rounded-lg shadow-lg">
+    <!-- Encabezado -->
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-chocolate-800">{{ crud_title }}</h1>
+        <button 
+            data-modal-target="crud-modal" 
+            data-modal-toggle="crud-modal" 
+            class="inline-flex items-center px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200"
+            type="button">
+            <i class="fas fa-plus mr-2"></i>
+            Agregar {{ modal_title }}
+        </button>
     </div>
-    <button id="btn-add-new" class="bg-green-500 text-white px-4 py-2 rounded">
-      Agregar {{ modal_title }}
-    </button>
-  </div>
 
-  <div class="overflow-x-auto bg-white shadow-md rounded">
-    <table class="min-w-full text-sm">
-      <thead>
-        <tr class="bg-gray-200 text-gray-600 uppercase">
-          {% for header in table_headers %}
-          <th class="py-3 px-4 text-left">{{ header }}</th>
-          {% endfor %}
-          <th class="py-3 px-4 text-center">Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in items %}
-        <tr class="border-b hover:bg-gray-100" data-id="{{ item.id }}">
-          {% for field in item.fields %}
-          <td class="py-3 px-4">{{ field }}</td>
-          {% endfor %}
-          <td class="py-3 px-4 text-center">
-            <button
-              class="text-blue-500 hover:text-blue-700 mr-2 btn-view"
-              data-id="{{ item.id }}"
+    <!-- Buscador -->
+    <div class="mb-6">
+        <div class="relative">
+            <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+                <i class="fas fa-search text-gray-400"></i>
+            </div>
+            <input 
+                type="text" 
+                id="table-search" 
+                class="border border-cookie-200 rounded-lg p-2.5 pl-10 w-full focus:ring-cookie-500 focus:border-cookie-500" 
+                placeholder="Buscar recetas..."
             >
-              <i class="fas fa-eye"></i>
-            </button>
-            <button
-              class="text-yellow-500 hover:text-yellow-700 mr-2 btn-edit"
-              data-id="{{ item.id }}"
-            >
-              <i class="fas fa-edit"></i>
-            </button>
-            <button
-              class="text-red-500 hover:text-red-700 btn-delete"
-              data-id="{{ item.id }}"
-            >
-              <i class="fas fa-trash"></i>
-            </button>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
+        </div>
+    </div>
+
+    <!-- Tabla de registros -->
+    <div class="overflow-x-auto bg-white shadow-md rounded-lg">
+        <table class="min-w-full text-sm">
+            <thead>
+                <tr class="bg-cookie-100 text-chocolate-700 uppercase">
+                    {% for header in table_headers %}
+                    <th class="py-3 px-4 text-left">{{ header }}</th>
+                    {% endfor %}
+                    <th class="py-3 px-4 text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr class="border-b hover:bg-cream-50" data-id="{{ item.id }}">
+                    {% for field in item.fields %}
+                    <td class="py-3 px-4">{{ field }}</td>
+                    {% endfor %}
+                    <td class="py-3 px-4 text-center">
+                        <a
+                            href="{{ url_for('galletas.details', receta_id=item.id) }}"
+                            class="text-cookie-600 hover:text-cookie-700 mr-2"
+                            title="Ver detalles"
+                        >
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <button
+                            class="text-blue-500 hover:text-blue-700 mr-2 btn-edit"
+                            data-id="{{ item.id }}"
+                            title="Editar"
+                            onclick="editItem({{ item.id }})"
+                        >
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button
+                            data-item-id="{{ item.id }}"
+                            onclick="deleteItem({{ item.id }})"
+                            class="text-red-500 hover:text-red-700"
+                            title="Eliminar"
+                        >
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+                {% if not items %}
+                <tr>
+                    <td colspan="{{ table_headers|length + 1 }}" class="py-4 px-4 text-center text-gray-500">
+                        No hay recetas para mostrar
+                    </td>
+                </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
 </div>
 
 <!-- Modal para añadir/editar -->
 <div
-  id="modal"
-  class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center"
+    id="crud-modal"
+    class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
 >
-  <div class="bg-white rounded-lg shadow-lg w-full max-w-md">
-    <div class="flex justify-between items-center bg-gray-200 p-4 rounded-t-lg">
-      <h3 class="text-lg font-semibold">{{ modal_title }}</h3>
-      <button id="btn-close-modal" class="text-gray-500 hover:text-gray-700">
-        <i class="fas fa-times"></i>
-      </button>
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md">
+        <div class="flex justify-between items-center bg-cookie-100 p-4 rounded-t-lg">
+            <h3 class="text-lg font-semibold text-chocolate-800">{{ modal_title }}</h3>
+            <button id="btn-close-modal" class="text-gray-500 hover:text-gray-700" data-modal-hide="crud-modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form id="crud-form" action="{{ form_action }}" method="POST" class="p-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+            <input type="hidden" id="item-id" name="id" value="">
+            
+            {% for field in form_fields %}
+            {% if field.template != "components/forms/input_hidden.html" %}
+            <div class="mb-4">
+                <label for="{{ field.id }}" class="block mb-2 text-sm font-medium text-chocolate-700">{{ field.label }}</label>
+                {% if field.template == "components/forms/input_text.html" %}
+                    <input 
+                        type="text" 
+                        id="{{ field.id }}" 
+                        name="{{ field.name }}" 
+                        value="{{ field.value }}" 
+                        {% if field.required %}required{% endif %}
+                        class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500"
+                    >
+                {% elif field.template == "components/forms/input_textarea.html" %}
+                    <textarea 
+                        id="{{ field.id }}" 
+                        name="{{ field.name }}" 
+                        rows="{{ field.rows|default(4) }}"
+                        {% if field.required %}required{% endif %}
+                        class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500"
+                    >{{ field.value }}</textarea>
+                {% elif field.template == "components/forms/input_select.html" %}
+                    <select 
+                        id="{{ field.id }}" 
+                        name="{{ field.name }}" 
+                        {% if field.required %}required{% endif %}
+                        class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500"
+                    >
+                        <option value="">Seleccionar...</option>
+                        {% if field.options %}
+                            {% for option in field.options %}
+                                <option value="{{ option.value }}" {% if option.value == field.value|string %}selected{% endif %}>
+                                    {{ option.label }}
+                                </option>
+                            {% endfor %}
+                        {% endif %}
+                    </select>
+                {% elif field.template == "components/forms/input_number.html" %}
+                    <input 
+                        type="number" 
+                        id="{{ field.id }}" 
+                        name="{{ field.name }}" 
+                        value="{{ field.value }}" 
+                        {% if field.min is not none %}min="{{ field.min }}"{% endif %}
+                        {% if field.max is not none %}max="{{ field.max }}"{% endif %}
+                        {% if field.required %}required{% endif %}
+                        class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500"
+                    >
+                {% endif %}
+            </div>
+            {% else %}
+                <input 
+                    type="hidden" 
+                    id="{{ field.id }}" 
+                    name="{{ field.name }}" 
+                    value="{{ field.value }}"
+                >
+            {% endif %}
+            {% endfor %}
+            <div class="mt-6 flex justify-end">
+                <button
+                    type="button"
+                    id="btn-cancel"
+                    class="px-4 py-2 border border-cookie-300 rounded-lg text-chocolate-700 mr-2 hover:bg-cream-100 transition-colors"
+                    data-modal-hide="crud-modal"
+                >
+                    Cancelar
+                </button>
+                <button 
+                    type="submit" 
+                    class="px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors"
+                >
+                    Guardar
+                </button>
+            </div>
+        </form>
     </div>
-    <form id="form-crud" action="{{ form_action }}" method="POST" class="p-4">
-      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-
-      
-
-      <div class="mt-6 flex justify-end">
-        <button
-          type="button"
-          id="btn-cancel"
-          class="px-4 py-2 border rounded mr-2"
-        >
-          Cancelar
-        </button>
-        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">
-          Guardar
-        </button>
-      </div>
-    </form>
-  </div>
 </div>
 
+<!-- Modal de confirmación de eliminación -->
+<div id="delete-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-md">
+        <div class="bg-red-100 text-red-800 px-4 py-3 rounded-t-lg">
+            <h3 class="text-lg font-semibold">Confirmar eliminación</h3>
+        </div>
+        <div class="p-4">
+            <p class="mb-4">¿Estás seguro de que deseas eliminar esta receta? Esta acción no se puede deshacer.</p>
+            <form id="delete-form" method="POST">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="flex justify-end">
+                    <button 
+                        type="button" 
+                        id="btn-cancelar-eliminar" 
+                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 mr-2 hover:bg-gray-100"
+                        data-modal-hide="delete-modal"
+                    >
+                        Cancelar
+                    </button>
+                    <button 
+                        type="submit" 
+                        class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
+                    >
+                        Eliminar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
 <script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const modal = document.getElementById("modal");
-    const formCrud = document.getElementById("form-crud");
+    document.addEventListener("DOMContentLoaded", function () {
+        // Referencias a elementos DOM
+        const modal = document.getElementById("crud-modal");
+        const deleteModal = document.getElementById("delete-modal");
+        const formCrud = document.getElementById("crud-form");
+        const btnAddNew = document.querySelector('[data-modal-target="crud-modal"]');
+        const btnCloseModal = document.getElementById("btn-close-modal");
+        const btnCancel = document.getElementById("btn-cancel");
+        const btnCancelarEliminar = document.getElementById("btn-cancelar-eliminar");
+        const searchInput = document.getElementById("table-search");
 
-    // Función para abrir el modal
-    function openModal() {
-      modal.classList.remove("hidden");
-    }
-
-    // Función para cerrar el modal
-    function closeModal() {
-      modal.classList.add("hidden");
-      formCrud.reset();
-      // Reiniciar el ID oculto
-      const idField = document.querySelector('input[name="id"]');
-      if (idField) idField.value = "";
-    }
-
-    // Función para cargar datos de un elemento
-    async function loadItemData(id) {
-      try {
-        const response = await fetch(
-          `{{ url_for('galletas.get_galleta', galleta_id=0) }}`.replace(
-            "/0",
-            `/${id}`
-          )
-        );
-        const data = await response.json();
-
-        // Recorrer todos los campos y establecer sus valores
-        for (const key in data) {
-          const field = document.querySelector(`[name="${key}"]`);
-          if (field) {
-            field.value = data[key];
-          }
+        // Función para abrir modal (Nuevo)
+        function openModal() {
+            modal.classList.remove("hidden");
         }
 
-        openModal();
-      } catch (error) {
-        console.error("Error al cargar datos:", error);
-        alert("Ocurrió un error al cargar los datos");
-      }
+        // Función para cerrar modal
+        function closeModal() {
+            modal.classList.add("hidden");
+            formCrud.reset();
+            document.getElementById('item-id').value = "";
+        }
+        
+        // Función para cerrar modal de eliminación
+        function closeDeleteModal() {
+            deleteModal.classList.add("hidden");
+        }
+
+        // Evento para el botón "Agregar"
+        if (btnAddNew) {
+            btnAddNew.addEventListener("click", function() {
+                formCrud.reset();
+                document.getElementById('item-id').value = "";
+                openModal();
+            });
+        }
+
+        // Eventos para cerrar el modal
+        if (btnCloseModal) {
+            btnCloseModal.addEventListener("click", closeModal);
+        }
+        
+        if (btnCancel) {
+            btnCancel.addEventListener("click", closeModal);
+        }
+        
+        // Eventos para cerrar el modal de eliminación
+        if (btnCancelarEliminar) {
+            btnCancelarEliminar.addEventListener("click", closeDeleteModal);
+        }
+
+        // Cerrar modal al hacer clic fuera
+        modal.addEventListener("click", function(e) {
+            if (e.target === modal) {
+                closeModal();
+            }
+        });
+        
+        // Cerrar modal de eliminación al hacer clic fuera
+        deleteModal.addEventListener("click", function(e) {
+            if (e.target === deleteModal) {
+                closeDeleteModal();
+            }
+        });
+
+        // Buscar en la tabla
+        if (searchInput) {
+            searchInput.addEventListener("keyup", function() {
+                const searchTerm = this.value.toLowerCase();
+                const tableRows = document.querySelectorAll("tbody tr");
+                
+                tableRows.forEach(function(row) {
+                    let textContent = "";
+                    row.querySelectorAll("td").forEach(function(cell) {
+                        textContent += cell.textContent.toLowerCase() + " ";
+                    });
+                    
+                    if (textContent.includes(searchTerm)) {
+                        row.style.display = "";
+                    } else {
+                        row.style.display = "none";
+                    }
+                });
+            });
+        }
+        
+        // Asignar eventos a los botones que tienen el data-modal-hide
+        document.querySelectorAll('[data-modal-hide]').forEach(function(element) {
+            element.addEventListener('click', function() {
+                const modalId = element.getAttribute('data-modal-hide');
+                document.getElementById(modalId).classList.add('hidden');
+            });
+        });
+    });
+
+    // Función para editar un elemento
+    function editItem(itemId) {
+        const modal = document.getElementById("crud-modal");
+        const idField = document.getElementById('item-id');
+        
+        // Hacer una petición para obtener los datos del elemento
+        fetch(/recetas/get/${itemId})
+            .then(response => response.json())
+            .then(data => {
+                // Establecer el ID
+                idField.value = data.id || data.idReceta;
+                
+                // Asignar valores a los campos del formulario
+                document.getElementById('nombreReceta').value = data.nombreReceta || '';
+                document.getElementById('instruccionesReceta').value = data.instruccionesReceta || '';
+                document.getElementById('galletasProducidas').value = data.galletasProducidas || '';
+                
+                // Establecer el tipo de galleta
+                const selectGalleta = document.getElementById('idGalleta');
+                if (selectGalleta) {
+                    selectGalleta.value = data.idGalleta;
+                }
+                
+                // Establecer el estatus
+                const selectEstatus = document.getElementById('estatus');
+                if (selectEstatus) {
+                    selectEstatus.value = data.estatus.toString();
+                }
+                
+                // Mostrar el modal
+                modal.classList.remove("hidden");
+            })
+            .catch(error => {
+                console.error("Error al cargar los datos:", error);
+                alert("Error al cargar los datos de la receta");
+            });
     }
 
     // Función para eliminar un elemento
-    async function deleteItem(id) {
-      if (confirm("¿Estás seguro de que deseas eliminar este elemento?")) {
-        try {
-          const csrfToken = document.querySelector(
-            'input[name="csrf_token"]'
-          ).value;
-          const response = await fetch(
-            `{{ url_for('galletas.delete', galleta_id=0) }}`.replace(
-              "/0",
-              `/${id}`
-            ),
-            {
-              method: "POST",
-              headers: {
-                "X-Requested-With": "XMLHttpRequest",
-                "Content-Type": "application/json",
-                "X-CSRFToken": csrfToken,
-              },
-            }
-          );
-
-          const result = await response.json();
-
-          if (result.success) {
-            location.reload();
-          } else {
-            alert(result.message || "Error al eliminar");
-          }
-        } catch (error) {
-          console.error("Error al eliminar:", error);
-          alert("Ocurrió un error al eliminar");
-        }
-      }
+    function deleteItem(itemId) {
+        const deleteModal = document.getElementById("delete-modal");
+        const deleteForm = document.getElementById("delete-form");
+        
+        // Configurar la acción del formulario
+        deleteForm.action = /recetas/delete/${itemId};
+        
+        // Mostrar el modal de confirmación
+        deleteModal.classList.remove("hidden");
     }
-
-    // Botón para añadir nuevo
-    document.getElementById("btn-add-new").addEventListener("click", openModal);
-
-    // Botones para cerrar modal
-    document
-      .getElementById("btn-close-modal")
-      .addEventListener("click", closeModal);
-    document.getElementById("btn-cancel").addEventListener("click", closeModal);
-
-    // Botones de edición
-    document.querySelectorAll(".btn-edit").forEach((button) => {
-      button.addEventListener("click", function () {
-        const id = this.getAttribute("data-id");
-        loadItemData(id);
-      });
-    });
-
-    // Botones de eliminación
-    document.querySelectorAll(".btn-delete").forEach((button) => {
-      button.addEventListener("click", function () {
-        const id = this.getAttribute("data-id");
-        deleteItem(id);
-      });
-    });
-
-    // Botones de visualización
-    document.querySelectorAll(".btn-view").forEach((button) => {
-      button.addEventListener("click", function () {
-        const id = this.getAttribute("data-id");
-        window.location.href =
-          `{{ url_for('galletas.details', galleta_id=0) }}`.replace(
-            "/0",
-            `/${id}`
-          );
-      });
-    });
-
-    // Cerrar modal si se hace clic fuera
-    modal.addEventListener("click", function (e) {
-      if (e.target === modal) {
-        closeModal();
-      }
-    });
-  });
 </script>
 {% endblock %}

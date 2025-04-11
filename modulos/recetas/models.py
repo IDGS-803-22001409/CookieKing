@@ -6,7 +6,7 @@ class Receta(db.Model):
     idReceta = db.Column(db.Integer, primary_key=True, autoincrement=True)
     nombreReceta = db.Column(db.String(150), nullable=False)
     instruccionesReceta = db.Column(db.Text)
-    galletasProducidas = db.Column(db.Integer)
+    galletasProducidas = db.Column(db.Integer, nullable=True)
     estatus = db.Column(db.Integer, nullable=False)
     idGalleta = db.Column(db.Integer, db.ForeignKey('Galletas.idGalleta'), nullable=False)
     

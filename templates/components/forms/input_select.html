@@ -2,7 +2,7 @@
     id="{{ field.id }}" 
     name="{{ field.name }}" 
     {% if field.required %}required{% endif %}
-    class="bg-gray-700 border border-gray-600 text-white text-sm rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5"
+    class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500"
     {% for attr_name, attr_value in field.attrs.items() %}
         {{ attr_name }}="{{ attr_value }}"
     {% endfor %}

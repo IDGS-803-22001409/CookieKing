@@ -1,4 +1,3 @@
-# modulos / reportes / routes.py
 import json
 from datetime import datetime, timedelta
 from flask import Blueprint, render_template, redirect, url_for, request, jsonify, flash, send_file
@@ -150,7 +149,6 @@ def reporte_ventas():
         opciones=opciones
     )
 
-# Similar updates for other routes - inventario, produccion, financiero
 @reportes_bp.route('/inventario', methods=['GET', 'POST'])
 @login_required
 def reporte_inventario():
@@ -204,100 +202,6 @@ def reporte_inventario():
         form=form,
         opciones=opciones
     )
-
-@reportes_bp.route('/produccion', methods=['GET', 'POST'])
-@login_required
-def reporte_produccion():
-    """Generar reportes de producción"""
-    # Obtener opciones para los select
-    opciones = {
-        'productos': [(g.idGalleta, g.nombreGalleta) for g in Galletas.query.filter_by(estatus=1).all()]
-    }
-    
-    form = create_reportes_form('produccion', choices=opciones)
-    
-    if request.method == 'POST' and form.validate_on_submit():
-        # Recopilar datos del formulario
-        datos_reporte = {
-            'titulo': form.titulo.data,
-            'fecha_inicio': form.fecha_inicio.data.strftime('%Y-%m-%d'),
-            'fecha_fin': form.fecha_fin.data.strftime('%Y-%m-%d'),
-            'tipo_reporte': form.tipo_reporte.data,
-            'formato': 'pdf',  # Hardcoded to PDF
-            'incluir_grafico': form.incluir_grafico.data,
-            'productos': form.productos.data if hasattr(form, 'productos') else []
-        }
-        
-        try:
-            # Generar el reporte
-            ruta_archivo = generar_reporte_produccion(datos_reporte)
-            
-            # Registrar en historial
-            historial = HistorialReportes(
-                nombre=datos_reporte['titulo'],
-                tipo=f"produccion_{datos_reporte['tipo_reporte']}",
-                formato='PDF',  # Uppercase PDF
-                usuario=current_user.nombre_usuario if current_user else None,
-                rutaArchivo=ruta_archivo,
-                exitoso=True
-            )
-            db.session.add(historial)
-            db.session.commit()
-            
-            flash(f'Reporte generado correctamente', 'success')
-            return redirect(url_for('reportes.descargar_reporte', historial_id=historial.idHistorial))
-        
-        except Exception as e:
-            db.session.rollback()  # Rollback in case of error
-            flash(f'Error al generar el reporte: {str(e)}', 'error')
-    
-    # Si es GET o si falló la validación, mostrar el formulario
-    return render_template(
-        'modulos/reportes/reporte_produccion.html',
-        form=form,
-        opciones=opciones
-    )
-
-@reportes_bp.route('/financiero', methods=['GET', 'POST'])
-@login_required
-def reporte_financiero():
-    """Generar reportes financieros"""
-    if request.method == 'POST':
-        # Recopilar datos del formulario
-        datos_reporte = {
-            'titulo': request.form.get('titulo'),
-            'fecha_inicio': request.form.get('fecha_inicio'),
-            'fecha_fin': request.form.get('fecha_fin'),
-            'tipo_reporte': request.form.get('tipo_reporte'),
-            'formato': 'pdf',  # Hardcoded to PDF
-            'incluir_grafico': 'incluir_grafico' in request.form
-        }
-        
-        try:
-            # Generar el reporte
-            ruta_archivo = generar_reporte_financiero(datos_reporte)
-            
-            # Registrar en historial
-            historial = HistorialReportes(
-                nombre=datos_reporte['titulo'],
-                tipo=f"financiero_{datos_reporte['tipo_reporte']}",
-                formato='PDF',  # Uppercase PDF
-                usuario=current_user.nombre_usuario if current_user else None,
-                rutaArchivo=ruta_archivo,
-                exitoso=True
-            )
-            db.session.add(historial)
-            db.session.commit()
-            
-            flash(f'Reporte generado correctamente', 'success')
-            return redirect(url_for('reportes.descargar_reporte', historial_id=historial.idHistorial))
-        
-        except Exception as e:
-            db.session.rollback()  # Rollback in case of error
-            flash(f'Error al generar el reporte: {str(e)}', 'error')
-    
-    # Si es GET o si falló la validación, mostrar el formulario
-    return render_template('modulos/reportes/reporte_financiero.html')
 
 @reportes_bp.route('/historial')
 @login_required

@@ -1,6 +1,10 @@
 from flask_wtf import FlaskForm
 from wtforms import StringField, TextAreaField, FloatField, SelectField, HiddenField
 from wtforms.validators import DataRequired, Optional, NumberRange
+from flask_wtf import FlaskForm
+from wtforms import StringField, TextAreaField, FloatField, SelectField, HiddenField, FileField
+from wtforms.validators import DataRequired, Optional, NumberRange
+
 
 class GalletaForm(FlaskForm):
     """Formulario para galletas usando WTForms"""
@@ -8,8 +12,9 @@ class GalletaForm(FlaskForm):
     nombreGalleta = StringField('Nombre de la Galleta', validators=[DataRequired()])
     descripcion = TextAreaField('Descripción', validators=[Optional()])
     estado = StringField('Estado', validators=[DataRequired()])
-    peso_por_unidad = FloatField('Peso por Unidad (g)', validators=[NumberRange(min=0.1)])
+    peso_por_unidad = FloatField('Peso por Unidad (g)')
     precio_unitario = FloatField('Precio Unitario ($)', validators=[NumberRange(min=0.1)])
+    foto = FileField('Foto')
     estatus = SelectField('Estatus', 
                         choices=[('1', 'Activo'), ('0', 'Inactivo')], 
                         validators=[DataRequired()])
@@ -40,4 +45,4 @@ def create_galleta_form(galleta=None):
                    estatus_value, True).get_dict()
     ]
     
-    return fields 
+    return fields

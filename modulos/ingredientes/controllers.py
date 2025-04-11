@@ -145,3 +145,66 @@ class IngredienteController:
         """Obtener todos los movimientos de un ingrediente específico"""
         return MovimientoInsumo.query.filter_by(ingrediente_id=ingrediente_id).order_by(
             MovimientoInsumo.fecha_movimiento.desc()).all()
+    
+
+    @staticmethod
+    def registrar_merma(ingrediente_id, cantidad, motivo, unidad_ingresada=None):
+        """
+        Registrar una merma de ingrediente con posible conversión de unidades
+        
+        Args:
+            ingrediente_id: ID del ingrediente
+            cantidad: Cantidad perdida
+            motivo: Motivo de la merma (caducidad, accidente, etc.)
+            unidad_ingresada: Unidad en la que se ingresó la cantidad (opcional)
+        """
+        ingrediente = Ingrediente.query.get(ingrediente_id)
+        
+        if not ingrediente:
+            return False
+        
+        try:
+            # Convertir la cantidad si es necesario
+            cantidad_convertida = cantidad
+            
+            if unidad_ingresada and unidad_ingresada != ingrediente.unidad:
+                # Conversiones de kg a g y viceversa
+                if ingrediente.unidad == 'kg' and unidad_ingresada == 'g':
+                    cantidad_convertida = cantidad / 1000
+                elif ingrediente.unidad == 'g' and unidad_ingresada == 'kg':
+                    cantidad_convertida = cantidad * 1000
+                # Conversiones de l a ml y viceversa
+                elif ingrediente.unidad == 'l' and unidad_ingresada == 'ml':
+                    cantidad_convertida = cantidad / 1000
+                elif ingrediente.unidad == 'ml' and unidad_ingresada == 'l':
+                    cantidad_convertida = cantidad * 1000
+            
+            # Verificar que haya suficiente stock
+            if ingrediente.stock < cantidad_convertida:
+                return False
+            
+            # Reducir el stock
+            ingrediente.stock -= cantidad_convertida
+            
+            # Incluir la información de la unidad en la referencia si es diferente
+            referencia_detallada = motivo
+            if unidad_ingresada and unidad_ingresada != ingrediente.unidad:
+                referencia_detallada = f"Merma: {cantidad} {unidad_ingresada} ({cantidad_convertida} {ingrediente.unidad}) - {motivo}"
+            else:
+                referencia_detallada = f"Merma: {motivo}"
+            
+            # Registrar el movimiento como un tipo especial (2 = Merma)
+            movimiento = MovimientoInsumo(
+                ingrediente_id=ingrediente_id,
+                tipo_movimiento=2,  # 2 para merma
+                cantidad=cantidad_convertida,
+                fecha_movimiento=datetime.now().date(),
+                referencia=referencia_detallada
+            )
+            
+            db.session.add(movimiento)
+            db.session.commit()
+            return True
+        except Exception:
+            db.session.rollback()
+            return False

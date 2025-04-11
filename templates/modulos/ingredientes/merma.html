@@ -1,0 +1,93 @@
+{% extends "layouts/base_layout.html" %}
+{% block title %}Registrar Merma - Cookie King{% endblock %}
+
+{% block content %}
+<div class="container mx-auto px-4 py-6">
+    <div class="flex justify-between items-center mb-6">
+        <h1 class="text-2xl font-bold text-chocolate-800">
+            Registrar Merma: {{ ingrediente.nombreIngrediente }}
+        </h1>
+        <a href="{{ url_for('ingredientes.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded inline-flex items-center">
+            <i class="fas fa-arrow-left mr-2"></i> Volver
+        </a>
+    </div>
+
+    <!-- Información del ingrediente -->
+    <div class="bg-cookie-50 border-l-4 border-cookie-500 text-chocolate-700 p-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+                <p class="text-sm">Stock Actual:</p>
+                <p class="text-lg font-bold">{{ ingrediente.stock }} {{ ingrediente.unidad }}</p>
+            </div>
+            <div>
+                <p class="text-sm">Precio Unitario:</p>
+                <p class="text-lg font-bold">${{ ingrediente.precio_unitario|round(2) }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Formulario de merma -->
+    <div class="bg-white shadow-md rounded-lg overflow-hidden p-6">
+        <form method="POST" action="{{ url_for('ingredientes.registrar_merma', ingrediente_id=ingrediente.idIngrediente) }}">
+            {{ form.csrf_token }}
+            
+            <div class="mb-4">
+                <label for="cantidad" class="block text-gray-700 text-sm font-bold mb-2">
+                    Cantidad a mermar:
+                </label>
+                <div class="flex">
+                    {{ form.cantidad(class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline w-full", placeholder="Cantidad") }}
+                    {% if form.cantidad.errors %}
+                        <div class="text-red-500 text-xs mt-1">
+                            {% for error in form.cantidad.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <label for="unidad" class="block text-gray-700 text-sm font-bold mb-2">
+                    Unidad:
+                </label>
+                <div class="flex">
+                    {{ form.unidad(class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline w-full") }}
+                    {% if form.unidad.errors %}
+                        <div class="text-red-500 text-xs mt-1">
+                            {% for error in form.unidad.errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+                {% if ingrediente.unidad in ['kg', 'g', 'l', 'ml'] %}
+                    <p class="text-gray-600 text-xs mt-1">
+                        Puedes seleccionar diferentes unidades de medida para mayor precisión.
+                    </p>
+                {% endif %}
+            </div>
+            
+            <div class="mb-6">
+                <label for="motivo" class="block text-gray-700 text-sm font-bold mb-2">
+                    Motivo de la merma:
+                </label>
+                {{ form.motivo(class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline w-full", rows=3, placeholder="Ej: Caducidad, producto caído, daño en empaque, etc.") }}
+                {% if form.motivo.errors %}
+                    <div class="text-red-500 text-xs mt-1">
+                        {% for error in form.motivo.errors %}
+                            {{ error }}
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="flex items-center justify-end">
+                <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline">
+                    Registrar Merma
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

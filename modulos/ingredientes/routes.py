@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, redirect, url_for, flash, request,
 from flask_login import login_required
 from modulos.main.routes import roles_required
 from modulos.ingredientes.controllers import IngredienteController
-from modulos.ingredientes.forms import IngredienteForm, MovimientoStockForm
+from modulos.ingredientes.forms import IngredienteForm, MovimientoStockForm, MermaForm
 from datetime import datetime
 
 # Crear blueprint para las rutas de ingredientes
@@ -140,3 +140,38 @@ def api_listar():
     """API para obtener lista de ingredientes en formato JSON"""
     ingredientes = IngredienteController.get_all_ingredientes()
     return jsonify([ing.to_dict() for ing in ingredientes])
+
+
+
+@ingredientes_bp.route('/merma/<int:ingrediente_id>', methods=['GET', 'POST'])
+@login_required
+@roles_required("admin","empleado")
+def registrar_merma(ingrediente_id):
+    """Registra una merma de ingrediente"""
+    ingrediente = IngredienteController.get_ingrediente_by_id(ingrediente_id)
+    
+    if not ingrediente:
+        flash('Ingrediente no encontrado', 'error')
+        return redirect(url_for('ingredientes.index'))
+    
+    form = MermaForm()
+    form.set_unidades_choices(ingrediente.unidad)
+    
+    if form.validate_on_submit():
+        try:
+            resultado = IngredienteController.registrar_merma(
+                ingrediente_id=ingrediente_id,
+                cantidad=form.cantidad.data,
+                motivo=form.motivo.data,
+                unidad_ingresada=form.unidad.data
+            )
+            
+            if resultado:
+                flash('Merma registrada con éxito', 'success')
+                return redirect(url_for('ingredientes.historial', ingrediente_id=ingrediente_id))
+            else:
+                flash('Error al registrar la merma. Verifique que haya stock suficiente.', 'error')
+        except Exception as e:
+            flash(f'Error al registrar merma: {str(e)}', 'error')
+    
+    return render_template('modulos/ingredientes/merma.html', form=form, ingrediente=ingrediente)

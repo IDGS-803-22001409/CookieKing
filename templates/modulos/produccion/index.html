@@ -7,7 +7,13 @@
     class="min-h-[70vh] flex flex-col items-center justify-center bg-cream-50 rounded-lg border border-cookie-200 shadow-md p-8 text-center w-full">
     <!-- Título -->
     <h2 class="text-3xl font-bold text-chocolate-800 mb-6">Solicitud de Producción</h2>
-
+<!-- Botones de acción -->
+    <div class="w-full max-w-4xl flex justify-end mb-4">
+        <a href="{{ url_for('produccion.merma_galletas') }}" 
+           class="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600 transition mr-2">
+            Registrar Merma
+        </a>
+    </div>
     <!-- Tabla de Galletas con Existencias Bajas -->
     <div class="w-full max-w-4xl">
         <table class="w-full bg-white border border-cookie-200 rounded-lg shadow-md">
@@ -20,7 +26,7 @@
             </thead>
             <tbody>
                 {% for galleta in galletas %}
-                {% if galleta.existencias < 101 %} <tr class="border-b border-cookie-300">
+                <tr class="border-b border-cookie-300">
                     <td class="py-3 px-4">{{ galleta.nombreGalleta }}</td>
                     <td class="py-3 px-4 {% if galleta.existencias < 101 %}text-red-600 font-bold{% endif %}">
                         {{ galleta.existencias }}
@@ -32,7 +38,7 @@
                         </a>
                     </td>
                     </tr>
-                    {% endif %}
+                   
                     {% endfor %}
             </tbody>
         </table>

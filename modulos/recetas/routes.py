@@ -76,7 +76,7 @@ def save():
         data = {
             'nombreReceta': form.nombreReceta.data,
             'instruccionesReceta': form.instruccionesReceta.data,
-            'galletasProducidas': form.galletasProducidas.data,
+            'galletasProducidas': 0,
             'idGalleta': form.idGalleta.data,
             'estatus': 1 if form.estatus.data == '1' else 0
         }

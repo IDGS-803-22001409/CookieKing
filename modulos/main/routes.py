@@ -39,8 +39,21 @@ def root_redirect():
 def index():    
     """Dashboard de ventas diarias (solo admin/empleado)"""
     hoy = datetime.now().date()
+    inicio_mes = datetime.now().replace(day=1).date()
     
-    try:
+    # Inicializar variables
+    ventasClientes = []
+    ventas_cliente_general = 0
+    total_ventas = 0
+    total_unidades = 0
+    galletas_mas_vendidas = []
+    presentaciones = []
+    ventas_periodo = 0
+    galletas_con_costos = []
+    galleta_recomendada = None
+    
+    try:        
+        # Consulta para ventas por cliente
         ventasClientes = db.session.query(
             Cliente.nombreCliente,
             func.sum(DetalleVenta.cantidad * Galletas.precio_unitario).label('total_cliente')
@@ -53,12 +66,39 @@ def index():
          .order_by(func.sum(DetalleVenta.cantidad * Galletas.precio_unitario).desc())\
          .all()
 
+        # Consulta para obtener ventas sin cliente específico (clientes generales)
+        ventas_sin_cliente = db.session.query(
+            func.sum(DetalleVenta.cantidad * Galletas.precio_unitario).label('total_general')
+        ).select_from(Venta)\
+         .outerjoin(Cliente, Venta.IdCliente == Cliente.idCliente)\
+         .join(DetalleVenta, DetalleVenta.venta_id == Venta.idVenta)\
+         .join(Galletas, DetalleVenta.galleta_id == Galletas.idGalleta)\
+         .filter(func.date(Venta.fechaVenta) == hoy)\
+         .filter(Cliente.idCliente.is_(None))\
+         .first()
+        
+        # Si hay ventas sin cliente, agregar "Cliente General" a la lista
+        if ventas_sin_cliente and ventas_sin_cliente.total_general:
+            ventas_cliente_general = float(ventas_sin_cliente.total_general or 0)
+            # Crear objeto similar a los resultados de ventasClientes
+            cliente_general = type('obj', (object,), {
+                'nombreCliente': 'Cliente General', 
+                'total_cliente': ventas_cliente_general
+            })
+            # Agregar al inicio de la lista
+            ventasClientes = [cliente_general] + list(ventasClientes)
+
+        # Resto del código como estaba
         totales = db.session.query(
             func.sum(DetalleVenta.cantidad * Galletas.precio_unitario).label('total_ventas'),
             func.sum(DetalleVenta.cantidad).label('total_unidades')
         ).join(Venta, DetalleVenta.venta_id == Venta.idVenta)\
          .join(Galletas, DetalleVenta.galleta_id == Galletas.idGalleta)\
          .filter(func.date(Venta.fechaVenta) == hoy).first()
+        
+        if totales:
+            total_ventas = float(totales.total_ventas or 0)
+            total_unidades = int(totales.total_unidades or 0)
         
         galletas = db.session.query(
             Galletas.nombreGalleta,
@@ -69,6 +109,8 @@ def index():
          .order_by(func.sum(DetalleVenta.cantidad).desc())\
          .limit(5)\
          .all()
+        
+        galletas_mas_vendidas = galletas
         
         presentaciones = db.session.query(
             case(
@@ -82,21 +124,72 @@ def index():
             ).order_by(func.sum(DetalleVenta.cantidad).desc()
         ).all()
 
+        # 1. Ventas totales con período específico (último mes)
+        ventas_periodo_result = db.session.query(
+            func.sum(DetalleVenta.cantidad * Galletas.precio_unitario).label('total_ventas')
+        ).join(Venta, DetalleVenta.venta_id == Venta.idVenta)\
+         .join(Galletas, DetalleVenta.galleta_id == Galletas.idGalleta)\
+         .filter(func.date(Venta.fechaVenta) >= inicio_mes).first()
+        
+        ventas_periodo = float(ventas_periodo_result.total_ventas or 0) if ventas_periodo_result else 0
+        
+        # 2. Cálculo de costos usando un enfoque alternativo
+        galletas_result = Galletas.query.filter_by(estatus=1).all()
+        
+        for galleta in galletas_result:
+            try:
+                # Usar un costo estimado basado en el precio
+                precio = float(galleta.precio_unitario or 0)                
+                costo_unitario = precio * 0.40
+                margen = precio - costo_unitario
+                margen_porcentaje = (margen / costo_unitario * 100) if costo_unitario > 0 else 0
+                
+                galleta_info = {
+                    'nombreGalleta': galleta.nombreGalleta,
+                    'precio': precio,
+                    'costo': costo_unitario,
+                    'margen': margen,
+                    'margen_porcentaje': margen_porcentaje
+                }
+                
+                galletas_con_costos.append(galleta_info)
+                
+                # Actualizar la galleta recomendada si tiene mejor margen
+                if not galleta_recomendada or margen_porcentaje > galleta_recomendada['margen_porcentaje']:
+                    galleta_recomendada = galleta_info
+                    
+            except Exception as e:
+                print(f"Error calculando costo para galleta {galleta.nombreGalleta}: {str(e)}")
+                # Continuar con la siguiente galleta
+
         return render_template('index.html',
             ventasClientes=ventasClientes,
-            total_ventas=totales.total_ventas if totales else 0,
-            total_unidades=totales.total_unidades if totales else 0,
+            total_ventas=total_ventas,
+            total_unidades=total_unidades,
             fecha_actual=hoy.strftime('%d/%m/%Y'),
-            galletas_mas_vendidas=galletas,
-            presentaciones=presentaciones)
+            galletas_mas_vendidas=galletas_mas_vendidas,
+            presentaciones=presentaciones,
+            # Nuevos datos para los criterios faltantes
+            ventas_periodo=ventas_periodo,
+            periodo_inicio=inicio_mes.strftime('%d/%m/%Y'),
+            periodo_fin=hoy.strftime('%d/%m/%Y'),
+            galletas_con_costos=galletas_con_costos,
+            galleta_recomendada=galleta_recomendada)
     
     except Exception as e:
-        print(f"Error en consulta: {str(e)}")
+        import traceback
+        print(f"Error en consulta principal: {str(e)}")
+        print(traceback.format_exc())
         return render_template('index.html',
             ventasClientes=[],
             total_ventas=0,
             total_unidades=0,
-            fecha_actual=hoy.strftime('%d/%m/%Y'))
+            fecha_actual=hoy.strftime('%d/%m/%Y'),
+            ventas_periodo=0,
+            periodo_inicio=inicio_mes.strftime('%d/%m/%Y'),
+            periodo_fin=hoy.strftime('%d/%m/%Y'),
+            galletas_con_costos=[],
+            galleta_recomendada=None)
 
 @main_bp.route('/cliente')
 def cliente_portal():

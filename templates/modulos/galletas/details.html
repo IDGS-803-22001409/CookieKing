@@ -1,10 +1,14 @@
-{% extends "layouts/base_layout.html" %} {% block content %}
-<div class="p-4">
+{% extends "layouts/base_layout.html" %}
+
+{% block title %}Detalles de Galleta - Cookie King{% endblock %}
+
+{% block content %}
+<div class="p-6 bg-cream-50 rounded-lg shadow-lg">
   <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl font-bold">Detalles de Galleta</h1>
+    <h1 class="text-2xl font-bold text-chocolate-800">Detalles de Galleta</h1>
     <a
       href="{{ url_for('galletas.index') }}"
-      class="bg-blue-500 text-white px-4 py-2 rounded"
+      class="inline-flex items-center px-4 py-2 bg-cookie-600 text-white rounded-lg hover:bg-cookie-700 transition-colors duration-200"
     >
       <i class="fas fa-arrow-left mr-2"></i> Volver
     </a>
@@ -13,113 +17,131 @@
   <div class="bg-white shadow-md rounded-lg p-6">
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
       <div>
-        <h2 class="text-xl font-semibold mb-4">Información Básica</h2>
+        <h2 class="text-xl font-semibold mb-4 text-chocolate-700">Información Básica</h2>
 
         <div class="mb-4">
           <label class="block text-gray-700 font-bold mb-1">Nombre:</label>
-          <div class="border rounded px-3 py-2 bg-gray-50">
+          <div class="border rounded-lg px-4 py-3 bg-cream-50">
             {{ galleta.nombreGalleta }}
           </div>
         </div>
 
         <div class="mb-4">
           <label class="block text-gray-700 font-bold mb-1">Estado:</label>
-          <div class="border rounded px-3 py-2 bg-gray-50">
+          <div class="border rounded-lg px-4 py-3 bg-cream-50">
             {{ galleta.estado }}
           </div>
         </div>
 
         <div class="mb-4">
           <label class="block text-gray-700 font-bold mb-1">Estatus:</label>
-          <div class="border rounded px-3 py-2 bg-gray-50">
+          <div class="border rounded-lg px-4 py-3 bg-cream-50">
             <span
-              class="px-2 py-1 rounded {{ 'bg-green-100 text-green-800' if galleta.estatus == 1 else 'bg-red-100 text-red-800' }}"
+              class="px-3 py-1 rounded-full {{ 'bg-green-100 text-green-800' if galleta.estatus == 1 else 'bg-red-100 text-red-800' }}"
             >
               {{ "Activo" if galleta.estatus == 1 else "Inactivo" }}
             </span>
           </div>
         </div>
       </div>
+      
       <div>
-        <h2 class="text-xl font-semibold mb-4">Detalles de Producción</h2>
+        <h2 class="text-xl font-semibold mb-4 text-chocolate-700">Detalles de Producción</h2>
 
         <div class="mb-4">
-          <label class="block text-gray-700 font-bold mb-1"
-            >Peso por Unidad:</label
-          >
-          <div class="border rounded px-3 py-2 bg-gray-50">
-            {{ galleta.peso_por_unidad }} g
+          <label class="block text-gray-700 font-bold mb-1">Peso por Unidad:</label>
+          <div class="border rounded-lg px-4 py-3 bg-cream-50">
+            {{ galleta.peso_por_unidad }} kg
           </div>
         </div>
 
         <div class="mb-4">
-          <label class="block text-gray-700 font-bold mb-1"
-            >Precio Unitario:</label
-          >
-          <div class="border rounded px-3 py-2 bg-gray-50">
+          <label class="block text-gray-700 font-bold mb-1">Precio Unitario:</label>
+          <div class="border rounded-lg px-4 py-3 bg-cream-50">
             ${{ "%.2f"|format(galleta.precio_unitario) }}
           </div>
         </div>
+        
+        <!-- Existencias -->
+        <div class="mb-4">
+          <label class="block text-gray-700 font-bold mb-1">Existencias:</label>
+          <div class="border rounded-lg px-4 py-3 bg-cream-50">
+            {{ galleta.existencias|default(0) }} unidades
+          </div>
+        </div>
       </div>
     </div>
 
+    <!-- Descripción -->
     <div class="mt-6">
       <label class="block text-gray-700 font-bold mb-1">Descripción:</label>
-      <div class="border rounded px-3 py-4 bg-gray-50 min-h-[100px]">
+      <div class="border rounded-lg px-4 py-4 bg-cream-50 min-h-[100px]">
         {{ galleta.descripcion or "Sin descripción" }}
       </div>
     </div>
+    
+    <!-- Foto de la galleta -->
+    <div class="mt-6">
+      <label class="block text-gray-700 font-bold mb-1">Imagen:</label>
+      {% if galleta.foto %}
+      <div class="border rounded-lg p-4 bg-cream-50 flex justify-center">
+        <img 
+          src="{{ galleta.get_galleta_foto() }}"
+          alt="Imagen de {{ galleta.nombreGalleta }}"
+          class="h-64 w-auto object-contain"
+        >
+      </div>
+      {% else %}
+      <div class="border rounded-lg p-6 bg-cream-50 text-gray-500 text-center">
+        <i class="fas fa-cookie fa-3x mb-3"></i>
+        <p>No hay imagen disponible para esta galleta</p>
+      </div>
+      {% endif %}
+    </div>
 
+    <!-- Recetas relacionadas -->
     <div class="mt-8">
-      <h2 class="text-xl font-semibold mb-4">Recetas Relacionadas</h2>
+      <h2 class="text-xl font-semibold mb-4 text-chocolate-700">Recetas Relacionadas</h2>
 
-      {% if galleta.recetas %}
-      <div class="overflow-x-auto bg-white border rounded">
+      {% if galleta.recetas and galleta.recetas|length > 0 %}
+      <div class="overflow-x-auto bg-white shadow-md rounded-lg">
         <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-100">
+          <thead class="bg-cookie-100">
             <tr>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
+              <th class="py-3 px-4 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
                 Nombre
               </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
+              <th class="py-3 px-4 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
                 Producción
               </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
+              <th class="py-3 px-4 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
                 Estatus
               </th>
-              <th
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-              >
+              <th class="py-3 px-4 text-left text-xs font-medium text-chocolate-700 uppercase tracking-wider">
                 Acciones
               </th>
             </tr>
           </thead>
           <tbody class="bg-white divide-y divide-gray-200">
             {% for receta in galleta.recetas %}
-            <tr class="hover:bg-gray-50">
-              <td class="px-6 py-4 whitespace-nowrap">
+            <tr class="hover:bg-cream-50">
+              <td class="py-3 px-4 whitespace-nowrap">
                 {{ receta.nombreReceta }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td class="py-3 px-4 whitespace-nowrap">
                 {{ receta.galletasProducidas }} unidades
               </td>
-              <td class="px-6 py-4 whitespace-nowrap">
+              <td class="py-3 px-4 whitespace-nowrap">
                 <span
-                  class="px-2 py-1 text-xs rounded {{ 'bg-green-100 text-green-800' if receta.estatus == 1 else 'bg-red-100 text-red-800' }}"
+                  class="px-2 py-1 text-xs rounded-full {{ 'bg-green-100 text-green-800' if receta.estatus == 1 else 'bg-red-100 text-red-800' }}"
                 >
                   {{ "Activo" if receta.estatus == 1 else "Inactivo" }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm">
+              <td class="py-3 px-4 whitespace-nowrap text-sm">
                 <a
                   href="{{ url_for('recetas.details', receta_id=receta.idReceta) }}"
-                  class="text-blue-500 hover:text-blue-700"
+                  class="text-cookie-600 hover:text-cookie-700"
                 >
                   <i class="fas fa-eye mr-1"></i> Ver
                 </a>
@@ -130,8 +152,9 @@
         </table>
       </div>
       {% else %}
-      <div class="border rounded p-4 bg-gray-50 text-gray-600">
-        No hay recetas asociadas a esta galleta.
+      <div class="border rounded-lg p-6 bg-cream-50 text-gray-600 text-center">
+        <i class="fas fa-book-open fa-2x mb-3"></i>
+        <p>No hay recetas asociadas a esta galleta.</p>
       </div>
       {% endif %}
     </div>
