@@ -1,5 +1,5 @@
 from mailbox import Message
-from flask import current_app, session
+from flask import current_app, session, url_for
 from flask_login import login_user, logout_user
 from datetime import datetime
 from .models import Usuario, db, ValidadorContrasena, AutenticacionDosFactores
@@ -30,50 +30,50 @@ class AuthController:
             
             mail = current_app.extensions.get('mail')
             msg = Message(
-    '🍪 Código de Seguridad - Dulce Verificación',
-    recipients=[usuario.correo],
-    html=f'''
-    <html>
-        <head>
-            <style>
-                body {{ font-family: 'Arial', sans-serif; line-height: 1.6; color: #5a3e2b; }}
-                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
-                .header {{ background-color: #fff5e6; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
-                .content {{ padding: 20px; background-color: #fff9f0; }}
-                .code {{ font-size: 28px; font-weight: bold; color: #d35400; text-align: center; margin: 25px 0; 
-                        background: #fff; padding: 15px; border-radius: 8px; border: 2px dashed #e67e22; }}
-                .footer {{ margin-top: 30px; font-size: 12px; color: #8b6b4a; text-align: center; 
-                          background-color: #fff5e6; padding: 15px; border-radius: 0 0 10px 10px; }}
-                .logo {{ color: #e67e22; font-weight: bold; font-size: 24px; }}
-                .cookie-icon {{ font-size: 20px; vertical-align: middle; }}
-            </style>
-        </head>
-        <body>
-            <div class="container">
-                <div class="header">
-                    <h2><span class="cookie-icon">🍪</span> <span class="logo">CooKieKing</span></h2>
-                </div>
-                <div class="content">
-                    <p>¡Hola {usuario.nombre_usuario}!</p>
-                    <p>Alguien está intentando acceder a tu cuenta en <strong>CooKieKing</strong>. Para asegurarnos de que eres tú, por favor utiliza este dulce código de verificación:</p>
-                    
-                    <div class="code">{datos_totp["codigo"]}</div>
-                    
-                    <p>Este código es tan fresco como nuestras galletas recién horneadas, pero solo dura 5 minutos. Si no has solicitado iniciar sesión, por favor ignora este mensaje o contáctanos en <a href="mailto:galletascookieking@gmail.com" style="color: #e67e22;">galletascookieking@gmail.com</a>.</p>
-                    
-                    <p style="text-align: center; margin-top: 25px;">
-                        <span style="font-size: 18px;">🍪 🍪 🍪</span>
-                    </p>
-                </div>
-                <div class="footer">
-                    <p>© {datetime.now().year} CooKieKing. Todos los derechos reservados.</p>
-                    <p>Este es un mensaje automático - Por la seguridad de tu cuenta, no lo reenvíes.</p>
-                </div>
-            </div>
-        </body>
-    </html>
-    '''
-)
+                '🍪 Código de Seguridad - Dulce Verificación',
+                recipients=[usuario.correo],
+                html=f'''
+                <html>
+                    <head>
+                        <style>
+                            body {{ font-family: 'Arial', sans-serif; line-height: 1.6; color: #5a3e2b; }}
+                            .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                            .header {{ background-color: #fff5e6; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+                            .content {{ padding: 20px; background-color: #fff9f0; }}
+                            .code {{ font-size: 28px; font-weight: bold; color: #d35400; text-align: center; margin: 25px 0; 
+                                    background: #fff; padding: 15px; border-radius: 8px; border: 2px dashed #e67e22; }}
+                            .footer {{ margin-top: 30px; font-size: 12px; color: #8b6b4a; text-align: center; 
+                                      background-color: #fff5e6; padding: 15px; border-radius: 0 0 10px 10px; }}
+                            .logo {{ color: #e67e22; font-weight: bold; font-size: 24px; }}
+                            .cookie-icon {{ font-size: 20px; vertical-align: middle; }}
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <div class="header">
+                                <h2><span class="cookie-icon">🍪</span> <span class="logo">CooKieKing</span></h2>
+                            </div>
+                            <div class="content">
+                                <p>¡Hola {usuario.nombre_usuario}!</p>
+                                <p>Alguien está intentando acceder a tu cuenta en <strong>CooKieKing</strong>. Para asegurarnos de que eres tú, por favor utiliza este dulce código de verificación:</p>
+                                
+                                <div class="code">{datos_totp["codigo"]}</div>
+                                
+                                <p>Este código es tan fresco como nuestras galletas recién horneadas, pero solo dura 5 minutos. Si no has solicitado iniciar sesión, por favor ignora este mensaje o contáctanos en <a href="mailto:galletascookieking@gmail.com" style="color: #e67e22;">galletascookieking@gmail.com</a>.</p>
+                                
+                                <p style="text-align: center; margin-top: 25px;">
+                                    <span style="font-size: 18px;">🍪 🍪 🍪</span>
+                                </p>
+                            </div>
+                            <div class="footer">
+                                <p>© {datetime.now().year} CooKieKing. Todos los derechos reservados.</p>
+                                <p>Este es un mensaje automático - Por la seguridad de tu cuenta, no lo reenvíes.</p>
+                            </div>
+                        </div>
+                    </body>
+                </html>
+                '''
+            )
             mail.send(msg)
             
             session['totp_data'] = {
@@ -127,10 +127,8 @@ class AuthController:
         if usuario_existente:
             return False, "Nombre de usuario o correo ya registrados"
         
-        # Lógica mejorada para asignación de roles
         rol = data.get('rol', 'cliente')
         
-        # Solo permitir asignación de roles admin/empleado si el usuario actual es admin
         if rol in ['admin', 'empleado']:
             if not (usuario_actual and usuario_actual.is_authenticated and usuario_actual.rol == 'admin'):
                 return False, "No tienes permisos para asignar este rol"
@@ -161,8 +159,8 @@ class AuthController:
         return Usuario.query.all()
 
     @staticmethod
-    def crear_usuario_admin(data):
-        return AuthController.registrar_usuario(data)
+    def crear_usuario_admin(data, usuario_actual=None):
+        return AuthController.registrar_usuario(data, usuario_actual)
 
     @staticmethod
     def actualizar_usuario(usuario_id, data):
@@ -215,4 +213,103 @@ class AuthController:
         except Exception as e:
             db.session.rollback()
             return False, f"Error al cambiar estado: {str(e)}"
-            
+    
+    @staticmethod
+    def solicitar_recuperacion_contrasena(correo):
+        usuario = Usuario.query.filter_by(correo=correo).first()
+        
+        if not usuario:
+            return True, "Si el correo está registrado, recibirás instrucciones para restablecer tu contraseña."
+        
+        if not usuario.esta_activo:
+            return False, "Esta cuenta está desactivada. Contacte al administrador."
+        
+        token = usuario.generar_token_recuperacion()
+        enlace_recuperacion = url_for('auth.restablecer_contrasena', token=token, _external=True)
+        
+        mail = current_app.extensions.get('mail')
+        msg = Message(
+            '🍪 Recuperación de Contraseña - Cookie King',
+            recipients=[usuario.correo],
+            html=f'''
+            <html>
+                <head>
+                    <style>
+                        body {{ font-family: 'Arial', sans-serif; line-height: 1.6; color: #5a3e2b; }}
+                        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                        .header {{ background-color: #fff5e6; padding: 20px; text-align: center; border-radius: 10px 10px 0 0; }}
+                        .content {{ padding: 20px; background-color: #fff9f0; }}
+                        .button {{ display: inline-block; background-color: #e67e22; color: white; padding: 12px 24px; 
+                                   text-decoration: none; font-weight: bold; border-radius: 5px; margin: 20px 0; }}
+                        .footer {{ margin-top: 30px; font-size: 12px; color: #8b6b4a; text-align: center; 
+                                  background-color: #fff5e6; padding: 15px; border-radius: 0 0 10px 10px; }}
+                        .logo {{ color: #e67e22; font-weight: bold; font-size: 24px; }}
+                        .cookie-icon {{ font-size: 20px; vertical-align: middle; }}
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <div class="header">
+                            <h2><span class="cookie-icon">🍪</span> <span class="logo">CooKieKing</span></h2>
+                        </div>
+                        <div class="content">
+                            <p>¡Hola {usuario.nombre_usuario}!</p>
+                            <p>Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en <strong>CooKieKing</strong>.</p>
+                            
+                            <p style="text-align: center;">
+                                <a href="{enlace_recuperacion}" class="button">Restablecer mi contraseña</a>
+                            </p>
+                            
+                            <p>Este enlace expirará en 1 hora. Si no solicitaste restablecer tu contraseña, puedes ignorar este mensaje.</p>
+                            
+                            <p style="text-align: center; margin-top: 25px;">
+                                <span style="font-size: 18px;">🍪 🍪 🍪</span>
+                            </p>
+                        </div>
+                        <div class="footer">
+                            <p>© {datetime.now().year} CooKieKing. Todos los derechos reservados.</p>
+                            <p>Este es un mensaje automático - Por la seguridad de tu cuenta, no lo reenvíes.</p>
+                        </div>
+                    </div>
+                </body>
+            </html>
+            '''
+        )
+        mail.send(msg)
+        
+        return True, "Si el correo está registrado, recibirás instrucciones para restablecer tu contraseña."
+
+    @staticmethod
+    def validar_token_recuperacion(token):
+        usuario = Usuario.query.filter_by(token_recuperacion=token).first()
+        
+        if not usuario:
+            return None, "El enlace de recuperación no es válido o ha expirado."
+        
+        if datetime.utcnow() > usuario.token_expiracion:
+            usuario.limpiar_token_recuperacion()
+            return None, "El enlace de recuperación ha expirado. Por favor, solicita uno nuevo."
+        
+        return usuario, "Token válido"
+
+    @staticmethod
+    def restablecer_contrasena(token, nueva_contrasena):
+        usuario, mensaje = AuthController.validar_token_recuperacion(token)
+        
+        if not usuario:
+            return False, mensaje
+        
+        es_valida, mensaje = AuthController.validador.validar_contrasena(nueva_contrasena)
+        if not es_valida:
+            return False, mensaje
+        
+        usuario.hash_contrasena = AuthController.validador.hash_contrasena(nueva_contrasena)
+        usuario.contrasena_cambiada_en = datetime.utcnow()
+        usuario.limpiar_token_recuperacion()
+        
+        try:
+            db.session.commit()
+            return True, "Contraseña restablecida exitosamente. Ya puedes iniciar sesión con tu nueva contraseña."
+        except Exception as e:
+            db.session.rollback()
+            return False, f"Error al restablecer la contraseña: {str(e)}"

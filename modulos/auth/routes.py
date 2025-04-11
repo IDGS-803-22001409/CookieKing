@@ -1,3 +1,4 @@
+from datetime import datetime
 from flask import Blueprint, request, redirect, url_for, flash, session, render_template
 from flask_login import login_required, current_user, login_user
 from .controllers import AuthController
@@ -6,7 +7,6 @@ from modulos.main.routes import main_bp
 
 auth_bp = Blueprint('auth', __name__)
 
-# Decorador para restringir acceso solo a roles específicos
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
@@ -34,7 +34,6 @@ def iniciar_sesion():
 
     return render_template('modulos/auth/iniciar_sesion.html')
 
-# En la función verificar_totp, modificamos la redirección:
 @auth_bp.route('/verificar_totp', methods=['GET', 'POST'])
 def verificar_totp():
     if not session.get('totp_data'):
@@ -76,7 +75,7 @@ def registro():
         if not desde_admin and 'rol' in data and data['rol'] != 'cliente':
             data['rol'] = 'cliente'  # Asegurar que los auto-registros sean siempre como cliente
 
-        success, message = AuthController.registrar_usuario(data)
+        success, message = AuthController.registrar_usuario(data, current_user if current_user.is_authenticated else None)
         flash(message, 'success' if success else 'error')
 
         if success:
@@ -95,7 +94,6 @@ def cerrar_sesion():
 @login_required
 @admin_required
 def catalogo_usuarios():
-    # Importa Usuario solo cuando sea necesario
     from modulos.auth.models import Usuario
     usuarios = Usuario.query.all()
     return render_template('modulos/auth/catalogo_usuarios.html', usuarios=usuarios)
@@ -112,7 +110,8 @@ def crear_usuario():
             'rol': request.form.get('rol')
         }
 
-        success, message = AuthController.crear_usuario_admin(data)
+        # Pasamos el usuario actual al método para verificar permisos
+        success, message = AuthController.crear_usuario_admin(data, current_user)
         flash(message, 'success' if success else 'error')
 
         if success:
@@ -150,3 +149,44 @@ def cambiar_estado_usuario(usuario_id):
     success, message = AuthController.cambiar_estado_usuario(usuario_id)
     flash(message, 'success' if success else 'error')
     return redirect(url_for('auth.catalogo_usuarios'))
+
+@auth_bp.route('/recuperar_contrasena', methods=['GET', 'POST'])
+def recuperar_contrasena():
+    if current_user.is_authenticated:
+        return redirect(url_for('main.root_redirect'))
+        
+    if request.method == 'POST':
+        correo = request.form.get('correo')
+        success, message = AuthController.solicitar_recuperacion_contrasena(correo)
+        flash(message, 'success' if success else 'error')
+        
+        if success:
+            return redirect(url_for('auth.iniciar_sesion'))
+    
+    return render_template('modulos/auth/recuperar_contrasena.html')
+
+@auth_bp.route('/restablecer_contrasena/<token>', methods=['GET', 'POST'])
+def restablecer_contrasena(token):
+    if current_user.is_authenticated:
+        return redirect(url_for('main.root_redirect'))
+    
+    usuario, mensaje = AuthController.validar_token_recuperacion(token)
+    
+    if not usuario:
+        flash(mensaje, 'error')
+        return redirect(url_for('auth.recuperar_contrasena'))
+    
+    if request.method == 'POST':
+        nueva_contrasena = request.form.get('nueva_contrasena')
+        confirmacion = request.form.get('confirmacion_contrasena')
+        
+        if nueva_contrasena != confirmacion:
+            flash('Las contraseñas no coinciden', 'error')
+        else:
+            success, message = AuthController.restablecer_contrasena(token, nueva_contrasena)
+            flash(message, 'success' if success else 'error')
+            
+            if success:
+                return redirect(url_for('auth.iniciar_sesion'))
+    
+    return render_template('modulos/auth/restablecer_contrasena.html', token=token)

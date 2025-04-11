@@ -5,7 +5,7 @@ from passlib.context import CryptContext
 import re
 from models import db  
 
-class Usuario( db.Model, UserMixin):  
+class Usuario(db.Model, UserMixin):  
     __tablename__ = 'usuario'
 
     id = db.Column(db.Integer, primary_key=True)
@@ -13,20 +13,19 @@ class Usuario( db.Model, UserMixin):
     correo = db.Column(db.String(120), unique=True, nullable=False)
     hash_contrasena = db.Column(db.String(255), nullable=False)
     rol = db.Column(db.String(20), nullable=False)
-    
-    # Campos de seguridad
     ultimo_inicio_sesion = db.Column(db.DateTime, nullable=True)
     intentos_inicio_sesion = db.Column(db.Integer, default=0)
     esta_bloqueado = db.Column(db.Boolean, default=False)
     bloqueo_hasta = db.Column(db.DateTime, nullable=True)
     contrasena_cambiada_en = db.Column(db.DateTime, default=datetime.utcnow)
     esta_activo = db.Column(db.Boolean, default=True)
+    token_recuperacion = db.Column(db.String(100), nullable=True)
+    token_expiracion = db.Column(db.DateTime, nullable=True)
     
-    # Métodos requeridos por Flask-Login
     def get_id(self):
         return str(self.id)
     
-    def __repr__(self):
+    def _repr_(self):
         return f'<Usuario {self.nombre_usuario}>'
 
     def is_active(self):
@@ -61,6 +60,24 @@ class Usuario( db.Model, UserMixin):
         self.esta_activo = True
         db.session.commit()
 
+    def generar_token_recuperacion(self):
+        import secrets
+        self.token_recuperacion = secrets.token_urlsafe(32)
+        self.token_expiracion = datetime.utcnow() + timedelta(hours=1)
+        db.session.commit()
+        return self.token_recuperacion
+
+    def verificar_token_recuperacion(self, token):
+        if token != self.token_recuperacion:
+            return False
+        if datetime.utcnow() > self.token_expiracion:
+            return False
+        return True
+
+    def limpiar_token_recuperacion(self):
+        self.token_recuperacion = None
+        self.token_expiracion = None
+        db.session.commit()
 
 class ValidadorContrasena:
     CONTRASENAS_DEBILES = [

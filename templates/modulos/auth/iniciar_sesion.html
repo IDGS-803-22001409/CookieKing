@@ -41,6 +41,11 @@
                     <input type="password" name="contrasena" id="contrasena" 
                            class="border border-cookie-200 rounded-lg p-2.5 w-full focus:ring-cookie-500 focus:border-cookie-500" 
                            placeholder="••••••••" required>
+                    <div class="flex justify-end mt-1">
+                        <a href="{{ url_for('auth.recuperar_contrasena') }}" class="text-xs text-cookie-600 hover:text-cookie-800">
+                            ¿Olvidaste tu contraseña?
+                        </a>
+                    </div>
                 </div>
                 
                 <div class="flex items-center justify-between">
