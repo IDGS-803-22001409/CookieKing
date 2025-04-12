@@ -236,18 +236,20 @@ class RecetaController:
                 if precio is None:
                     return False, f"El ingrediente {nombre} no tiene precio unitario"
                 
-                # Convertir todo a kg para cálculo consistente
-                if unidad and unidad.lower() in ['g', 'gr', 'gramos']:
+                # Conservar las unidades originales para líquidos
+                unidad = unidad.lower() if unidad else ''
+                
+                if unidad in ['g', 'gr', 'gramos']:
                     cantidad_kg = cantidad / 1000
-                elif unidad and unidad.lower() in ['unidad', 'unidades', 'u']:
+                elif unidad in ['ml', 'mililitro', 'mililitros']:
+                    # Conservar mililitros sin conversión
+                    cantidad_kg = cantidad / 1000  # Convertir a litros para cálculo
+                elif unidad in ['l', 'litro', 'litros']:
+                    # Conservar litros sin conversión
+                    cantidad_kg = cantidad
+                elif unidad in ['unidad', 'unidades', 'u']:
                     # Manejo especial para huevos (50g por unidad)
-                    if 'huevo' in nombre.lower():
-                        cantidad_kg = cantidad * 0.05
-                    else:
-                        cantidad_kg = cantidad
-                elif unidad and unidad.lower() in ['litro', 'litros', 'l']:
-                    # Asumir 1 kg por litro para líquidos
-                    cantidad_kg = cantidad * 1.0
+                    cantidad_kg = cantidad * 0.05 if 'huevo' in nombre.lower() else cantidad
                 else:  # asumimos kg por defecto
                     cantidad_kg = cantidad
 
@@ -258,7 +260,7 @@ class RecetaController:
                 return False, "La producción debe ser mayor a cero"
 
             peso_por_galleta = peso_total / receta.galletasProducidas
-            precio_por_galleta = (costo_total * 1.3) / receta.galletasProducidas  # 30% margen
+            precio_por_galleta = (costo_total * 1.57) / receta.galletasProducidas  # 57% margen
 
             # Actualizar la galleta
             Galletas.query.filter_by(idGalleta=receta.idGalleta).update({
@@ -306,22 +308,23 @@ class RecetaController:
                 if stock <= 0:
                     return False, f"El ingrediente {nombre} no tiene existencias disponibles"
                 
-                # Conversión a kg para cálculo consistente
-                if unidad and unidad.lower() in ['g', 'gr', 'gramos']:
+                # Conservar las unidades originales para líquidos
+                unidad = unidad.lower() if unidad else ''
+                
+                if unidad in ['g', 'gr', 'gramos']:
                     cantidad_kg = cantidad_receta / 1000
                     existencias_kg = stock / 1000
-                elif unidad and unidad.lower() in ['unidad', 'unidades', 'u']:
-                    # Manejo especial para huevos (50g por unidad)
-                    if 'huevo' in nombre.lower():
-                        cantidad_kg = cantidad_receta * 0.05
-                        existencias_kg = stock * 0.05
-                    else:
-                        cantidad_kg = cantidad_receta
-                        existencias_kg = stock
-                elif unidad and unidad.lower() in ['litro', 'litros', 'l']:
-                    # Asumir 1 kg por litro para líquidos
-                    cantidad_kg = cantidad_receta * 1.0
-                    existencias_kg = stock * 1.0
+                elif unidad in ['ml', 'mililitro', 'mililitros']:
+                    # Conservar mililitros sin conversión
+                    cantidad_kg = cantidad_receta / 1000  # Convertir a litros para cálculo
+                    existencias_kg = stock / 1000
+                elif unidad in ['l', 'litro', 'litros']:
+                    # Conservar litros sin conversión
+                    cantidad_kg = cantidad_receta
+                    existencias_kg = stock
+                elif unidad in ['unidad', 'unidades', 'u']:
+                    cantidad_kg = cantidad_receta * 0.05 if 'huevo' in nombre.lower() else cantidad_receta
+                    existencias_kg = stock * 0.05 if 'huevo' in nombre.lower() else stock
                 else:  # asumimos kg por defecto
                     cantidad_kg = cantidad_receta
                     existencias_kg = stock

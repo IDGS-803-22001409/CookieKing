@@ -9,7 +9,7 @@ class Config:
 
 class DevelopmentConfig(Config):  
     DEBUG = True
-    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://root:sergio@localhost:3306/CookieKing'
+    SQLALCHEMY_DATABASE_URI = 'mysql+pymysql://cookieking:cookieking@localhost:3306/CookieKing'
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     MAIL_SERVER = 'smtp.gmail.com'  # Cambia por tu servidor SMTP
